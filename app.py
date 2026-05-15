@@ -35,11 +35,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 
 # ============ TiDB CLOUD DATABASE CONFIGURATION ============
-# MySQL connection string for TiDB Cloud with SSL
+# MySQL connection string for TiDB Cloud (without SSL for now)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     'mysql+pymysql://Zs51ycD7dYgEUy3.root:qar204jhgxpJE2sB@'
     'gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/innovation_hub'
-    '?charset=utf8mb4&ssl=true'
+    '?charset=utf8mb4'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -142,14 +142,11 @@ def portfolio():
 
 @app.route('/portfolio/project/<int:project_id>')
 def portfolio_detail(project_id):
-    """Public view of completed project for portfolio"""
     try:
         project = Project.query.get_or_404(project_id)
-
         if project.status != 'completed':
             flash('This project is not available for public viewing', 'error')
             return redirect(url_for('portfolio'))
-
         return render_template('portfolio_detail.html', project=project)
     except Exception as e:
         print(f"Error in portfolio_detail: {e}")
@@ -168,18 +165,15 @@ def terms():
 def privacy():
     return render_template('privacy.html')
 
-
 # ==================== PUBLIC ANNOUNCEMENTS API ====================
 
 @app.route('/api/announcements')
 def get_public_announcements():
-    """Get announcements for landing page (public access, no login required)"""
     try:
         announcements = Announcement.query.order_by(
             Announcement.is_pinned.desc(),
             Announcement.created_at.desc()
         ).limit(5).all()
-
         data = []
         for ann in announcements:
             data.append({
@@ -190,25 +184,20 @@ def get_public_announcements():
                 'attachment_filename': ann.attachment_filename,
                 'created_at': ann.created_at.strftime('%b %d, %Y') if ann.created_at else 'Recently'
             })
-
         return jsonify(data)
     except Exception as e:
         print(f"Error fetching announcements: {e}")
         return jsonify([])
 
-
 # ==================== DOWNLOAD ANNOUNCEMENT ATTACHMENT ====================
 
 @app.route('/api/download-announcement/<int:announcement_id>')
 def download_announcement(announcement_id):
-    """Download announcement attachment (public access)"""
     try:
         announcement = Announcement.query.get_or_404(announcement_id)
-
         if not announcement.attachment_path or not os.path.exists(announcement.attachment_path):
             flash('File not found', 'error')
             return redirect(url_for('index'))
-
         return send_file(
             announcement.attachment_path,
             as_attachment=True,
@@ -218,7 +207,6 @@ def download_announcement(announcement_id):
         print(f"Error downloading attachment: {e}")
         flash('Error downloading file', 'error')
         return redirect(url_for('index'))
-
 
 # ==================== PROJECT ROUTES ====================
 
@@ -235,13 +223,10 @@ def create_project():
             roles = request.form.get('roles')
             additional_details = request.form.get('additional_details')
             skills_input = request.form.get('skills', '')
-
             skills_required = [s.strip() for s in skills_input.split(',') if s.strip()]
-
             if not title or not description or not team_size:
                 flash('Please fill in all required fields', 'error')
                 return redirect(url_for('create_project'))
-
             new_project = Project(
                 project_id=generate_project_id(),
                 title=title,
@@ -255,34 +240,27 @@ def create_project():
                 status='active'
             )
             new_project.set_skills(skills_required)
-
             db.session.add(new_project)
             db.session.flush()
-
             new_group = Group(
                 name=f"{title} Chat Group",
                 project_id=new_project.id
             )
             db.session.add(new_group)
             db.session.flush()
-
             group_member = GroupMember(
                 group_id=new_group.id,
                 user_id=current_user.id,
                 is_muted=False
             )
             db.session.add(group_member)
-
             db.session.commit()
-
             flash(f'Project created successfully. Project ID: {new_project.project_id}', 'success')
             return redirect(url_for('project_detail', project_id=new_project.id))
-
         except Exception as e:
             db.session.rollback()
             flash(f'Error creating project: {str(e)}', 'error')
             return redirect(url_for('create_project'))
-
     return render_template('create_project.html')
 
 @app.route('/projects')
@@ -290,7 +268,6 @@ def projects():
     try:
         category = request.args.get('category')
         filter_type = request.args.get('filter', 'all')
-
         if filter_type == 'recommended' and current_user.is_authenticated:
             user_skills = current_user.get_skills()
             if user_skills:
@@ -320,7 +297,6 @@ def projects():
             projects = query.order_by(Project.created_at.desc()).all()
     except:
         projects = []
-
     return render_template('projects.html', projects=projects)
 
 @app.route('/project/<int:project_id>')
@@ -329,22 +305,18 @@ def project_detail(project_id):
         project = Project.query.get_or_404(project_id)
         supervisors = User.query.filter_by(is_supervisor=True).all()
         has_applied = False
-
         if current_user.is_authenticated:
             application = ProjectApplication.query.filter_by(
                 applicant_id=current_user.id,
                 project_id=project_id
             ).first()
             has_applied = application is not None
-
         return render_template('project_detail.html',
                              project=project,
                              supervisors=supervisors,
                              has_applied=has_applied)
     except Exception as e:
         print(f"Error in project_detail: {e}")
-        import traceback
-        traceback.print_exc()
         flash('Project not found', 'error')
         return redirect(url_for('projects'))
 
@@ -353,32 +325,25 @@ def project_detail(project_id):
 def apply_to_project(project_id):
     try:
         project = Project.query.get_or_404(project_id)
-
         existing = ProjectApplication.query.filter_by(
             applicant_id=current_user.id,
             project_id=project_id
         ).first()
-
         if existing:
             flash('You have already applied to this project', 'warning')
             return redirect(url_for('project_detail', project_id=project_id))
-
         message = request.form.get('message', '')
-
         application = ProjectApplication(
             applicant_id=current_user.id,
             project_id=project_id,
             message=message,
             status='pending'
         )
-
         db.session.add(application)
         db.session.commit()
-
         flash('Application submitted successfully. The project creator will review it.', 'success')
     except Exception as e:
         flash(f'Error applying to project: {str(e)}', 'error')
-
     return redirect(url_for('project_detail', project_id=project_id))
 
 # ==================== PROJECT STATUS MANAGEMENT ====================
@@ -388,23 +353,18 @@ def apply_to_project(project_id):
 def mark_project_complete(project_id):
     try:
         project = Project.query.get_or_404(project_id)
-
         if project.student_id != current_user.id:
             flash('You do not have permission to modify this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
-
         if project.status == 'completed':
             flash('Project is already completed', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
-
         project.status = 'completed'
         project.completed_at = datetime.utcnow()
         db.session.commit()
-
         flash('Project marked as completed. It will appear in the portfolio.', 'success')
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
-
     return redirect(url_for('project_detail', project_id=project_id))
 
 @app.route('/project/<int:project_id>/mark-active', methods=['POST'])
@@ -412,23 +372,18 @@ def mark_project_complete(project_id):
 def mark_project_active(project_id):
     try:
         project = Project.query.get_or_404(project_id)
-
         if project.student_id != current_user.id:
             flash('You do not have permission to modify this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
-
         if project.status != 'completed':
             flash('Only completed projects can be marked as active', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
-
         project.status = 'active'
         project.completed_at = None
         db.session.commit()
-
         flash('Project marked as active again.', 'success')
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
-
     return redirect(url_for('project_detail', project_id=project_id))
 
 @app.route('/project/<int:project_id>/request-supervisor', methods=['POST'])
@@ -438,33 +393,26 @@ def request_supervisor(project_id):
         project = Project.query.get_or_404(project_id)
         supervisor_id = request.form.get('supervisor_id')
         message = request.form.get('message', '')
-
         if project.student_id != current_user.id:
             flash('You do not have permission to request supervision for this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
-
         if project.supervisor_id:
             flash('This project already has a supervisor', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
-
         if not supervisor_id:
             flash('Please select a supervisor', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
-
         supervisor = User.query.get(supervisor_id)
         if not supervisor or not supervisor.is_supervisor:
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
-
         project.supervisor_id = supervisor_id
         project.status = 'pending_supervision'
         project.supervision_requested_at = datetime.utcnow()
         db.session.commit()
-
         flash(f'Supervision request sent to {supervisor.get_full_name()}', 'success')
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
-
     return redirect(url_for('project_detail', project_id=project_id))
 
 # ==================== APPLICATION MANAGEMENT ====================
@@ -475,19 +423,15 @@ def manage_applications():
     try:
         my_projects = Project.query.filter_by(student_id=current_user.id).all()
         project_ids = [p.id for p in my_projects]
-
         pending_applications = ProjectApplication.query.filter(
             ProjectApplication.project_id.in_(project_ids),
             ProjectApplication.status == 'pending'
         ).order_by(ProjectApplication.applied_at.desc()).all()
-
         approved_members = ProjectApplication.query.filter(
             ProjectApplication.project_id.in_(project_ids),
             ProjectApplication.status == 'approved'
         ).order_by(ProjectApplication.applied_at.desc()).all()
-
         user_projects = Project.query.filter_by(student_id=current_user.id).all()
-
         return render_template('manage_applications.html',
                              pending_applications=pending_applications,
                              approved_members=approved_members,
@@ -501,18 +445,14 @@ def manage_applications():
 def handle_application(application_id):
     try:
         application = ProjectApplication.query.get_or_404(application_id)
-
         if application.project.student_id != current_user.id:
             flash('You do not have permission to do that', 'error')
             return redirect(url_for('manage_applications'))
-
         action = request.form.get('action')
-
         if action == 'approve':
             application.status = 'approved'
             application.approved_at = datetime.utcnow()
             db.session.commit()
-
             group = Group.query.filter_by(project_id=application.project_id).first()
             if group:
                 existing_member = GroupMember.query.filter_by(
@@ -532,7 +472,6 @@ def handle_application(application_id):
                     flash(f'Application from {application.applicant.username} approved. User already in chat.', 'success')
             else:
                 flash(f'Application from {application.applicant.username} approved.', 'success')
-
         elif action == 'reject':
             application.status = 'rejected'
             db.session.commit()
@@ -540,11 +479,9 @@ def handle_application(application_id):
         else:
             flash('Invalid action', 'error')
             return redirect(url_for('manage_applications'))
-
     except Exception as e:
         flash(f'Error handling application: {str(e)}', 'error')
         db.session.rollback()
-
     return redirect(url_for('manage_applications'))
 
 @app.route('/application/<int:application_id>/cancel', methods=['POST'])
@@ -552,22 +489,17 @@ def handle_application(application_id):
 def cancel_application(application_id):
     try:
         application = ProjectApplication.query.get_or_404(application_id)
-
         if application.applicant_id != current_user.id:
             flash('You do not have permission to cancel this application', 'error')
             return redirect(url_for('manage_applications'))
-
         if application.status != 'pending':
             flash('Only pending applications can be cancelled', 'error')
             return redirect(url_for('manage_applications'))
-
         db.session.delete(application)
         db.session.commit()
-
         flash('Application cancelled successfully', 'success')
     except Exception as e:
         flash(f'Error cancelling application: {str(e)}', 'error')
-
     return redirect(url_for('dashboard.dashboard'))
 
 # ==================== FORUM ROUTES ====================
@@ -588,27 +520,22 @@ def create_topic():
             title = request.form.get('title')
             content = request.form.get('content')
             project_id = request.form.get('project_id')
-
             if not title or not content:
                 flash('Title and content are required', 'error')
                 return redirect(url_for('create_topic'))
-
             new_topic = ForumTopic(
                 title=title,
                 content=content,
                 author_id=current_user.id,
                 project_id=project_id if project_id else None
             )
-
             db.session.add(new_topic)
             db.session.commit()
-
             flash('Topic created successfully', 'success')
             return redirect(url_for('forum'))
         except Exception as e:
             flash(f'Error creating topic: {str(e)}', 'error')
             return redirect(url_for('create_topic'))
-
     try:
         projects = Project.query.filter_by(student_id=current_user.id).all()
     except:
@@ -622,7 +549,6 @@ def view_topic(topic_id):
     except:
         flash('Topic not found', 'error')
         return redirect(url_for('forum'))
-
     if request.method == 'POST' and current_user.is_authenticated:
         try:
             content = request.form.get('content')
@@ -638,7 +564,6 @@ def view_topic(topic_id):
         except Exception as e:
             flash(f'Error posting reply: {str(e)}', 'error')
         return redirect(url_for('view_topic', topic_id=topic_id))
-
     return render_template('view_topic.html', topic=topic)
 
 # ==================== CONTACT FORM ====================
@@ -652,16 +577,12 @@ def send_contact():
         phone = request.form.get('phone', 'Not provided')
         inquiry_type = request.form.get('inquiry_type')
         message = request.form.get('message')
-
         if not name or not email or not inquiry_type or not message:
             flash('Please fill in all required fields', 'error')
             return redirect(url_for('contact'))
-
         flash('Thank you for your inquiry. We will get back to you soon.', 'success')
-
     except Exception as e:
         flash(f'Error sending message: {str(e)}', 'error')
-
     return redirect(url_for('contact'))
 
 # ==================== API ENDPOINTS ====================
@@ -670,20 +591,16 @@ def send_contact():
 def match_projects():
     if not current_user.is_authenticated:
         return jsonify({'error': 'Not logged in'}), 401
-
     try:
         user_skills = set(current_user.get_skills())
         if not user_skills:
             return jsonify([])
-
         matches = []
         projects = Project.query.filter_by(status='active').all()
-
         for project in projects:
             project_skills = set(project.get_skills())
             common_skills = user_skills.intersection(project_skills)
             match_score = len(common_skills) / len(project_skills) if project_skills else 0
-
             if match_score > 0:
                 matches.append({
                     'id': project.id,
@@ -692,7 +609,6 @@ def match_projects():
                     'common_skills': list(common_skills),
                     'project_id': project.project_id
                 })
-
         matches.sort(key=lambda x: x['match_score'], reverse=True)
         return jsonify(matches[:10])
     except Exception as e:
@@ -704,16 +620,13 @@ def match_projects():
 def view_supervisor_profile(supervisor_id):
     try:
         supervisor = User.query.get_or_404(supervisor_id)
-
         if not supervisor.is_supervisor:
             flash('User is not a supervisor', 'error')
             return redirect(url_for('index'))
-
         supervised_projects = Project.query.filter_by(
             supervisor_id=supervisor.id,
             status='active'
         ).all()
-
         return render_template('supervisor/public_profile.html',
                              supervisor=supervisor,
                              supervised_projects=supervised_projects)

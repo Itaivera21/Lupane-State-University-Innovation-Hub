@@ -34,8 +34,14 @@ from supervisor import supervisor_bp
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 
-# ============ SQLITE DATABASE CONFIGURATION ============
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///innovation_hub.db'
+# ============ TiDB CLOUD DATABASE CONFIGURATION ============
+# MySQL connection string for TiDB Cloud
+# Format: mysql+pymysql://username:password@host:port/database?charset=utf8mb4
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    'mysql+pymysql://Zs5lycD7dYgEUy3rOot:qar204jhgxpJE2sB@'
+    'gateway0teu-central-tprodaws.tidbcloud.com:4000/innovation_hub'
+    '?charset=utf8mb4'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,

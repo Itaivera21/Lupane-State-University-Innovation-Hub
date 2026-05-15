@@ -36,7 +36,6 @@ app.config['SECRET_KEY'] = 'your-secret-key-here'
 
 # ============ TiDB CLOUD DATABASE CONFIGURATION ============
 # MySQL connection string for TiDB Cloud with SSL
-# Format: mysql+pymysql://username:password@host:port/database?charset=utf8mb4&ssl=true
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     'mysql+pymysql://Zs51ycD7dYgEUy3.root:qar204jhgxpJE2sB@'
     'gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/innovation_hub'
@@ -147,7 +146,6 @@ def portfolio_detail(project_id):
     try:
         project = Project.query.get_or_404(project_id)
 
-        # Only allow viewing completed projects
         if project.status != 'completed':
             flash('This project is not available for public viewing', 'error')
             return redirect(url_for('portfolio'))
@@ -261,7 +259,6 @@ def create_project():
             db.session.add(new_project)
             db.session.flush()
 
-            # Create group for the project and add project owner
             new_group = Group(
                 name=f"{title} Chat Group",
                 project_id=new_project.id
@@ -269,7 +266,6 @@ def create_project():
             db.session.add(new_group)
             db.session.flush()
 
-            # Add project owner to group
             group_member = GroupMember(
                 group_id=new_group.id,
                 user_id=current_user.id,
@@ -517,10 +513,8 @@ def handle_application(application_id):
             application.approved_at = datetime.utcnow()
             db.session.commit()
 
-            # Add the approved applicant to the group
             group = Group.query.filter_by(project_id=application.project_id).first()
             if group:
-                # Check if already a member
                 existing_member = GroupMember.query.filter_by(
                     group_id=group.id,
                     user_id=application.applicant_id
@@ -553,7 +547,7 @@ def handle_application(application_id):
 
     return redirect(url_for('manage_applications'))
 
-@app.route('/application/<int:application_id>/cancel', methods(['POST'])
+@app.route('/application/<int:application_id>/cancel', methods=['POST'])
 @login_required
 def cancel_application(application_id):
     try:

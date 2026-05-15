@@ -9,6 +9,7 @@ import string
 import os
 import sys
 import traceback
+import ssl
 
 # ============ GLOBAL EXCEPTION HANDLER ============
 def global_exception_handler(exctype, value, tb):
@@ -34,18 +35,27 @@ from supervisor import supervisor_bp
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 
-# ============ TiDB CLOUD DATABASE CONFIGURATION ============
-# MySQL connection string for TiDB Cloud (without SSL for now)
+# ============ TiDB CLOUD DATABASE CONFIGURATION WITH SSL ============
+# Download CA cert from TiDB Cloud and save to 'cacert.pem'
+# For Render, we'll use SSL without cert verification temporarily
+
+# Option 1: Use SSL without cert verification (for testing)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     'mysql+pymysql://Zs51ycD7dYgEUy3.root:qar204jhgxpJE2sB@'
     'gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/innovation_hub'
     '?charset=utf8mb4'
 )
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# SSL configuration for pymysql
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,
     'pool_recycle': 3600,
     'pool_pre_ping': True,
+    'connect_args': {
+        'ssl': {
+            'ssl': True
+        }
+    }
 }
 # ================================================
 

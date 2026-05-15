@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Team Members - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            max-width: 900px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        .back-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .add-member-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .add-member-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .add-member-form input:focus {
+            border-color: #0066cc;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052a3;
+        }
+
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+
+        .btn-outline:hover {
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            transition: all 0.2s;
+        }
+
+        .member-item:hover {
+            background: #f0f0f0;
+        }
+
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+            color: #0066cc;
+            flex-shrink: 0;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .member-email {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .member-role {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .member-role.owner {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .member-role.muted {
+            color: #ff9800;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .role-select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: none;
+            justify-content: space-around;
+            padding: 10px 20px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid #eee;
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .nav-item.active {
+            color: #0066cc;
+        }
+
+        .nav-item span:first-child {
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+        <div class="nav-menu">
+            <ul>
+                <li>
+                    <a href="{{ url_for('dashboard.dashboard') }}">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                        <span class="nav-item">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}">
+                        <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                        <span class="nav-item">Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('projects') }}">
+                        <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                        <span class="nav-item">Projects</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('chat.chats') }}">
+                        <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                        <span class="nav-item">Chats</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('forum') }}">
+                        <img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum">
+                        <span class="nav-item">Forum</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                    <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                    <span class="nav-item">Log out</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="back-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1>Team Members</h1>
+        </div>
+
+        <!-- Add Member Card (Only visible to project owner) -->
+        <div class="card" id="addMemberCard" style="display: none;">
+            <div class="card-header">
+                <h2>➕ Add Team Member</h2>
+            </div>
+            <div class="add-member-form">
+                <input type="email" id="memberEmail" placeholder="Enter email address" autocomplete="off">
+                <button class="btn btn-primary" onclick="addMember()">Add Member</button>
+            </div>
+            <div id="addError" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Members List Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👥 All Members</h2>
+                <span style="font-size: 14px; color: #888;" id="totalMembers">(0)</span>
+            </div>
+            <div id="membersLoading" class="loading">Loading members...</div>
+            <div id="membersError" class="error-message" style="display: none;"></div>
+            <div id="memberList" class="member-list" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item" onclick="goToChats()">
+            <span>💬</span>
+            <span>Chat</span>
+        </button>
+        <button class="nav-item" onclick="goToGroupInfo()">
+            <span>ℹ️</span>
+            <span>Info</span>
+        </button>
+        <button class="nav-item active">
+            <span>👥</span>
+            <span>Members</span>
+        </button>
+    </div>
+
+    <script>
+        // Get project_id from URL or sessionStorage
+        let projectId = null;
+
+        // Try to get from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        projectId = urlParams.get('project_id');
+
+        // If not in URL, try to get from sessionStorage
+        if (!projectId) {
+            projectId = sessionStorage.getItem('currentProjectId');
+        }
+
+        // If still no projectId, try to get from the URL path
+        if (!projectId) {
+            const pathMatch = window.location.pathname.match(/\/team-members\/(\d+)/);
+            if (pathMatch) {
+                projectId = pathMatch[1];
+            }
+        }
+
+        let currentUserId = {{ current_user.id|tojson }};
+        let isProjectOwner = false;
+        let projectOwnerId = null;
+        let membersList = [];
+
+        async function loadData() {
+            if (!projectId) {
+                document.getElementById('membersLoading').innerHTML = '<div class="error-message">No project selected. Please go back and select a project.</div>';
+                return;
+            }
+
+            // Save to sessionStorage for other pages
+            sessionStorage.setItem('currentProjectId', projectId);
+
+            await loadProjectInfo();
+            await loadTeamMembers();
+        }
+
+        async function loadProjectInfo() {
+            try {
+                const response = await fetch(`/chat/api/project-info/${projectId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    projectOwnerId = data.owner_id;
+                    isProjectOwner = (currentUserId === projectOwnerId);
+
+                    // Show/hide add member card
+                    const addCard = document.getElementById('addMemberCard');
+                    if (addCard) {
+                        addCard.style.display = isProjectOwner ? 'block' : 'none';
+                    }
+                } else {
+                    console.error('Failed to load project info:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading project info:', error);
+            }
+        }
+
+        async function loadTeamMembers() {
+            const loadingEl = document.getElementById('membersLoading');
+            const errorEl = document.getElementById('membersError');
+            const listEl = document.getElementById('memberList');
+
+            try {
+                const response = await fetch(`/chat/api/members/${projectId}`);
+                if (response.ok) {
+                    membersList = await response.json();
+
+                    loadingEl.style.display = 'none';
+                    errorEl.style.display = 'none';
+                    listEl.style.display = 'flex';
+                    document.getElementById('totalMembers').textContent = `(${membersList.length})`;
+
+                    renderMembersList();
+                } else {
+                    throw new Error('Failed to load members');
+                }
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                errorEl.textContent = '❌ Error loading team members. Please refresh the page.';
+                console.error('Error:', error);
+            }
+        }
+
+        function renderMembersList() {
+            const listEl = document.getElementById('memberList');
+
+            listEl.innerHTML = membersList.map(member => {
+                let roleText = 'Team Member';
+                let roleClass = '';
+                let isOwner = (member.user_id === projectOwnerId);
+                let isSupervisor = member.is_supervisor || false;
+
+                if (isOwner) {
+                    roleText = '👑 Project Lead (Owner)';
+                    roleClass = 'owner';
+                } else if (isSupervisor) {
+                    roleText = '📚 Faculty Supervisor';
+                    roleClass = '';
+                }
+
+                let mutedBadge = '';
+                if (member.is_muted) {
+                    mutedBadge = '<span class="member-role muted">🔇 Muted</span>';
+                }
+
+                // Action buttons only for project owner
+                let actionButtons = '';
+                if (isProjectOwner && !isOwner) {
+                    actionButtons = `
+                        <div class="member-actions">
+                            <select class="role-select" data-user-id="${member.user_id}" onchange="changeMemberRole(${member.user_id}, this.value)">
+                                <option value="member" ${!isSupervisor ? 'selected' : ''}>Member</option>
+                                <option value="supervisor" ${isSupervisor ? 'selected' : ''}>Supervisor</option>
+                            </select>
+                            <button class="btn btn-outline btn-sm" onclick="toggleMemberMute(${member.user_id}, ${!member.is_muted})">
+                                ${member.is_muted ? '🔊 Unmute' : '🔇 Mute'}
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="removeMember(${member.user_id})">
+                                Remove
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="member-item" data-user-id="${member.user_id}">
+                        <div class="member-avatar">${(member.name || member.username).substring(0, 2).toUpperCase()}</div>
+                        <div class="member-info">
+                            <div class="member-name">${escapeHtml(member.name || member.username)}</div>
+                            <div class="member-email">${escapeHtml(member.email || '')}</div>
+                            <div class="member-role ${roleClass}">${roleText}</div>
+                            ${mutedBadge}
+                        </div>
+                        ${actionButtons}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function addMember() {
+            const emailInput = document.getElementById('memberEmail');
+            const email = emailInput.value.trim();
+            const errorEl = document.getElementById('addError');
+
+            if (!email) {
+                errorEl.textContent = 'Please enter an email address';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            if (!email.includes('@')) {
+                errorEl.textContent = 'Please enter a valid email address';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            errorEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`/chat/api/add-member/${projectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (response.ok) {
+                    showNotification('Member added successfully!', 'success');
+                    emailInput.value = '';
+                    await loadTeamMembers();
+                } else {
+                    const error = await response.json();
+                    errorEl.textContent = error.error || 'Failed to add member';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                errorEl.textContent = 'Error adding member';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        async function removeMember(userId) {
+            const member = membersList.find(m => m.user_id === userId);
+            if (!confirm(`Remove ${member?.name || 'this member'} from the project? They will lose access.`)) return;
+
+            try {
+                const response = await fetch(`/chat/api/remove-member/${projectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                if (response.ok) {
+                    showNotification('Member removed', 'success');
+                    await loadTeamMembers();
+                } else {
+                    showNotification('Failed to remove member', 'error');
+                }
+            } catch (error) {
+                showNotification('Error removing member', 'error');
+            }
+        }
+
+        async function toggleMemberMute(userId, mute) {
+            try {
+                const response = await fetch(`/chat/api/mute-member/${projectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, mute: mute })
+                });
+
+                if (response.ok) {
+                    showNotification(mute ? 'Member muted' : 'Member unmuted', 'success');
+                    await loadTeamMembers();
+                } else {
+                    showNotification('Failed to update mute status', 'error');
+                }
+            } catch (error) {
+                showNotification('Error', 'error');
+            }
+        }
+
+        async function changeMemberRole(userId, role) {
+            const isSupervisor = (role === 'supervisor');
+
+            try {
+                const response = await fetch(`/chat/api/update-role/${projectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, is_supervisor: isSupervisor })
+                });
+
+                if (response.ok) {
+                    showNotification(`Role updated`, 'success');
+                    await loadTeamMembers();
+                } else {
+                    showNotification('Failed to update role', 'error');
+                }
+            } catch (error) {
+                showNotification('Error updating role', 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `flash-message flash-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function goBack() {
+            if (document.referrer && document.referrer.includes('/chat/')) {
+                window.location.href = document.referrer;
+            } else if (projectId) {
+                window.location.href = `/chat/project/${projectId}`;
+            } else {
+                window.location.href = '/chat/chats';
+            }
+        }
+
+        function goToChats() {
+            if (projectId) {
+                window.location.href = `/chat/project/${projectId}`;
+            } else {
+                window.location.href = '/chat/chats';
+            }
+        }
+
+        function goToGroupInfo() {
+            if (projectId) {
+                window.location.href = `/chat/group-info/${projectId}`;
+            } else {
+                window.location.href = '/chat/chats';
+            }
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            if (window.innerWidth <= 768) {
+                if (sidebar && menuBtn && !sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Project Chats - Supervisor | Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #2c3e50;
+            color: #fff;
+            min-height: 100vh;
+            position: fixed;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            margin: 4px 0;
+            cursor: pointer;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-item.logout {
+            margin-top: auto;
+            border-top: 1px solid #34495e;
+            padding-top: 10px;
+        }
+
+        .nav-item img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        /* Projects Sidebar */
+        .projects-sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        @media (max-width: 768px) {
+            .projects-sidebar {
+                width: 100%;
+            }
+        }
+
+        .sidebar-header-chat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header-chat h3 {
+            color: #333;
+            font-size: 16px;
+        }
+
+        .project-count {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .project-item a {
+            display: block;
+            color: inherit;
+        }
+
+        .project-item:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .project-item.active {
+            background: #e6f2ff;
+            border-color: #0066cc;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .unread-badge {
+            background: #ff4444;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+        }
+
+        @media (max-width: 768px) {
+            .chat-area {
+                height: calc(100vh - 160px);
+            }
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .chat-header h2 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .chat-header p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .team-members {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .member-avatars {
+            display: flex;
+            align-items: center;
+        }
+
+        .member-avatar {
+            width: 28px;
+            height: 28px;
+            background: #0066cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+            margin-right: -5px;
+            border: 2px solid white;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fafbfc;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+        }
+
+        .message.own-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        @media (max-width: 768px) {
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            background: #0066cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border-top-left-radius: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .own-message .message-content {
+            background: #0066cc;
+            color: white;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 0;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .own-message .message-author {
+            color: white;
+        }
+
+        .message-time {
+            color: #999;
+            font-size: 10px;
+        }
+
+        .own-message .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .message-text {
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .resource-share {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .own-message .resource-share {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .resource-icon {
+            width: 30px;
+            height: 30px;
+            background: #e6f2ff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .resource-info {
+            flex: 1;
+        }
+
+        .resource-name {
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .resource-size {
+            font-size: 10px;
+            color: #888;
+        }
+
+        .download-btn {
+            color: #0066cc;
+            font-size: 11px;
+            cursor: pointer;
+            background: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .download-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Chat Input */
+        .chat-input-area {
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+            background: white;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .input-tools {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            padding: 6px 12px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            color: #555;
+            font-size: 12px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-btn:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .message-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 25px;
+            font-size: 13px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            background: #0066cc;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .send-btn:hover {
+            background: #0052a3;
+        }
+
+        /* Supervisor Badge */
+        .supervisor-badge-chat {
+            background: #2c3e50;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .flash-message {
+                position: fixed;
+                top: 70px;
+                right: 15px;
+                left: 15px;
+                width: auto;
+                z-index: 2000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Innovation Hub</h2>
+            <p>Supervisor Portal</p>
+        </div>
+
+        <div class="nav-menu">
+            <a href="{{ url_for('supervisor.dashboard') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                Dashboard
+            </a>
+            <a href="{{ url_for('supervisor.projects') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                My Projects
+            </a>
+            <a href="{{ url_for('supervisor.applications') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/form.png') }}" alt="Applications">
+                Supervision Requests
+            </a>
+            <a href="{{ url_for('supervisor.chats') }}" class="nav-item active">
+                <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                Project Chats
+            </a>
+            <a href="{{ url_for('supervisor.profile') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                My Profile
+            </a>
+            <a href="{{ url_for('supervisor.signout') }}" class="nav-item logout">
+                <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                Sign Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Projects Sidebar -->
+        <div class="projects-sidebar">
+            <div class="sidebar-header-chat">
+                <h3>Supervised Projects</h3>
+                <span class="project-count">{{ project_chats|length if project_chats else 0 }}</span>
+            </div>
+
+            <ul class="project-list" id="projectList">
+                {% if project_chats %}
+                    {% for chat in project_chats %}
+                    <li class="project-item {% if current_project and current_project.id == chat.project.id %}active{% endif %}" data-project-id="{{ chat.project.id }}">
+                        <a href="{{ url_for('supervisor.chats', project_id=chat.project.id) }}">
+                            <div class="project-name">{{ chat.project.title }}</div>
+                            <div class="project-meta">
+                                <span>{{ chat.project.student.get_full_name() if chat.project.student else 'Student' }}</span>
+                                {% if chat.unread_count > 0 %}
+                                <span class="unread-badge">{{ chat.unread_count }} new</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li style="color: #888; text-align: center; padding: 20px;">
+                        No supervised projects yet.<br>
+                        When you are assigned as a supervisor, chats will appear here.
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        {% if current_project %}
+        <div class="chat-area" id="chatArea" data-project-id="{{ current_project.id }}">
+            <div class="chat-header">
+                <div>
+                    <h2>{{ current_project.title }}</h2>
+                    <div class="team-members">
+                        <span>Project Lead: {{ current_project.student.get_full_name() if current_project.student else 'Unknown' }}</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="supervisor-badge-chat">Supervisor View</span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="message {% if message.sender_id == current_user.id %}own-message{% endif %}" data-message-id="{{ message.id }}">
+                        <div class="message-avatar">{{ (message.sender.get_full_name() or message.sender.username)[:2]|upper if message.sender else '?' }}</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">{{ message.sender.get_full_name() or message.sender.username if message.sender else 'Unknown' }}</span>
+                                <span class="message-time">{{ message.created_at.strftime('%I:%M %p, %d %b') if message.created_at else '' }}</span>
+                            </div>
+                            <div class="message-text">{{ message.content }}</div>
+                            {% if message.resource %}
+                            <div class="resource-share">
+                                <div class="resource-icon">
+                                    {% if message.resource.file_type in ['png','jpg','jpeg','gif'] %}🖼️
+                                    {% elif message.resource.file_type == 'pdf' %}📄
+                                    {% else %}📎{% endif %}
+                                </div>
+                                <div class="resource-info">
+                                    <div class="resource-name">{{ message.resource.original_filename }}</div>
+                                    <div class="resource-size">{{ message.resource.file_size }}</div>
+                                </div>
+                                <button onclick="downloadResource({{ message.resource.id }})" class="download-btn">Download</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <h3>No messages yet</h3>
+                    <p>Start the conversation with the student team!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Modals -->
+            <div class="modal" id="resourceModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share Resource</h3>
+                        <span class="close-modal" onclick="closeModal('resourceModal')">&times;</span>
+                    </div>
+                    <form id="resourceForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>Resource Name <span style="color: #888;">(optional)</span></label>
+                            <input type="text" name="resource_name" placeholder="e.g., Project Proposal">
+                        </div>
+                        <div class="form-group">
+                            <label>Description <span style="color: #888;">(optional)</span></label>
+                            <textarea name="description" placeholder="What's this file about?"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Select File <span class="required">*</span></label>
+                            <input type="file" name="file" id="resourceFile" required>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('resourceModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Upload & Share</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal" id="linkModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share Link</h3>
+                        <span class="close-modal" onclick="closeModal('linkModal')">&times;</span>
+                    </div>
+                    <form id="linkForm">
+                        <div class="form-group">
+                            <label>Link URL</label>
+                            <input type="url" name="link" required placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Description (Optional)</label>
+                            <textarea name="description" placeholder="What's this link about?"></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('linkModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Share Link</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal" id="codeModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share Code Snippet</h3>
+                        <span class="close-modal" onclick="closeModal('codeModal')">&times;</span>
+                    </div>
+                    <form id="codeForm">
+                        <div class="form-group">
+                            <label>Language</label>
+                            <select name="language">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="html">HTML</option>
+                                <option value="css">CSS</option>
+                                <option value="java">Java</option>
+                                <option value="cpp">C++</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Code</label>
+                            <textarea name="code" required placeholder="Paste your code here..."></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('codeModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Share Code</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-tools">
+                    <span class="tool-btn" onclick="openModal('resourceModal')">📎 Share Resource</span>
+                    <span class="tool-btn" onclick="openModal('linkModal')">🔗 Link</span>
+                    <span class="tool-btn" onclick="openModal('codeModal')">📋 Code Snippet</span>
+                </div>
+                <form id="messageForm">
+                    <div class="message-input-wrapper">
+                        <input type="text" class="message-input" name="message" placeholder="Type your message..." autocomplete="off" required>
+                        <button type="submit" class="send-btn">➤</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="chat-area">
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <h3>Select a project chat</h3>
+                <p>Choose a project from the sidebar to start messaging</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .modal-btn-primary {
+            background: #0066cc;
+            color: white;
+            border: none;
+        }
+        .modal-btn-secondary {
+            background: #f8f9fa;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+    </style>
+
+    <script>
+        const currentProjectId = {{ current_project.id if current_project else 'null' }};
+
+        // Download resource
+        async function downloadResource(resourceId) {
+            if (!resourceId) {
+                showNotification('Error: No resource specified', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/chat/api/download-resource/${resourceId}`);
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'download';
+
+                    if (contentDisposition) {
+                        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                        if (match) filename = match[1];
+                    }
+
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showNotification('Download started', 'success');
+                } else {
+                    showNotification('Download failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Error downloading file', 'error');
+            }
+        }
+
+        // Send message
+        document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch(`/chat/api/send-message/${currentProjectId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    e.target.reset();
+                    await loadMessages();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Failed to send message', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sending message', 'error');
+            }
+        });
+
+        // Load messages
+        async function loadMessages() {
+            if (!currentProjectId) return;
+
+            try {
+                const response = await fetch(`/chat/api/messages/${currentProjectId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateMessagesDisplay(data.messages);
+                    markMessagesAsRead();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function updateMessagesDisplay(messages) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No messages yet</h3>
+                        <p>Start the conversation with the student team!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => `
+                <div class="message ${msg.is_own ? 'own-message' : ''}" data-message-id="${msg.id}">
+                    <div class="message-avatar">${(msg.sender_name || '?').substring(0, 2).toUpperCase()}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-author">${escapeHtml(msg.sender_name)}</span>
+                            <span class="message-time">${msg.time}</span>
+                        </div>
+                        <div class="message-text">${escapeHtml(msg.content)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            scrollToBottom();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function markMessagesAsRead() {
+            if (!currentProjectId) return;
+
+            try {
+                await fetch(`/chat/api/mark-project-read/${currentProjectId}`, {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `flash-message flash-${type}`;
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '3000';
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Share resource
+        document.getElementById('resourceForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch(`/chat/api/share-resource/${currentProjectId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    closeModal('resourceModal');
+                    await loadMessages();
+                    showNotification('Resource shared successfully', 'success');
+                    e.target.reset();
+                } else {
+                    showNotification('Failed to share resource', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sharing resource', 'error');
+            }
+        });
+
+        // Share link
+        document.getElementById('linkForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`/chat/api/share-link/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    closeModal('linkModal');
+                    await loadMessages();
+                    showNotification('Link shared successfully', 'success');
+                    e.target.reset();
+                } else {
+                    showNotification('Failed to share link', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sharing link', 'error');
+            }
+        });
+
+        // Share code
+        document.getElementById('codeForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`/chat/api/share-code/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    closeModal('codeModal');
+                    await loadMessages();
+                    showNotification('Code shared successfully', 'success');
+                    e.target.reset();
+                } else {
+                    showNotification('Failed to share code', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sharing code', 'error');
+            }
+        });
+
+        // Auto-refresh messages every 5 seconds
+        if (currentProjectId) {
+            setInterval(loadMessages, 5000);
+            setTimeout(() => {
+                scrollToBottom();
+                loadMessages();
+            }, 500);
+        }
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

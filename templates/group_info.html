@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Group Info - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Sidebar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            max-width: 800px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        /* Group Avatar */
+        .group-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #0066cc, #004999);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .group-avatar span {
+            font-size: 48px;
+            color: white;
+        }
+
+        .group-name {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .group-description {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .group-meta {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            padding: 16px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-number {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Mute Setting */
+        .mute-setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .mute-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mute-info span:first-child {
+            font-size: 24px;
+        }
+
+        .toggle-switch {
+            width: 52px;
+            height: 32px;
+            background: #ccc;
+            border-radius: 32px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #34c759;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        .mute-status-text {
+            font-size: 12px;
+            color: #ff9800;
+            margin-top: 8px;
+            display: none;
+        }
+
+        /* Member List */
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            transition: background 0.2s;
+        }
+
+        .member-item:hover {
+            background: #f0f0f0;
+        }
+
+        .member-avatar {
+            width: 48px;
+            height: 48px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+            color: #0066cc;
+            flex-shrink: 0;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .member-role {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .member-role.owner {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .member-role.muted {
+            color: #ff9800;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052a3;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+
+        .btn-outline:hover {
+            background: #f8f9fa;
+            border-color: #0066cc;
+        }
+
+        .btn-danger {
+            background: #fee;
+            color: #ff4444;
+        }
+
+        .btn-danger:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+
+        /* Loading & Error */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* Flash Message */
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: none;
+            justify-content: space-around;
+            padding: 10px 20px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid #eee;
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .nav-item.active {
+            color: #0066cc;
+        }
+
+        .nav-item span:first-child {
+            font-size: 22px;
+        }
+
+        /* Back button */
+        .back-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+        <div class="nav-menu">
+            <ul>
+                <li>
+                    <a href="{{ url_for('dashboard.dashboard') }}">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                        <span class="nav-item">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}">
+                        <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                        <span class="nav-item">Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('projects') }}">
+                        <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                        <span class="nav-item">Projects</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('chat.chats') }}">
+                        <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                        <span class="nav-item">Chats</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('forum') }}">
+                        <img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum">
+                        <span class="nav-item">Forum</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                    <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                    <span class="nav-item">Log out</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="back-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1>Group Info</h1>
+        </div>
+
+        <!-- Group Info Card -->
+        <div class="card" id="groupInfoCard">
+            <div class="group-avatar">
+                <span>🏗️</span>
+            </div>
+            <div class="group-name" id="groupName">Loading...</div>
+            <div class="group-description" id="groupDescription"></div>
+            <div class="group-meta">
+                <div class="meta-item">
+                    <div class="meta-number" id="memberCount">0</div>
+                    <div class="meta-label">Members</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-number" id="createdDate">-</div>
+                    <div class="meta-label">Created</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⚙️ Settings</h2>
+            </div>
+            <div class="mute-setting">
+                <div class="mute-info">
+                    <span>🔕</span>
+                    <span>Mute group notifications</span>
+                </div>
+                <div class="toggle-switch" id="muteToggle"></div>
+            </div>
+            <div class="mute-status-text" id="muteStatus">🔇 Group is muted - you won't receive notifications</div>
+        </div>
+
+        <!-- Team Members Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>👥 Team Members</h2>
+                <button class="btn-outline" style="padding: 8px 16px; font-size: 13px;" onclick="goToTeamMembers()">Manage →</button>
+            </div>
+            <div id="membersLoading" class="loading">Loading members...</div>
+            <div id="membersError" class="error-message" style="display: none;"></div>
+            <div id="memberList" class="member-list" style="display: none;"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-outline" onclick="shareGroup()">📤 Share Group</button>
+            <button class="btn btn-danger" onclick="leaveGroup()">🚪 Leave Group</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <div class="bottom-nav">
+        <button class="nav-item" onclick="goToChat()">
+            <span>💬</span>
+            <span>Chat</span>
+        </button>
+        <button class="nav-item active">
+            <span>ℹ️</span>
+            <span>Info</span>
+        </button>
+        <button class="nav-item" onclick="goToTeamMembers()">
+            <span>👥</span>
+            <span>Members</span>
+        </button>
+    </div>
+
+    <script>
+        // Get project_id from URL or session
+        let projectId = null;
+
+        // Try to get from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        projectId = urlParams.get('project_id');
+
+        // If not in URL, try to get from sessionStorage
+        if (!projectId) {
+            projectId = sessionStorage.getItem('currentProjectId');
+        }
+
+        // If still no projectId, try to get from the URL path
+        if (!projectId) {
+            const pathMatch = window.location.pathname.match(/\/group-info\/(\d+)/);
+            if (pathMatch) {
+                projectId = pathMatch[1];
+            }
+        }
+
+        let currentUserId = {{ current_user.id|tojson }};
+        let isProjectOwner = false;
+        let projectOwnerId = null;
+        let projectData = null;
+
+        // Save to sessionStorage for other pages
+        if (projectId) {
+            sessionStorage.setItem('currentProjectId', projectId);
+        }
+
+        async function loadGroupInfo() {
+            if (!projectId) {
+                showError('No project selected. Please go back and select a project.');
+                document.getElementById('groupName').textContent = 'No project selected';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/chat/api/project-info/${projectId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    projectData = data;
+                    projectOwnerId = data.owner_id;
+                    isProjectOwner = (currentUserId === data.owner_id);
+
+                    document.getElementById('groupName').textContent = data.title || 'Untitled Project';
+                    document.getElementById('groupDescription').textContent = data.description || 'No description provided';
+                    document.getElementById('memberCount').textContent = data.member_count || 0;
+                    document.getElementById('createdDate').textContent = data.created_date || 'Unknown';
+
+                    // Load mute status
+                    loadMuteStatus();
+                } else {
+                    const error = await response.json();
+                    showError(error.error || 'Failed to load group info');
+                }
+            } catch (error) {
+                showError('Error loading group info');
+            }
+        }
+
+        async function loadMuteStatus() {
+            try {
+                const response = await fetch(`/chat/api/mute-status/${projectId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const toggle = document.getElementById('muteToggle');
+                    const statusText = document.getElementById('muteStatus');
+
+                    if (data.is_muted) {
+                        toggle.classList.add('active');
+                        statusText.style.display = 'block';
+                    } else {
+                        toggle.classList.remove('active');
+                        statusText.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading mute status:', error);
+            }
+        }
+
+        // Mute toggle functionality
+        const muteToggle = document.getElementById('muteToggle');
+        if (muteToggle) {
+            muteToggle.addEventListener('click', async function() {
+                const isCurrentlyMuted = this.classList.contains('active');
+                const newMuteState = !isCurrentlyMuted;
+
+                try {
+                    const response = await fetch(`/chat/api/toggle-mute/${projectId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ muted: newMuteState })
+                    });
+
+                    if (response.ok) {
+                        if (newMuteState) {
+                            this.classList.add('active');
+                            document.getElementById('muteStatus').style.display = 'block';
+                            showNotification('Group muted 🔇', 'success');
+                        } else {
+                            this.classList.remove('active');
+                            document.getElementById('muteStatus').style.display = 'none';
+                            showNotification('Group unmuted 🔔', 'success');
+                        }
+                    } else {
+                        showNotification('Failed to change mute status', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error updating mute status', 'error');
+                }
+            });
+        }
+
+        async function loadTeamMembers() {
+            if (!projectId) return;
+
+            const loadingEl = document.getElementById('membersLoading');
+            const errorEl = document.getElementById('membersError');
+            const listEl = document.getElementById('memberList');
+
+            try {
+                const response = await fetch(`/chat/api/members/${projectId}`);
+                if (response.ok) {
+                    const members = await response.json();
+
+                    loadingEl.style.display = 'none';
+                    errorEl.style.display = 'none';
+                    listEl.style.display = 'flex';
+
+                    if (members.length === 0) {
+                        listEl.innerHTML = '<div style="text-align: center; padding: 20px;">No members found</div>';
+                        return;
+                    }
+
+                    listEl.innerHTML = members.map(member => {
+                        let roleText = 'Team Member';
+                        let roleClass = '';
+                        let mutedBadge = '';
+
+                        if (member.user_id === projectOwnerId) {
+                            roleText = '👑 Project Lead';
+                            roleClass = 'owner';
+                        } else if (member.is_supervisor) {
+                            roleText = '📚 Supervisor';
+                            roleClass = '';
+                        }
+
+                        if (member.is_muted) {
+                            mutedBadge = ' <span class="member-role muted">(muted)</span>';
+                        }
+
+                        return `
+                            <div class="member-item">
+                                <div class="member-avatar">${(member.name || member.username).substring(0, 2).toUpperCase()}</div>
+                                <div class="member-info">
+                                    <div class="member-name">${escapeHtml(member.name || member.username)}${mutedBadge}</div>
+                                    <div class="member-role ${roleClass}">${roleText}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                } else {
+                    throw new Error('Failed to load members');
+                }
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                errorEl.textContent = '❌ Error loading team members. Please try again.';
+                console.error('Error loading members:', error);
+            }
+        }
+
+        async function leaveGroup() {
+            if (!confirm('⚠️ Are you sure you want to leave this group?\n\nYou will lose access to all project resources and chat history.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/chat/api/leave-group/${projectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    showNotification('You have left the group', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/chat/chats';
+                    }, 1500);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Failed to leave group', 'error');
+                }
+            } catch (error) {
+                showNotification('Error leaving group', 'error');
+            }
+        }
+
+        function shareGroup() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: projectData?.title || 'Innovation Hub Project',
+                    text: projectData?.description || 'Join our project on Innovation Hub',
+                    url: url
+                }).catch(() => {
+                    copyToClipboard(url);
+                });
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Link copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Could not copy link', 'error');
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `flash-message flash-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.top = '70px';
+            errorDiv.style.left = '50%';
+            errorDiv.style.transform = 'translateX(-50%)';
+            errorDiv.style.zIndex = '2000';
+            errorDiv.style.minWidth = '250px';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 4000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function goBack() {
+            if (document.referrer && document.referrer.includes('/chat/')) {
+                window.location.href = document.referrer;
+            } else if (projectId) {
+                window.location.href = `/chat/project/${projectId}`;
+            } else {
+                window.location.href = '/chat/chats';
+            }
+        }
+
+        function goToChat() {
+            if (projectId) {
+                window.location.href = `/chat/project/${projectId}`;
+            } else {
+                window.location.href = '/chat/chats';
+            }
+        }
+
+        function goToTeamMembers() {
+            if (projectId) {
+                window.location.href = `/chat/team-members/${projectId}`;
+            } else {
+                window.location.href = '/chat/chats';
+            }
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            if (window.innerWidth <= 768) {
+                if (sidebar && menuBtn && !sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Initialize
+        if (projectId) {
+            loadGroupInfo();
+            loadTeamMembers();
+        } else {
+            document.getElementById('groupName').textContent = 'No project selected';
+            document.getElementById('membersLoading').innerHTML = '<div class="error-message">Please select a project from the chat page first</div>';
+        }
+    </script>
+</body>
+</html>

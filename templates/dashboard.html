@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Dashboard - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Fixed Sidebar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            overflow-y: auto;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+                width: 100%;
+            }
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+        }
+
+        .welcome-section h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .welcome-section h1 {
+                font-size: 22px;
+            }
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stat-card {
+                width: 100%;
+            }
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            color: #333;
+            border-left: 4px solid #0066cc;
+        }
+
+        .stat-card:first-child {
+            border-left-color: #28a745;
+        }
+
+        .stat-card:last-child {
+            border-left-color: #ffc107;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-btn, .manage-apps-btn, .supervisor-btn, .reopen-btn {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0066cc;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #0052a3;
+        }
+
+        .action-btn.secondary {
+            background: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .action-btn.secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .manage-apps-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .manage-apps-btn:hover {
+            background: #218838;
+        }
+
+        .supervisor-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #6c757d;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .supervisor-btn:hover {
+            background: #5a6268;
+        }
+
+        .reopen-btn {
+            background: #f39c12;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .reopen-btn:hover {
+            background: #e67e22;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0 20px 0;
+        }
+
+        .section-header h2 {
+            color: #333;
+            font-size: 22px;
+        }
+
+        @media (max-width: 768px) {
+            .section-header h2 {
+                font-size: 18px;
+            }
+        }
+
+        .view-all {
+            color: #0066cc;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .projects-grid,
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .project-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .project-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .status-badge.pending {
+            background: #fff9e6;
+            color: #ffc107;
+        }
+
+        .status-badge.completed {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .project-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #888;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .project-meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        .project-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .view-btn {
+            color: #0066cc;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .applications-list {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .application-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 768px) {
+            .application-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .application-item > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .application-item:last-child {
+            border-bottom: none;
+        }
+
+        .app-info h4 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .app-info p {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .status-pending {
+            color: #ffc107;
+            font-weight: 500;
+            font-size: 13px;
+            background: #fff9e6;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .cancel-btn {
+            color: #ff4444;
+            font-size: 13px;
+            background: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #ffe6e6;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .recommendation-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+        }
+
+        .match-score {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .rec-title {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .rec-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .skill-tag {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .apply-link {
+            color: #0066cc;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .forum-activity {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .forum-post {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 768px) {
+            .forum-post {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .forum-post span {
+                align-self: flex-end;
+            }
+        }
+
+        .forum-post:last-child {
+            border-bottom: none;
+        }
+
+        .post-content {
+            flex: 1;
+        }
+
+        .post-title {
+            color: #333;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .post-meta {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .unread-badge {
+            width: 8px;
+            height: 8px;
+            background: #0066cc;
+            border-radius: 50%;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .approve-btn {
+            background: #28a745;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: inline-block;
+        }
+
+        .approve-btn:hover {
+            background: #218838;
+        }
+
+        .reject-btn {
+            background: #dc3545;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: inline-block;
+        }
+
+        .reject-btn:hover {
+            background: #c82333;
+        }
+
+        .supervisor-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .complete-btn {
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <!-- Fixed Sidebar -->
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+
+        <div class="nav-menu">
+            <ul>
+                <li>
+                    <a href="{{ url_for('dashboard.dashboard') }}" class="active">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                        <span class="nav-item">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}">
+                        <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                        <span class="nav-item">Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('projects') }}">
+                        <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                        <span class="nav-item">Projects</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('chat.chats') }}">
+                        <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                        <span class="nav-item">Chats</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('forum') }}">
+                        <img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum">
+                        <span class="nav-item">Forum</span>
+                    </a>
+                </li>
+
+                {% if user and user.is_supervisor %}
+                <li>
+                    <a href="{{ url_for('supervisor.dashboard') }}">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Supervisor">
+                        <span class="nav-item">Supervisor Panel</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                    <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                    <span class="nav-item">Log out</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome back, {{ user.get_full_name() if user else 'User' }}!</h1>
+
+            <!-- Stats based on user type -->
+            {% if user and user.is_supervisor %}
+            <div class="stats-container">
+                <div class="stat-card">{{ supervised_projects_count|default(0) }} Projects Supervising</div>
+                <div class="stat-card">{{ pending_supervision_requests|default(0) }} Pending Requests</div>
+                <div class="stat-card">{{ completed_supervised|default(0) }} Completed Projects</div>
+            </div>
+            {% else %}
+            <div class="stats-container">
+                <div class="stat-card">{{ active_projects_count if active_projects_count else 0 }} Active Projects</div>
+                <div class="stat-card">{{ completed_projects_count if completed_projects_count else 0 }} Completed Projects</div>
+                <div class="stat-card">{{ pending_applications_count if pending_applications_count else 0 }} Pending Applications</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            {% if user and user.is_supervisor %}
+                <a href="{{ url_for('supervisor.applications') }}" class="supervisor-btn">Review Pending Requests</a>
+                <a href="{{ url_for('supervisor.projects') }}" class="action-btn secondary">View Supervised Projects</a>
+                <a href="{{ url_for('projects') }}" class="action-btn secondary">Browse All Projects</a>
+            {% else %}
+                <a href="{{ url_for('create_project') }}" class="action-btn">Create Project</a>
+                <a href="{{ url_for('projects') }}" class="action-btn secondary">Browse Projects</a>
+                <a href="{{ url_for('forum') }}" class="action-btn secondary">Go to Forum</a>
+
+                {% if user and user.projects_created %}
+                <a href="{{ url_for('manage_applications') }}" class="manage-apps-btn">Manage Applications</a>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- For Supervisors: Pending Supervision Requests -->
+        {% if user and user.is_supervisor and pending_supervision_requests_list %}
+        <div class="applications-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #333;">Pending Supervision Requests</h3>
+                <span class="status-pending">{{ pending_supervision_requests_list|length }} requests waiting</span>
+            </div>
+
+            {% for project in pending_supervision_requests_list %}
+            <div class="application-item">
+                <div class="app-info">
+                    <h4>{{ project.title }}</h4>
+                    <p>Student: {{ project.student.get_full_name() if project.student else 'Unknown' }} • Requested: {{ project.supervision_requested_at.strftime('%d %b %Y') if project.supervision_requested_at else 'Recently' }}</p>
+                    <p class="project-description" style="margin-top: 5px;">{{ project.description[:100] }}...</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <form action="{{ url_for('supervisor.approve_application', project_id=project.id) }}" method="POST">
+                        <button type="submit" class="approve-btn">Approve</button>
+                    </form>
+                    <button class="reject-btn" onclick="rejectRequest({{ project.id }})">Reject</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- For Students: My Active Projects -->
+        {% if not user.is_supervisor %}
+        <div class="section-header">
+            <h2>My Active Projects</h2>
+            <a href="{{ url_for('projects') }}" class="view-all">View All</a>
+        </div>
+
+        <div class="projects-grid">
+            {% if active_projects %}
+                {% for project in active_projects %}
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3>{{ project.title }}</h3>
+                        <span class="status-badge {% if project.status == 'pending_supervision' %}pending{% elif project.status == 'completed' %}completed{% endif %}">{{ project.status|replace('_', ' ')|title }}</span>
+                    </div>
+                    <p class="project-description">{{ project.description[:100] }}...</p>
+                    <div class="project-meta">
+                        <span>Created: {{ project.created_at.strftime('%d %b %Y') }}</span>
+                        {% if project.supervisor %}
+                        <span>Supervisor: {{ project.supervisor.get_full_name() }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="project-footer">
+                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="view-btn">View Details →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3>No Active Projects</h3>
+                    </div>
+                    <p class="project-description">You don't have any active projects yet. Create one or join existing projects!</p>
+                    <div class="project-footer">
+                        <a href="{{ url_for('create_project') }}" class="view-btn">Create Project →</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- For Students: My Completed Projects (for reopening) -->
+        <div class="section-header">
+            <h2>My Completed Projects</h2>
+        </div>
+
+        <div class="projects-grid">
+            {% if completed_projects %}
+                {% for project in completed_projects %}
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3>{{ project.title }}</h3>
+                        <span class="status-badge completed">Completed</span>
+                    </div>
+                    <p class="project-description">{{ project.description[:100] }}...</p>
+                    <div class="project-meta">
+                        <span>Completed: {{ project.completed_at.strftime('%d %b %Y') if project.completed_at else 'Recently' }}</span>
+                        <span>Team Size: {{ project.team_size }} members</span>
+                        {% if project.supervisor %}
+                        <span>Supervisor: {{ project.supervisor.get_full_name() }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="project-footer">
+                        <a href="{{ url_for('portfolio_detail', project_id=project.id) }}" class="view-btn">View in Portfolio →</a>
+                        <form method="POST" action="{{ url_for('mark_project_active', project_id=project.id) }}" onsubmit="return confirm('Reopen this project for editing? It will be removed from the portfolio and you can edit it again.')">
+                            <button type="submit" class="reopen-btn">Reopen for Editing</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3>No Completed Projects</h3>
+                    </div>
+                    <p class="project-description">Projects you mark as complete will appear here and in the public portfolio.</p>
+                    <div class="project-footer">
+                        <a href="{{ url_for('create_project') }}" class="view-btn">Create a Project →</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- For Supervisors: Projects They Supervise -->
+        {% if user and user.is_supervisor and supervised_projects_list %}
+        <div class="section-header">
+            <h2>Projects I Supervise</h2>
+            <a href="{{ url_for('supervisor.projects') }}" class="view-all">View All</a>
+        </div>
+
+        <div class="projects-grid">
+            {% for project in supervised_projects_list %}
+            <div class="project-card">
+                <div class="project-header">
+                    <h3>{{ project.title }}</h3>
+                    <span class="status-badge {% if project.status == 'completed' %}completed{% endif %}">{{ project.status|title }}</span>
+                </div>
+                <p class="project-description">{{ project.description[:100] }}...</p>
+                <div class="project-meta">
+                    <span>Student: {{ project.student.get_full_name() if project.student else 'Unknown' }}</span>
+                    <span>Started: {{ project.supervision_approved_at.strftime('%d %b %Y') if project.supervision_approved_at else project.created_at.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="project-footer">
+                    <a href="{{ url_for('project_detail', project_id=project.id) }}" class="view-btn">View Details →</a>
+                    {% if project.status != 'completed' %}
+                    <form action="{{ url_for('supervisor.mark_project_complete', project_id=project.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="complete-btn">Mark Complete</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- For Students: Pending Applications -->
+        {% if not user.is_supervisor %}
+        <div class="applications-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #333;">Pending Applications</h3>
+                <span class="status-pending">{{ pending_applications_count if pending_applications_count else 0 }} pending</span>
+            </div>
+
+            {% if pending_applications %}
+                {% for app in pending_applications %}
+                <div class="application-item">
+                    <div class="app-info">
+                        <h4>{{ app.project.title }}</h4>
+                        <p>Applied {{ app.applied_at.strftime('%d %b %Y') }} • Waiting for owner review</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span class="status-pending">Pending</span>
+                        <form action="{{ url_for('cancel_application', application_id=app.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to cancel this application?');">
+                            <button type="submit" class="cancel-btn" style="background: none; border: none; cursor: pointer;">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="application-item">
+                    <div class="app-info">
+                        <h4>No pending applications</h4>
+                        <p>You haven't applied to any projects yet.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Recommended Projects (Students only) -->
+        {% if not user.is_supervisor %}
+        <div class="section-header">
+            <h2>Recommended for You</h2>
+            <a href="{{ url_for('projects') }}" class="view-all">View All</a>
+        </div>
+
+        <div class="recommendations-grid">
+            {% if recommended_projects %}
+                {% for rec in recommended_projects %}
+                <div class="recommendation-card">
+                    <span class="match-score">{{ rec.match }}% Match</span>
+                    <h4 class="rec-title">{{ rec.project.title }}</h4>
+                    <p style="color: #666; font-size: 13px; margin: 8px 0;">{{ rec.project.description[:60] }}...</p>
+                    <div class="rec-skills">
+                        {% for skill in rec.matching_skills %}
+                        <span class="skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('project_detail', project_id=rec.project.id) }}" class="apply-link">Apply Now →</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="recommendation-card">
+                    <h4 class="rec-title">No recommendations yet</h4>
+                    <p style="color: #666; font-size: 13px; margin: 8px 0;">Add skills to your profile to get personalized project recommendations.</p>
+                    <a href="{{ url_for('auth.edit_profile') }}" class="apply-link">Edit Profile →</a>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Recent Forum Activity (Both user types) -->
+        <div class="forum-activity">
+            <h3 style="color: #333; margin-bottom: 15px;">Latest from Forum</h3>
+
+            {% if forum_posts %}
+                {% for post in forum_posts %}
+                <div class="forum-post">
+                    <div class="unread-badge"></div>
+                    <div class="post-content">
+                        <div class="post-title">{{ post.title }}</div>
+                        <div class="post-meta">{{ post.author.username if post.author else 'Unknown' }} • {{ post.created_at.strftime('%d %b %Y') }}</div>
+                    </div>
+                    <span style="color: #0066cc; font-size: 13px;">{{ post.posts|length if post.posts else 0 }} replies</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="forum-post">
+                    <div class="post-content">
+                        <div class="post-title">No forum activity yet</div>
+                        <div class="post-meta">Be the first to start a discussion!</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        function rejectRequest(projectId) {
+            if (confirm('Are you sure you want to reject this supervision request?')) {
+                fetch(`/supervisor/application/${projectId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error rejecting request');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

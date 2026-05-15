@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Innovation Hub - Lupane State University</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            background: white;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 75px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-container img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .logo-text:hover { color: #0066cc; }
+
+        /* ── Desktop Auth Buttons ── */
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login, .btn-signup {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-login:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .btn-signup {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-signup:hover { background: #0052a3; }
+
+        /* ── Desktop Secondary Nav ── */
+        .main-nav {
+            background: white;
+            padding-top: 75px;
+            padding-bottom: 0;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-inner {
+            padding: 10px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #555;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover { color: #0066cc; }
+
+        .nav-links a.active {
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        /* ── Mobile Menu Button ── */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* ── Mobile Slide-in Menu ── */
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+
+        .mobile-nav-menu {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 2001;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .mobile-nav-menu.active { right: 0; }
+
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav-header h3 { color: #333; font-size: 18px; }
+
+        .close-menu { font-size: 28px; cursor: pointer; color: #888; }
+        .close-menu:hover { color: #ff4444; }
+
+        .mobile-nav-links { list-style: none; flex: 1; }
+        .mobile-nav-links li { margin: 15px 0; }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 10px;
+            color: #555;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .mobile-auth {
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-auth .btn-login,
+        .mobile-auth .btn-signup {
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
+
+        /* ── Page Body wrapper ── */
+        .page-body {
+            padding-top: 120px;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 60px 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #e6f2ff 0%, #dfe9f5 100%);
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            color: #0066cc;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto;
+            color: #444;
+        }
+
+        /* ── Announcements Section ── */
+        .announcements-section {
+            max-width: 1200px;
+            margin: 40px auto 20px;
+            padding: 0 30px;
+        }
+
+        .announcements-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .announcements-header h2 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .announcements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .announcement-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #0066cc;
+        }
+
+        .announcement-card.pinned {
+            border-left-color: #f39c12;
+            background: #fffef5;
+        }
+
+        .announcement-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .announcement-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pinned-badge {
+            font-size: 11px;
+            background: #f39c12;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .announcement-date {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .announcement-content {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .announcement-attachment {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .attachment-link {
+            font-size: 12px;
+            color: #0066cc;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .attachment-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-announcements {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: #888;
+        }
+
+        /* ── Cards ── */
+        .main-content {
+            max-width: 1200px;
+            margin: 40px auto 40px;
+            padding: 0 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 { color: #0066cc; font-size: 24px; margin-bottom: 20px; }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 10px 30px;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+        }
+
+        .card-btn:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        /* ── Footer ── */
+        footer {
+            background: white;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .copyright { font-size: 14px; }
+
+        /* ── Hidden Easter Egg Corners (no visible hint) ── */
+        .easter-egg-dev,
+        .easter-egg-admin,
+        .easter-egg-supervisor {
+            position: fixed;
+            bottom: 20px;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            cursor: pointer;
+            z-index: 9999;
+        }
+
+        .easter-egg-dev  { left: 20px; }
+        .easter-egg-admin { right: 20px; }
+        .easter-egg-supervisor { left: 50%; transform: translateX(-50%); }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: flex; }
+            .auth-buttons    { display: none; }
+            .main-nav        { display: none; }
+
+            .page-body { padding-top: 75px; }
+
+            header {
+                padding: 12px 20px;
+                height: 70px;
+            }
+
+            .logo-text { font-size: 16px; }
+
+            .logo-container img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .hero {
+                padding: 30px 20px 20px;
+            }
+
+            .hero h1 { font-size: 26px; }
+            .hero p  { font-size: 15px; }
+
+            .announcements-section {
+                padding: 0 15px;
+                margin: 30px auto 20px;
+            }
+
+            .announcements-header h2 { font-size: 20px; }
+            .announcements-grid { grid-template-columns: 1fr; }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 0 15px;
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .card { padding: 25px 20px; }
+            .card h3 { font-size: 20px; }
+
+            footer { padding: 20px 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 22px; }
+            .hero p  { font-size: 14px; }
+            .card    { padding: 20px 15px; }
+            .announcement-card { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hamburger (mobile only) -->
+    <div class="mobile-menu-btn" onclick="openMobileMenu()">&#9776;</div>
+
+    <!-- Mobile overlay + slide-in -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
+
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <div class="mobile-nav-header">
+            <h3>Innovation Hub</h3>
+            <span class="close-menu" onclick="closeMobileMenu()">&times;</span>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/services">Services</a></li>
+            <li><a href="/portfolio">Portfolio</a></li>
+            <li><a href="/terms">Terms & Privacy</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+        <div class="mobile-auth">
+            <a href="/signin" class="btn-login">Sign In</a>
+            <a href="/signup" class="btn-signup">Sign Up</a>
+        </div>
+    </div>
+
+    <!-- Fixed header -->
+    <header>
+        <div class="logo-container" id="logoContainer">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
+            <a href="/" class="logo-text">Innovation Hub</a>
+        </div>
+        <div class="auth-buttons">
+            <a href="/signin" class="btn-login">Sign In</a>
+            <a href="/signup" class="btn-signup">Sign Up</a>
+        </div>
+    </header>
+
+    <!-- Desktop secondary nav (hidden on mobile) -->
+    <div class="main-nav">
+        <div class="nav-inner">
+            <ul class="nav-links">
+                <li><a href="/" class="active">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/services">Services</a></li>
+                <li><a href="/portfolio">Portfolio</a></li>
+                <li><a href="/terms">Terms & Privacy</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Everything below the navs -->
+    <div class="page-body">
+
+        <div class="hero">
+            <h1>Welcome to LSU Innovation Hub</h1>
+            <p>Where creativity meets technology. Join our community of innovators, researchers, and entrepreneurs to transform ideas into reality.</p>
+        </div>
+
+        <!-- ==================== ANNOUNCEMENTS SECTION ==================== -->
+        <div class="announcements-section">
+            <div class="announcements-header">
+                <h2>Latest Announcements</h2>
+            </div>
+            <div id="announcementsContainer" class="announcements-grid">
+                <div class="no-announcements">Loading announcements...</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h3>Get Started</h3>
+                <p>Join our community of innovators, researchers, and entrepreneurs to transform ideas into reality. Collaborate, innovate, and shape the future with us.</p>
+                <a href="/signup" class="card-btn">Get Started Today</a>
+            </div>
+
+            <div class="card">
+                <h3>Innovative Projects</h3>
+                <p>Explore cutting-edge research and innovative projects from our brightest minds. Collaborate with multidisciplinary teams to solve real-world challenges.</p>
+                <a href="/portfolio" class="card-btn">View Projects</a>
+            </div>
+
+            <div class="card">
+                <h3>Community</h3>
+                <p>Connect with industry leaders, alumni, and fellow innovators. Attend workshops, hackathons, and networking events to expand your professional circle.</p>
+                <a href="javascript:void(0);" class="card-btn" onclick="alert('Feature coming soon')">Join Community</a>
+            </div>
+        </div>
+
+        <footer>
+            <div class="copyright">
+                &copy; 2026 LSU Innovation Hub. All rights reserved.
+            </div>
+        </footer>
+
+    </div><!-- /page-body -->
+
+    <!-- Hidden Easter Egg Corners (no text hint) -->
+    <div class="easter-egg-dev"   onclick="window.location.href='/dev/signin'"></div>
+    <div class="easter-egg-admin" onclick="window.location.href='/admin/signin'"></div>
+    <div class="easter-egg-supervisor" onclick="window.location.href='/supervisor/signin'"></div>
+
+    <script>
+        // ==================== ANNOUNCEMENTS FETCH ====================
+        async function loadAnnouncements() {
+            const container = document.getElementById('announcementsContainer');
+            if (!container) return;
+
+            try {
+                const response = await fetch('/api/announcements');
+                if (response.ok) {
+                    const announcements = await response.json();
+                    displayAnnouncements(announcements);
+                } else {
+                    container.innerHTML = '<div class="no-announcements">Unable to load announcements. Please try again later.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                container.innerHTML = '<div class="no-announcements">Unable to load announcements.</div>';
+            }
+        }
+
+        function displayAnnouncements(announcements) {
+            const container = document.getElementById('announcementsContainer');
+
+            if (!announcements || announcements.length === 0) {
+                container.innerHTML = '<div class="no-announcements">No announcements at this time. Check back soon!</div>';
+                return;
+            }
+
+            // Show only latest 3 announcements
+            const latestAnnouncements = announcements.slice(0, 3);
+
+            container.innerHTML = latestAnnouncements.map(ann => {
+                let pinnedClass = ann.is_pinned ? 'pinned' : '';
+                let pinnedBadge = ann.is_pinned ? '<span class="pinned-badge">Pinned</span>' : '';
+                let attachmentHtml = '';
+
+                if (ann.attachment_filename) {
+                    attachmentHtml = `
+                        <div class="announcement-attachment">
+                            <a href="/api/download-announcement/${ann.id}" class="attachment-link">
+                                📎 Download Attachment
+                            </a>
+                        </div>
+                    `;
+                }
+
+                // Truncate content if too long
+                let content = ann.content;
+                if (content.length > 150) {
+                    content = content.substring(0, 150) + '...';
+                }
+
+                return `
+                    <div class="announcement-card ${pinnedClass}">
+                        <div class="announcement-title">
+                            ${escapeHtml(ann.title)}
+                            ${pinnedBadge}
+                        </div>
+                        <div class="announcement-date">${ann.created_at || 'Recently'}</div>
+                        <div class="announcement-content">${escapeHtml(content)}</div>
+                        ${attachmentHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== MOBILE MENU ====================
+        function openMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'block';
+            document.getElementById('mobileNavMenu').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'none';
+            document.getElementById('mobileNavMenu').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ==================== DESKTOP: KEYBOARD SEQUENCES ====================
+        let adminKeys = [], devKeys = [], supervisorKeys = [];
+        const adminSecret = ['A','D','M','I','N'];
+        const devSecret   = ['D','E','V'];
+        const supervisorSecret = ['S','U','P','E','R','V'];
+
+        document.addEventListener('keydown', function(e) {
+            const k = e.key.toUpperCase();
+
+            adminKeys.push(k);
+            if (adminKeys.length > adminSecret.length) adminKeys.shift();
+            if (adminKeys.join('') === adminSecret.join('')) window.location.href = '/admin/signin';
+
+            devKeys.push(k);
+            if (devKeys.length > devSecret.length) devKeys.shift();
+            if (devKeys.join('') === devSecret.join('')) window.location.href = '/dev/signin';
+
+            supervisorKeys.push(k);
+            if (supervisorKeys.length > supervisorSecret.length) supervisorKeys.shift();
+            if (supervisorKeys.join('') === supervisorSecret.join('')) window.location.href = '/supervisor/signin';
+        });
+
+        // ==================== MOBILE: TAP SEQUENCES ====================
+        // Logo 5 taps -> Admin
+        let logoTapCount = 0;
+        let logoTapTimer;
+        const logoContainer = document.getElementById('logoContainer');
+
+        if (logoContainer) {
+            logoContainer.addEventListener('click', function(e) {
+                e.stopPropagation();
+                logoTapCount++;
+                clearTimeout(logoTapTimer);
+                logoTapTimer = setTimeout(() => logoTapCount = 0, 2000);
+
+                if (logoTapCount === 5) {
+                    window.location.href = '/admin/signin';
+                    logoTapCount = 0;
+                }
+            });
+        }
+
+        // Footer 7 taps -> Dev
+        let footerTapCount = 0;
+        let footerTapTimer;
+        const footer = document.querySelector('footer');
+
+        if (footer) {
+            footer.addEventListener('click', function(e) {
+                e.stopPropagation();
+                footerTapCount++;
+                clearTimeout(footerTapTimer);
+                footerTapTimer = setTimeout(() => footerTapCount = 0, 2000);
+
+                if (footerTapCount === 7) {
+                    window.location.href = '/dev/signin';
+                    footerTapCount = 0;
+                }
+            });
+        }
+
+        // 3-finger tap anywhere -> Supervisor
+        let touchCount = 0;
+        let touchTimer;
+
+        document.body.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 3) {
+                touchCount++;
+                clearTimeout(touchTimer);
+                touchTimer = setTimeout(() => touchCount = 0, 1000);
+
+                if (touchCount === 1) {
+                    window.location.href = '/supervisor/signin';
+                    touchCount = 0;
+                }
+            }
+        });
+
+        // Load announcements when page loads
+        loadAnnouncements();
+    </script>
+</body>
+</html>

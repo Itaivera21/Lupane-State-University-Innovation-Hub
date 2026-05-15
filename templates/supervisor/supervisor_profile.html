@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>My Profile - Supervisor | Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #2c3e50;
+            color: #fff;
+            min-height: 100vh;
+            position: fixed;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            margin: 4px 0;
+            cursor: pointer;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-item.logout {
+            margin-top: auto;
+            border-top: 1px solid #34495e;
+            padding-top: 10px;
+        }
+
+        .nav-item img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .supervisor-badge {
+            background: #0066cc;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Profile Container */
+        .profile-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 600px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            font-weight: 600;
+            font-size: 36px;
+        }
+
+        .profile-info h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .profile-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .profile-info .department {
+            color: #0066cc;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        /* Form Sections */
+        .form-section {
+            padding: 25px 30px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: #ff4444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #0066cc;
+            background: white;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .readonly-field {
+            background: #f0f0f0;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .skill-tag {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .suggested-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .suggested-skill {
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggested-skill:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #0052a3;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .field-error {
+            border-color: #ff4444 !important;
+        }
+
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Innovation Hub</h2>
+            <p>Supervisor Portal</p>
+        </div>
+
+        <div class="nav-menu">
+            <a href="{{ url_for('supervisor.dashboard') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                Dashboard
+            </a>
+            <a href="{{ url_for('supervisor.projects') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                My Projects
+            </a>
+            <a href="{{ url_for('supervisor.applications') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/form.png') }}" alt="Applications">
+                Supervision Requests
+            </a>
+            <a href="{{ url_for('supervisor.chats') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                Project Chats
+            </a>
+            <a href="{{ url_for('supervisor.profile') }}" class="nav-item active">
+                <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                My Profile
+            </a>
+            <a href="{{ url_for('supervisor.signout') }}" class="nav-item logout">
+                <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                Sign Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>My Profile</h1>
+                <p>View and manage your supervisor information</p>
+            </div>
+            <div class="supervisor-badge">
+                Faculty Supervisor
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ current_user.get_full_name()[:2]|upper if current_user else 'S' }}
+                </div>
+                <div class="profile-info">
+                    <h2>{{ current_user.get_full_name() if current_user else 'Supervisor' }}</h2>
+                    <p>{{ current_user.email if current_user else 'email@lsu.ac.zw' }}</p>
+                    <div class="department">Faculty Supervisor</div>
+                </div>
+            </div>
+
+            <!-- Edit Profile Form -->
+            <form method="POST" action="{{ url_for('supervisor.update_profile') }}" id="profileForm">
+                <div class="form-section">
+                    <h3>Personal Information</h3>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>First Name <span class="required">*</span></label>
+                            <input type="text" name="first_name" id="first_name" value="{{ current_user.first_name or '' }}" placeholder="John" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name <span class="required">*</span></label>
+                            <input type="text" name="last_name" id="last_name" value="{{ current_user.last_name or '' }}" placeholder="Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" class="readonly-field" value="{{ current_user.email if current_user else '' }}" readonly>
+                        <small style="color: #888; font-size: 11px;">Email cannot be changed</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Department / Faculty <span class="required">*</span></label>
+                        <select name="department" id="department" required>
+                            <option value="">Select Department</option>
+                            <option value="Engineering & Technology" {% if current_user.department == 'Engineering & Technology' %}selected{% endif %}>Engineering & Technology</option>
+                            <option value="Agriculture" {% if current_user.department == 'Agriculture' %}selected{% endif %}>Agriculture</option>
+                            <option value="Commerce" {% if current_user.department == 'Commerce' %}selected{% endif %}>Commerce</option>
+                            <option value="Humanities" {% if current_user.department == 'Humanities' %}selected{% endif %}>Humanities</option>
+                            <option value="Science" {% if current_user.department == 'Science' %}selected{% endif %}>Science</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Specialization / Expertise</label>
+                        <input type="text" name="specialization" id="specialization" value="{{ current_user.specialization or '' }}" placeholder="e.g., Software Engineering, IoT, Data Science">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Skills / Areas of Interest</label>
+                        <input type="text" name="skills" id="skillsInput" value="{{ current_user.skills or '' }}" placeholder="Python, IoT, Research, Project Management (comma separated)">
+                        <div class="suggested-skills">
+                            <span class="suggested-skill" onclick="addSkill('Python')">Python</span>
+                            <span class="suggested-skill" onclick="addSkill('Java')">Java</span>
+                            <span class="suggested-skill" onclick="addSkill('IoT')">IoT</span>
+                            <span class="suggested-skill" onclick="addSkill('AI/ML')">AI/ML</span>
+                            <span class="suggested-skill" onclick="addSkill('Embedded Systems')">Embedded Systems</span>
+                            <span class="suggested-skill" onclick="addSkill('Research Methods')">Research Methods</span>
+                            <span class="suggested-skill" onclick="addSkill('Project Management')">Project Management</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bio / Professional Background</label>
+                        <textarea name="bio" id="bio" placeholder="Brief introduction about yourself, research interests, and supervision experience...">{{ current_user.bio or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{{ url_for('supervisor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="profile-container">
+            <div class="form-section">
+                <h3>Change Password</h3>
+                <form method="POST" action="{{ url_for('supervisor.change_password') }}" id="passwordForm">
+                    <div class="form-group">
+                        <label>Current Password <span class="required">*</span></label>
+                        <input type="password" name="current_password" id="current_password" required>
+                        <div class="error-message" id="currentPasswordError"></div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label>New Password <span class="required">*</span></label>
+                            <input type="password" name="new_password" id="new_password" required>
+                            <div class="error-message" id="newPasswordError"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password <span class="required">*</span></label>
+                            <input type="password" name="confirm_password" id="confirm_password" required>
+                            <div class="error-message" id="confirmPasswordError"></div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Close sidebar when a link is clicked (mobile)
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        // Add skill function
+        function addSkill(skill) {
+            let input = document.getElementById('skillsInput');
+            let currentSkills = input.value.trim();
+
+            if (currentSkills) {
+                let skills = currentSkills.split(',').map(s => s.trim().toLowerCase());
+                if (!skills.includes(skill.toLowerCase())) {
+                    input.value = currentSkills + ', ' + skill;
+                }
+            } else {
+                input.value = skill;
+            }
+            input.dispatchEvent(new Event('input'));
+        }
+
+        // Password form validation
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            let isValid = true;
+
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+                el.classList.remove('visible');
+            });
+            document.querySelectorAll('input').forEach(el => {
+                el.classList.remove('field-error');
+            });
+
+            const currentPwd = document.getElementById('current_password').value;
+            const newPwd = document.getElementById('new_password').value;
+            const confirmPwd = document.getElementById('confirm_password').value;
+
+            if (!currentPwd) {
+                showError('currentPasswordError', 'Current password is required');
+                document.getElementById('current_password').classList.add('field-error');
+                isValid = false;
+            }
+
+            if (!newPwd) {
+                showError('newPasswordError', 'New password is required');
+                document.getElementById('new_password').classList.add('field-error');
+                isValid = false;
+            } else if (newPwd.length < 6) {
+                showError('newPasswordError', 'Password must be at least 6 characters');
+                document.getElementById('new_password').classList.add('field-error');
+                isValid = false;
+            }
+
+            if (!confirmPwd) {
+                showError('confirmPasswordError', 'Please confirm your new password');
+                document.getElementById('confirm_password').classList.add('field-error');
+                isValid = false;
+            } else if (newPwd !== confirmPwd) {
+                showError('confirmPasswordError', 'Passwords do not match');
+                document.getElementById('confirm_password').classList.add('field-error');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('visible');
+            }
+        }
+
+        // Real-time password match validation
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const newPwd = document.getElementById('new_password').value;
+            const confirmPwd = this.value;
+            const errorElement = document.getElementById('confirmPasswordError');
+
+            if (confirmPwd && newPwd !== confirmPwd) {
+                errorElement.textContent = 'Passwords do not match';
+                errorElement.classList.add('visible');
+                this.classList.add('field-error');
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.remove('visible');
+                this.classList.remove('field-error');
+            }
+        });
+    </script>
+</body>
+</html>

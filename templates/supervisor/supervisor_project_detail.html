@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>{{ project.title }} - Project Details | Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #2c3e50;
+            color: #fff;
+            min-height: 100vh;
+            position: fixed;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            margin: 4px 0;
+            cursor: pointer;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-item.logout {
+            margin-top: auto;
+            border-top: 1px solid #34495e;
+            padding-top: 10px;
+        }
+
+        .nav-item img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .supervisor-badge {
+            background: #0066cc;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0066cc;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Project Details Card */
+        .project-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .project-header {
+            background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+            color: white;
+            padding: 25px 30px;
+        }
+
+        .project-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .project-header .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .status-active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-pending_supervision {
+            background: #f39c12;
+            color: white;
+        }
+
+        .status-completed {
+            background: #3498db;
+            color: white;
+        }
+
+        .project-body {
+            padding: 30px;
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-section h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0066cc;
+            display: inline-block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .description-text {
+            color: #555;
+            line-height: 1.7;
+            font-size: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .skill-tag {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .team-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            background: #0066cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .member-role {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a54;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .chat-link {
+            margin-left: auto;
+        }
+
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+
+            .project-header {
+                padding: 20px;
+            }
+
+            .project-header h2 {
+                font-size: 20px;
+            }
+
+            .project-body {
+                padding: 20px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .chat-link {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Innovation Hub</h2>
+            <p>Supervisor Portal</p>
+        </div>
+
+        <div class="nav-menu">
+            <a href="{{ url_for('supervisor.dashboard') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                Dashboard
+            </a>
+            <a href="{{ url_for('supervisor.projects') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                My Projects
+            </a>
+            <a href="{{ url_for('supervisor.applications') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/form.png') }}" alt="Applications">
+                Supervision Requests
+            </a>
+            <a href="{{ url_for('supervisor.chats') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                Project Chats
+            </a>
+            <a href="{{ url_for('supervisor.profile') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                My Profile
+            </a>
+            <a href="{{ url_for('supervisor.signout') }}" class="nav-item logout">
+                <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                Sign Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Project Details</h1>
+                <p>Review project information and student team</p>
+            </div>
+            <div class="supervisor-badge">
+                Faculty Supervisor
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('supervisor.projects') }}" class="back-link">← Back to My Projects</a>
+
+        <!-- Project Details Card -->
+        <div class="project-card">
+            <div class="project-header">
+                <h2>{{ project.title }}</h2>
+                <span class="status-badge status-{{ project.status|replace('_', '') }}">
+                    {{ project.status|replace('_', ' ')|upper }}
+                </span>
+            </div>
+
+            <div class="project-body">
+                <!-- Basic Info -->
+                <div class="info-section">
+                    <h3>Project Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Project ID</div>
+                            <div class="info-value">{{ project.project_id }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Student Lead</div>
+                            <div class="info-value">{{ project.student.get_full_name() if project.student else 'Unknown' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Team Size</div>
+                            <div class="info-value">{{ project.team_size }} members</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Category</div>
+                            <div class="info-value">{{ project.category or 'General' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Duration</div>
+                            <div class="info-value">{{ project.duration or 'Not specified' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Created</div>
+                            <div class="info-value">{{ project.created_at.strftime('%d %b %Y') if project.created_at else 'Recently' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="info-section">
+                    <h3>Description</h3>
+                    <div class="description-text">
+                        {{ project.description }}
+                    </div>
+                </div>
+
+                <!-- Skills Required -->
+                <div class="info-section">
+                    <h3>Skills Required</h3>
+                    <div class="skills-list">
+                        {% if project.get_skills() %}
+                            {% for skill in project.get_skills() %}
+                            <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="skill-tag">No skills specified</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Team Members -->
+                <div class="info-section">
+                    <h3>Team Members</h3>
+                    <div class="team-list">
+                        {% if team_members %}
+                            {% for member in team_members %}
+                            <div class="team-member">
+                                <div class="member-avatar">{{ (member.get_full_name() or member.username)[:1]|upper }}</div>
+                                <div class="member-info">
+                                    <div class="member-name">{{ member.get_full_name() or member.username }}</div>
+                                    <div class="member-role">
+                                        {% if member.id == project.student_id %}Project Lead / Student{% else %}Team Member{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: #888;">No team members yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    {% if project.status == 'active' %}
+                    <form method="POST" action="{{ url_for('supervisor.mark_project_complete', project_id=project.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Mark this project as completed? It will appear in the portfolio.')">Mark as Complete</button>
+                    </form>
+                    {% elif project.status == 'completed' %}
+                    <form method="POST" action="{{ url_for('supervisor.mark_project_active', project_id=project.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('Mark this project as active again?')">Mark as Active</button>
+                    </form>
+                    {% endif %}
+
+                    <a href="{{ url_for('supervisor.chats', project_id=project.id) }}" class="btn btn-primary chat-link">Go to Project Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Close sidebar when a link is clicked (mobile)
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

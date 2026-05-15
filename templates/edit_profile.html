@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Edit Profile - Innovation Hub | LSU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .edit-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        @media (max-width: 480px) {
+            .edit-container {
+                padding: 25px 20px;
+            }
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+
+        .back-btn {
+            color: #0066cc;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .flash-message {
+                position: fixed;
+                top: 70px;
+                right: 15px;
+                left: 15px;
+                z-index: 2000;
+            }
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #0066cc;
+            background: white;
+        }
+
+        .readonly-field {
+            background: #f0f0f0;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Password section styling */
+        .password-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .password-section h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .show-password {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .show-password input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .show-password label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Field error styling */
+        .field-error {
+            border-color: #ff4444 !important;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        /* Skills Section */
+        .skills-section {
+            margin-top: 10px;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .skill-tag {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remove-skill {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            color: #0066cc;
+        }
+
+        .remove-skill:hover {
+            color: #ff4444;
+        }
+
+        .suggested-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .suggested-skill {
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggested-skill:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        @media (max-width: 480px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .save-btn, .cancel-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .save-btn {
+            flex: 1;
+            padding: 12px;
+            background: #0066cc;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .save-btn:hover {
+            background: #0052a3;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            color: #666;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .cancel-btn:hover {
+            background: #e0e0e0;
+        }
+
+        small {
+            color: #888;
+            font-size: 11px;
+            display: block;
+            margin-top: 5px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="header">
+            <h1>Edit Profile</h1>
+            <a href="{{ url_for('auth.profile') }}" class="back-btn">← Back</a>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.edit_profile') }}" id="editProfileForm">
+            <!-- Read-only Information -->
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="readonly-field" value="{{ user.username if user else '' }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="readonly-field" value="{{ user.email if user else '' }}" readonly>
+                <small>Email cannot be changed</small>
+            </div>
+
+            <div class="form-group">
+                <label>Student ID</label>
+                <input type="text" class="readonly-field" value="{{ user.student_id if user else '' }}" readonly>
+                <small>Student ID cannot be changed</small>
+            </div>
+
+            <!-- Editable Fields -->
+            <div class="form-group">
+                <label>Faculty</label>
+                <select name="faculty" id="faculty">
+                    <option value="">Select your faculty</option>
+                    <option value="Engineering & Technology" {% if user and user.faculty == 'Engineering & Technology' %}selected{% endif %}>Engineering & Technology</option>
+                    <option value="Agriculture" {% if user and user.faculty == 'Agriculture' %}selected{% endif %}>Agriculture</option>
+                    <option value="Commerce" {% if user and user.faculty == 'Commerce' %}selected{% endif %}>Commerce</option>
+                    <option value="Humanities" {% if user and user.faculty == 'Humanities' %}selected{% endif %}>Humanities</option>
+                    <option value="Science" {% if user and user.faculty == 'Science' %}selected{% endif %}>Science</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" id="phone" placeholder="+263 XXX XXX XXX" value="{{ user.phone if user and user.phone else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" name="location" id="location" placeholder="LSU Campus" value="{{ user.location if user and user.location else '' }}">
+            </div>
+
+            <!-- ============ NEW PASSWORD SECTION ============ -->
+            <div class="password-section">
+                <h3>🔐 Change Password</h3>
+                
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="current_password" id="current_password" placeholder="Enter your current password">
+                    <div class="error-message" id="currentPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
+                    <div class="error-message" id="newPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password">
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+
+                <!-- Show Password Checkbox -->
+                <div class="show-password">
+                    <input type="checkbox" id="showPassword">
+                    <label for="showPassword">Show Password</label>
+                </div>
+
+                <small>Leave password fields blank to keep current password</small>
+            </div>
+            <!-- ============ END PASSWORD SECTION ============ -->
+
+            <!-- Skills Section -->
+            <div class="form-group">
+                <label>Skills</label>
+                <input type="text" name="skills" id="skillsInput" placeholder="Python, JavaScript, Flask, etc." value="{{ user.skills if user and user.skills else '' }}">
+                <small>Separate skills with commas</small>
+                <div class="error-message" id="skillsError"></div>
+                
+                <div class="suggested-skills">
+                    <span class="suggested-skill" onclick="addSkill('Python')">Python</span>
+                    <span class="suggested-skill" onclick="addSkill('JavaScript')">JavaScript</span>
+                    <span class="suggested-skill" onclick="addSkill('Flask')">Flask</span>
+                    <span class="suggested-skill" onclick="addSkill('React')">React</span>
+                    <span class="suggested-skill" onclick="addSkill('Java')">Java</span>
+                    <span class="suggested-skill" onclick="addSkill('SQL')">SQL</span>
+                    <span class="suggested-skill" onclick="addSkill('HTML/CSS')">HTML/CSS</span>
+                    <span class="suggested-skill" onclick="addSkill('Node.js')">Node.js</span>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Save Changes</button>
+                <a href="{{ url_for('auth.profile') }}" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Add skill function
+        function addSkill(skill) {
+            let input = document.getElementById('skillsInput');
+            let currentSkills = input.value.trim();
+            
+            if (currentSkills) {
+                let skills = currentSkills.split(',').map(s => s.trim().toLowerCase());
+                if (!skills.includes(skill.toLowerCase())) {
+                    input.value = currentSkills + ', ' + skill;
+                }
+            } else {
+                input.value = skill;
+            }
+            input.dispatchEvent(new Event('input'));
+        }
+
+        // Show/Hide Password functionality
+        const showPasswordCheckbox = document.getElementById('showPassword');
+        const currentPassword = document.getElementById('current_password');
+        const newPassword = document.getElementById('new_password');
+        const confirmPassword = document.getElementById('confirm_password');
+
+        if (showPasswordCheckbox) {
+            showPasswordCheckbox.addEventListener('change', function() {
+                const type = this.checked ? 'text' : 'password';
+                if (currentPassword) currentPassword.type = type;
+                if (newPassword) newPassword.type = type;
+                if (confirmPassword) confirmPassword.type = type;
+            });
+        }
+
+        // Client-side form validation
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+                el.classList.remove('visible');
+            });
+            document.querySelectorAll('input, select').forEach(el => {
+                el.classList.remove('field-error');
+            });
+
+            // Validate phone number (optional)
+            const phone = document.getElementById('phone').value.trim();
+            if (phone && !/^[\d\s\+\(\)\-]{7,20}$/.test(phone)) {
+                showError('skillsError', 'Please enter a valid phone number');
+                document.getElementById('phone').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Password validation (only if user wants to change password)
+            const currentPwd = document.getElementById('current_password').value.trim();
+            const newPwd = document.getElementById('new_password').value.trim();
+            const confirmPwd = document.getElementById('confirm_password').value.trim();
+
+            // If any password field is filled, validate all
+            if (currentPwd || newPwd || confirmPwd) {
+                if (!currentPwd) {
+                    showError('currentPasswordError', 'Current password is required');
+                    document.getElementById('current_password').classList.add('field-error');
+                    isValid = false;
+                }
+                
+                if (!newPwd) {
+                    showError('newPasswordError', 'New password is required');
+                    document.getElementById('new_password').classList.add('field-error');
+                    isValid = false;
+                } else if (newPwd.length < 6) {
+                    showError('newPasswordError', 'Password must be at least 6 characters');
+                    document.getElementById('new_password').classList.add('field-error');
+                    isValid = false;
+                }
+                
+                if (!confirmPwd) {
+                    showError('confirmPasswordError', 'Please confirm your new password');
+                    document.getElementById('confirm_password').classList.add('field-error');
+                    isValid = false;
+                } else if (newPwd !== confirmPwd) {
+                    showError('confirmPasswordError', 'Passwords do not match');
+                    document.getElementById('confirm_password').classList.add('field-error');
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Real-time password match validation
+        const confirmPwdInput = document.getElementById('confirm_password');
+        if (confirmPwdInput) {
+            confirmPwdInput.addEventListener('input', function() {
+                const newPwd = document.getElementById('new_password').value;
+                const confirmPwd = this.value;
+                const errorElement = document.getElementById('confirmPasswordError');
+                
+                if (confirmPwd && newPwd !== confirmPwd) {
+                    errorElement.textContent = 'Passwords do not match';
+                    errorElement.classList.add('visible');
+                    this.classList.add('field-error');
+                } else {
+                    errorElement.textContent = '';
+                    errorElement.classList.remove('visible');
+                    this.classList.remove('field-error');
+                }
+            });
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('visible');
+            }
+        }
+    </script>
+</body>
+</html>

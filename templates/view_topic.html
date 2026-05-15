@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ topic.title }} - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Fixed Sidebar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+            filter: brightness(0) saturate(100%) invert(27%) sepia(100%) saturate(7488%) hue-rotate(0deg) brightness(100%) contrast(108%);
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #0066cc;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Topic Container */
+        .topic-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .topic-header {
+            margin-bottom: 20px;
+        }
+
+        .topic-title {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .topic-meta {
+            display: flex;
+            gap: 20px;
+            color: #888;
+            font-size: 14px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .topic-author {
+            font-weight: 500;
+            color: #0066cc;
+        }
+
+        .topic-content {
+            color: #333;
+            line-height: 1.8;
+            padding: 20px 0;
+        }
+
+        /* Replies Section */
+        .replies-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+        }
+
+        .replies-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .replies-header h2 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .reply-count {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .reply-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .reply-item:last-child {
+            border-bottom: none;
+        }
+
+        .reply-author {
+            min-width: 150px;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            color: #0066cc;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .author-role {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .reply-content {
+            flex: 1;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .reply-body {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Reply Form */
+        .reply-form {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .reply-form h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 120px;
+            margin-bottom: 15px;
+            font-family: "Poppins", sans-serif;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            border-color: #0066cc;
+            outline: none;
+        }
+
+        .btn-reply {
+            padding: 12px 30px;
+            background: #0066cc;
+            color: white;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-reply:hover {
+            background: #0052a3;
+        }
+
+        /* Login Prompt */
+        .login-prompt {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #666;
+        }
+
+        .login-prompt a {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .login-prompt a:hover {
+            text-decoration: underline;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+            nav {
+                display: none;
+            }
+            .reply-item {
+                flex-direction: column;
+            }
+            .reply-author {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .author-avatar {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+        
+        <div class="nav-menu">
+            <ul>
+                <li>
+                    <a href="{{ url_for('dashboard.dashboard') }}">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                        <span class="nav-item">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}">
+                        <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                        <span class="nav-item">Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('projects') }}">
+                        <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                        <span class="nav-item">Projects</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('chat.chats') }}">
+                        <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                        <span class="nav-item">Chats</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('forum') }}" class="active">
+                        <img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum">
+                        <span class="nav-item">Forum</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                    <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                    <span class="nav-item">Log out</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="main-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('forum') }}" class="back-link">← Back to Forum</a>
+
+        <!-- Topic Section -->
+        <div class="topic-container">
+            <div class="topic-header">
+                <h1 class="topic-title">{{ topic.title }}</h1>
+                <div class="topic-meta">
+                    <span>Posted by <span class="topic-author">{{ topic.author.username if topic.author else 'Unknown' }}</span></span>
+                    <span>{{ topic.created_at.strftime('%B %d, %Y at %I:%M %p') if topic.created_at }}</span>
+                    {% if topic.project %}
+                    <span>Project: {{ topic.project.title }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="topic-content">
+                {{ topic.content }}
+            </div>
+        </div>
+
+        <!-- Replies Section -->
+        <div class="replies-section">
+            <div class="replies-header">
+                <h2>Replies</h2>
+                <span class="reply-count">{{ topic.posts|length if topic.posts else 0 }} replies</span>
+            </div>
+
+            {% if topic.posts %}
+                {% for post in topic.posts %}
+                <div class="reply-item">
+                    <div class="reply-author">
+                        <div class="author-avatar">{{ post.author.username[:2]|upper if post.author else '?' }}</div>
+                        <div class="author-name">{{ post.author.username if post.author else 'Unknown' }}</div>
+                        <div class="author-role">Student</div>
+                    </div>
+                    <div class="reply-content">
+                        <div class="reply-header">
+                            <span>Replied {{ post.created_at.strftime('%B %d, %Y at %I:%M %p') if post.created_at }}</span>
+                        </div>
+                        <div class="reply-body">
+                            {{ post.content }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <p>No replies yet. Be the first to respond!</p>
+                </div>
+            {% endif %}
+
+            <!-- Reply Form - FIXED: Added action URL -->
+            {% if current_user.is_authenticated %}
+            <div class="reply-form">
+                <h3>Post a Reply</h3>
+                <form method="POST" action="{{ url_for('view_topic', topic_id=topic.id) }}">
+                    <textarea name="content" placeholder="Write your reply..." required></textarea>
+                    <button type="submit" class="btn-reply">Post Reply</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="login-prompt">
+                <p>Please <a href="{{ url_for('auth.signin') }}">sign in</a> to reply to this topic.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Auto-hide flash messages -->
+    <script>
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

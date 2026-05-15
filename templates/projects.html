@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Projects - Innovation Hub</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Fixed Sidebar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            overflow-y: auto;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+                width: 100%;
+            }
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 15px;
+                gap: 8px;
+            }
+            
+            .box {
+                width: 100%;
+            }
+            
+            .box a {
+                display: block;
+                width: 100%;
+            }
+            
+            .allprojects, .createprojects, .manage-apps-btn, .supervisor-projects-btn {
+                width: 100%;
+                text-align: center;
+                margin-left: 0 !important;
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .box[style*="margin-left: auto"] {
+                margin-left: 0 !important;
+            }
+        }
+
+        .box {
+            display: inline-block;
+        }
+
+        .allprojects {
+            border-radius: 8px;
+            background-color: #1E1E1E;
+            color: #FFFFFF;
+            border: 1px solid #e47373;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .allprojects:hover {
+            background-color: #2E2E2E;
+            border-color: #ff8a8a;
+            transform: translateY(-2px);
+        }
+
+        .createprojects {
+            background-color: #0066CC;
+            border-radius: 8px;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .createprojects:hover {
+            background-color: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,102,204,0.3);
+        }
+
+        .manage-apps-btn {
+            background-color: #28a745;
+            border-radius: 8px;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .manage-apps-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .supervisor-projects-btn {
+            background-color: #6c757d;
+            border-radius: 8px;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .supervisor-projects-btn:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .supervisor-requests-btn {
+            background-color: #fd7e14;
+            border-radius: 8px;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .supervisor-requests-btn:hover {
+            background-color: #e66a0d;
+            transform: translateY(-2px);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .filter-bar {
+                gap: 8px;
+                justify-content: center;
+            }
+            
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            background: white;
+            border-radius: 25px;
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .filter-btn.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 102, 204, 0.1);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .project-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .project-status {
+                align-self: flex-start;
+            }
+        }
+
+        .project-title {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .project-status {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .project-status.pending {
+            background: #fff9e6;
+            color: #ffc107;
+        }
+
+        .project-status.completed {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .project-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .project-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .project-skills {
+                gap: 6px;
+            }
+            
+            .skill-tag {
+                padding: 3px 8px;
+                font-size: 10px;
+            }
+        }
+
+        .skill-tag {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #888;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .project-meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        .project-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .team-size {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .view-btn {
+            color: #0066cc;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .view-btn:hover {
+            color: #0052a3;
+            text-decoration: underline;
+        }
+
+        .no-projects {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 15px;
+            color: #666;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .flash-message {
+                position: fixed;
+                top: 70px;
+                right: 15px;
+                left: 15px;
+                width: auto;
+                z-index: 999;
+            }
+        }
+
+        .supervisor-badge {
+            background: #6c757d;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .request-supervision-btn {
+            background: #fd7e14;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .request-supervision-btn:hover {
+            background: #e66a0d;
+        }
+
+        .supervisor-info {
+            font-size: 12px;
+            color: #28a745;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <!-- Fixed Sidebar -->
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+        
+        <div class="nav-menu">
+            <ul>
+                <li>
+                    <a href="{{ url_for('dashboard.dashboard') }}">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                        <span class="nav-item">Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}">
+                        <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                        <span class="nav-item">Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('projects') }}" class="active">
+                        <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                        <span class="nav-item">Projects</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('chat.chats') }}">
+                        <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                        <span class="nav-item">Chats</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('forum') }}">
+                        <img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum">
+                        <span class="nav-item">Forum</span>
+                    </a>
+                </li>
+                {% if current_user.is_authenticated and current_user.is_supervisor %}
+                <li>
+                    <a href="{{ url_for('supervisor.dashboard') }}">
+                        <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Supervisor">
+                        <span class="nav-item">Supervisor Panel</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                    <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                    <span class="nav-item">Log out</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <header>
+            <div class="box">
+                <a href="{{ url_for('projects', filter='recommended') }}">
+                    <button class="allprojects">Projects for you</button>
+                </a>
+            </div>
+            <div class="box">
+                <a href="{{ url_for('projects') }}">
+                    <button class="allprojects">All Projects</button>
+                </a>
+            </div>
+            
+            <!-- Supervisor-specific buttons -->
+            {% if current_user.is_authenticated and current_user.is_supervisor %}
+            <div class="box">
+                <a href="{{ url_for('projects', filter='pending_supervision') }}">
+                    <button class="supervisor-requests-btn">Pending Requests</button>
+                </a>
+            </div>
+            <div class="box">
+                <a href="{{ url_for('projects', filter='my_supervised') }}">
+                    <button class="supervisor-projects-btn">My Supervised Projects</button>
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Manage Applications Button (only for project creators) -->
+            {% if current_user.is_authenticated and current_user.projects_created %}
+            <div class="box">
+                <a href="{{ url_for('manage_applications') }}">
+                    <button class="manage-apps-btn">Manage Applications</button>
+                </a>
+            </div>
+            {% endif %}
+            
+            <div class="box" style="margin-left: auto;">
+                <a href="{{ url_for('create_project') }}">
+                    <button class="createprojects">+ Create Project</button>
+                </a>
+            </div>    
+        </header>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <a href="{{ url_for('projects') }}" class="filter-btn {% if not request.args.get('category') and not request.args.get('filter') %}active{% endif %}">All</a>
+            <a href="{{ url_for('projects', category='engineering') }}" class="filter-btn {% if request.args.get('category') == 'engineering' %}active{% endif %}">Engineering</a>
+            <a href="{{ url_for('projects', category='agriculture') }}" class="filter-btn {% if request.args.get('category') == 'agriculture' %}active{% endif %}">Agriculture</a>
+            <a href="{{ url_for('projects', category='commerce') }}" class="filter-btn {% if request.args.get('category') == 'commerce' %}active{% endif %}">Commerce</a>
+            <a href="{{ url_for('projects', category='humanities') }}" class="filter-btn {% if request.args.get('category') == 'humanities' %}active{% endif %}">Humanities</a>
+            <a href="{{ url_for('projects', category='science') }}" class="filter-btn {% if request.args.get('category') == 'science' %}active{% endif %}">Science</a>
+        </div>
+
+        <!-- Page Title based on filter -->
+        <h2 style="margin-bottom: 20px; color: #333;">
+            {% if request.args.get('filter') == 'pending_supervision' %}
+                Projects Pending Supervision
+            {% elif request.args.get('filter') == 'my_supervised' %}
+                Projects I Supervise
+            {% elif request.args.get('filter') == 'recommended' %}
+                Recommended Projects
+            {% else %}
+                All Projects
+            {% endif %}
+        </h2>
+
+        <!-- Project Grid -->
+        <div class="projects-grid">
+            {% if projects %}
+                {% for project in projects %}
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">
+                            {{ project.title }}
+                            {% if project.supervisor_id == current_user.id %}
+                            <span class="supervisor-badge">Supervising</span>
+                            {% endif %}
+                        </div>
+                        <span class="project-status {% if project.status == 'pending_supervision' %}pending{% elif project.status == 'completed' %}completed{% endif %}">
+                            {{ project.status|replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                    <div class="project-description">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</div>
+                    <div class="project-meta">
+                        <span>📅 {{ project.duration or 'Not specified' }}</span>
+                        <span>📂 {{ project.category or 'General' }}</span>
+                        {% if project.student %}
+                        <span>👨‍🎓 Student: {{ project.student.get_full_name() }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="project-skills">
+                        {% if project.get_skills %}
+                            {% for skill in project.get_skills() %}
+                            <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Show supervisor info if assigned -->
+                    {% if project.supervisor %}
+                    <div class="supervisor-info">
+                        Supervisor: {{ project.supervisor.get_full_name() }}
+                        {% if project.supervisor.department %} ({{ project.supervisor.department }}){% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="project-footer">
+                        <span class="team-size">👥 {{ project.team_size }} members</span>
+                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="view-btn">View Details →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-projects">
+                    <h3>No projects found</h3>
+                    {% if request.args.get('filter') == 'pending_supervision' %}
+                        <p>There are no pending supervision requests at this time.</p>
+                    {% elif request.args.get('filter') == 'my_supervised' %}
+                        <p>You are not supervising any projects yet.</p>
+                    {% elif request.args.get('filter') == 'recommended' %}
+                        <p>No recommendations available. Update your profile with skills and interests.</p>
+                        <a href="{{ url_for('auth.edit_profile') }}" class="createprojects" style="display: inline-block; margin-top: 20px;">Edit Profile</a>
+                    {% else %}
+                        <p>Be the first to create a project!</p>
+                        <a href="{{ url_for('create_project') }}" class="createprojects" style="display: inline-block; margin-top: 20px;">+ Create Project</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

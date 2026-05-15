@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Profile - Innovation Hub | LSU</title>
+    <style>
+        /* Keep all your existing CSS exactly as is */
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button - ADDED */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        nav {
+            position: fixed;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        /* Mobile Sidebar Hidden by Default */
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+            height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            margin-top: auto;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .logout-section a {
+            color: #ff4444;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            overflow-y: auto;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Mobile Main Content */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+                width: 100%;
+            }
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        /* Mobile Page Header */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 24px;
+                text-align: center;
+            }
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Mobile Profile Header */
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+            
+            .profile-info h1 {
+                font-size: 22px;
+            }
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            font-size: 36px;
+            font-weight: 600;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-info h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .profile-info .student-id {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .profile-info .faculty {
+            color: #0066cc;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .edit-profile-btn {
+            padding: 8px 25px;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .edit-profile-btn:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        /* Profile Grid */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        /* Mobile Profile Grid */
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* Left Column */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Mobile Left Column */
+        @media (max-width: 768px) {
+            .left-column {
+                gap: 20px;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Mobile Cards */
+        @media (max-width: 768px) {
+            .card {
+                padding: 20px;
+            }
+            
+            .card h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        /* Skills */
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Mobile Skills */
+        @media (max-width: 768px) {
+            .skills-list {
+                justify-content: center;
+            }
+            
+            .skill-tag {
+                padding: 5px 12px;
+                font-size: 12px;
+            }
+        }
+
+        .skill-tag {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .add-skill {
+            width: 100%;
+            padding: 10px;
+            background: #f8f9fa;
+            color: #888;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 15px;
+            cursor: pointer;
+            border: 1px dashed #ccc;
+        }
+
+        .add-skill:hover {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-color: #0066cc;
+        }
+
+        /* Contact Info */
+        .contact-info p {
+            color: #666;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Mobile Contact */
+        @media (max-width: 768px) {
+            .contact-info p {
+                justify-content: center;
+                font-size: 13px;
+                flex-wrap: wrap;
+                text-align: center;
+            }
+        }
+
+        .contact-info i {
+            color: #888;
+            width: 20px;
+        }
+
+        /* Right Column */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* Mobile Stats */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                text-align: left;
+            }
+            
+            .stat-number {
+                font-size: 24px;
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            
+            .stat-label {
+                font-size: 14px;
+            }
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            color: #0066cc;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Projects List */
+        .project-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* Mobile Project Items */
+        @media (max-width: 768px) {
+            .project-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .project-status {
+                align-self: flex-start;
+            }
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-info h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .project-info p {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .project-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .status-completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .view-all {
+            display: block;
+            text-align: center;
+            color: #0066cc;
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .view-all:hover {
+            background: #e6f2ff;
+        }
+
+        /* Applications */
+        .application-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .application-item:last-child {
+            border-bottom: none;
+        }
+
+        .application-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        /* Mobile Application Header */
+        @media (max-width: 768px) {
+            .application-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .application-status {
+                align-self: flex-start;
+            }
+        }
+
+        .application-title {
+            color: #333;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .application-status {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .application-meta {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Mobile Flash Messages */
+        @media (max-width: 768px) {
+            .flash-message {
+                position: fixed !important;
+                top: 70px !important;
+                right: 15px !important;
+                left: 15px !important;
+                width: auto;
+                z-index: 999;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button - ADDED -->
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;" class="flash-message flash-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+        
+        <ul>
+            <li>
+                <a href="{{ url_for('dashboard.dashboard') }}">
+                    <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                    <span class="nav-item">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('auth.profile') }}" class="active">
+                    <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                    <span class="nav-item">Profile</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('projects') }}">
+                    <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                    <span class="nav-item">Projects</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('chat.chats') }}">
+                    <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                    <span class="nav-item">Chats</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('forum') }}">
+                    <img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum">
+                    <span class="nav-item">Forum</span>
+                </a>
+            </li>
+            
+            <div class="logout-section">
+                <li>
+                    <a href="{{ url_for('auth.logout') }}">
+                        <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                        <span class="nav-item">Log out</span>
+                    </a>
+                </li>
+            </div>
+        </ul>
+    </nav>
+    
+    <div class="main-content">
+        <div class="page-header">
+            <h1>My Profile</h1>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {% if user and user.username %}
+                    {{ user.username[:2].upper() }}
+                {% else %}
+                    U
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1>{% if user and user.username %}{{ user.username }}{% else %}User Name{% endif %}</h1>
+                <div class="student-id">Student ID: {% if user and user.student_id %}{{ user.student_id }}{% else %}Not provided{% endif %}</div>
+                <div class="faculty">{% if user and user.faculty %}{{ user.faculty }}{% else %}Faculty not set{% endif %}</div>
+                <a href="{{ url_for('auth.edit_profile') }}" class="edit-profile-btn">Edit Profile</a>
+            </div>
+        </div>
+
+        <!-- Profile Grid -->
+        <div class="profile-grid">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Skills Card -->
+                <div class="card">
+                    <h2>Skills</h2>
+                    <div class="skills-list">
+                        {% if user and user.skills %}
+                            {% set skills_list = user.skills.split(',') %}
+                            {% for skill in skills_list %}
+                                {% if skill.strip() %}
+                                    <span class="skill-tag">{{ skill.strip() }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: #888; font-size: 14px;">No skills added yet</p>
+                        {% endif %}
+                    </div>
+                    <div class="add-skill" onclick="location.href='{{ url_for('auth.edit_profile') }}'">+ Add Skill</div>
+                </div>
+
+                <!-- Contact Card -->
+                <div class="card">
+                    <h2>Contact</h2>
+                    <div class="contact-info">
+                        <p><i>📧</i> {% if user and user.email %}{{ user.email }}{% else %}email@lsu.ac.zw{% endif %}</p>
+                        <p><i>📱</i> {% if user and user.phone %}{{ user.phone }}{% else %}+263 XXX XXX XXX{% endif %}</p>
+                        <p><i>📍</i> {% if user and user.location %}{{ user.location }}{% else %}LSU Campus{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ active_count|default(0) }}</div>
+                        <div class="stat-label">Active Projects</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ completed_count|default(0) }}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ pending_count|default(0) }}</div>
+                        <div class="stat-label">Pending Apps</div>
+                    </div>
+                </div>
+
+                <!-- Current Projects -->
+                <div class="card">
+                    <h2>Projects I've Created</h2>
+                    {% if created_projects %}
+                        {% for project in created_projects %}
+                            {% if project.status == 'active' %}
+                            <div class="project-item">
+                                <div class="project-info">
+                                    <h3>{{ project.title }}</h3>
+                                    <p>Created {{ project.created_at.strftime('%b %Y') if project.created_at else 'Recently' }}</p>
+                                </div>
+                                <span class="project-status status-active">Active</span>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #888; padding: 20px 0; text-align: center;">No projects created yet</p>
+                    {% endif %}
+                    
+                    <h2 style="margin-top: 20px;">Projects I've Joined</h2>
+                    {% if joined_projects %}
+                        {% for project in joined_projects %}
+                            {% if project.status == 'active' %}
+                            <div class="project-item">
+                                <div class="project-info">
+                                    <h3>{{ project.title }}</h3>
+                                    <p>Team Member</p>
+                                </div>
+                                <span class="project-status status-active">Active</span>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #888; padding: 20px 0; text-align: center;">No projects joined yet</p>
+                    {% endif %}
+                    <a href="{{ url_for('projects') }}" class="view-all">View All Projects →</a>
+                </div>
+
+                <!-- Pending Applications -->
+                <div class="card">
+                    <h2>Applications</h2>
+                    {% if applications %}
+                        {% for app in applications %}
+                        <div class="application-item">
+                            <div class="application-header">
+                                <span class="application-title">{{ app.project.title if app.project else 'Unknown Project' }}</span>
+                                <span class="application-status status-{{ app.status|lower }}">{{ app.status }}</span>
+                            </div>
+                            <div class="application-meta">
+                                Applied {{ app.applied_at.strftime('%b %d, %Y') if app.applied_at else 'Recently' }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #888; padding: 20px 0; text-align: center;">No applications yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-hide flash messages and mobile menu -->
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Close menu when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Close menu when a link is clicked (mobile)
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

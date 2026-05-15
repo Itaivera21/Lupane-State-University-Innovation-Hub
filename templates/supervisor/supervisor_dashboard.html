@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Supervisor Dashboard - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #2c3e50;
+            color: #fff;
+            min-height: 100vh;
+            position: fixed;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            margin: 4px 0;
+            cursor: pointer;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-item.logout {
+            margin-top: auto;
+            border-top: 1px solid #34495e;
+            padding-top: 10px;
+        }
+
+        .nav-item img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .supervisor-badge {
+            background: #0066cc;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #0066cc;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Two Column Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .card-header a {
+            color: #0066cc;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .card-header a:hover {
+            text-decoration: underline;
+        }
+
+        /* Activity List */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            background: #0066cc;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* Project Row */
+        .project-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .project-row:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 480px) {
+            .project-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+
+        .project-info h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .project-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #e8f5e9;
+            color: #27ae60;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #f39c12;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            background: linear-gradient(135deg, #e6f2ff 0%, #ffffff 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .welcome-section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .welcome-section p {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Innovation Hub</h2>
+            <p>Supervisor Portal</p>
+        </div>
+
+        <div class="nav-menu">
+            <a href="{{ url_for('supervisor.dashboard') }}" class="nav-item active">
+                <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                Dashboard
+            </a>
+            <a href="{{ url_for('supervisor.projects') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects">
+                My Projects
+            </a>
+            <a href="{{ url_for('supervisor.applications') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/form.png') }}" alt="Applications">
+                Supervision Requests
+            </a>
+            <a href="{{ url_for('supervisor.chats') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats">
+                Project Chats
+            </a>
+            <a href="{{ url_for('supervisor.profile') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile">
+                My Profile
+            </a>
+            <a href="{{ url_for('supervisor.signout') }}" class="nav-item logout">
+                <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                Sign Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Supervisor Dashboard</h1>
+                <p>Welcome back, {{ current_user.get_full_name() if current_user else 'Supervisor' }}</p>
+            </div>
+            <div class="supervisor-badge">
+                Faculty Supervisor
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Welcome to Your Supervision Dashboard</h2>
+            <p>Manage your supervised projects, review supervision requests, and track student progress from one place.</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>{{ supervised_projects_count or 0 }}</h3>
+                <p>Active Supervised Projects</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ pending_requests_count or 0 }}</h3>
+                <p>Pending Supervision Requests</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ total_students or 0 }}</h3>
+                <p>Students Supervised</p>
+            </div>
+            <div class="stat-card">
+                <h3>{{ completion_rate or 0 }}%</h3>
+                <p>Project Completion Rate</p>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid-2">
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Activity</h3>
+                    <a href="{{ url_for('supervisor.applications') }}">View all</a>
+                </div>
+
+                {% if recent_activity %}
+                    {% for activity in recent_activity %}
+                    <div class="activity-item">
+                        <span class="activity-dot"></span>
+                        <div class="activity-content">
+                            <div class="activity-title">{{ activity.title }}</div>
+                            <div class="activity-time">{{ activity.time.strftime('%d %b %Y') if activity.time else 'Recently' }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="activity-item">
+                        <div class="activity-content">
+                            <div class="activity-title">No recent activity</div>
+                            <div class="activity-time">Activities will appear here</div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- My Supervised Projects -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Supervised Projects</h3>
+                    <a href="{{ url_for('supervisor.projects') }}">View all</a>
+                </div>
+
+                {% if supervised_projects %}
+                    {% for project in supervised_projects %}
+                    <div class="project-row">
+                        <div class="project-info">
+                            <h4>{{ project.title }}</h4>
+                            <p>Student: {{ project.student.get_full_name() if project.student else 'Unknown' }}</p>
+                        </div>
+                        <span class="status-badge status-active">{{ project.status|title }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="project-row">
+                        <div class="project-info">
+                            <h4>No supervised projects</h4>
+                            <p>Apply to supervise projects or wait for student requests</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Close sidebar when a link is clicked (mobile)
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

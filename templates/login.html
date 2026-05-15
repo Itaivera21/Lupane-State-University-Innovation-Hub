@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - LSU Innovation Hub</title>
+    <style>
+        /* Keep all your existing CSS styles here */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-image: url("{{ url_for('static', filename='Images/robynne-o-HOrhCnQsxnQ-unsplash.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login {
+            width: 350px;
+            height: 500px;
+            border: 2px solid white;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            padding: 30px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: whitesmoke;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        label {
+            color: white;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .userName {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-top-right-radius: 15px;
+            border-bottom-left-radius: 15px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .userName:focus {
+            outline: none;
+            border-color: orangered;
+            box-shadow: 0 0 5px rgba(255, 69, 0, 0.5);
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .show-password {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0 20px 0;
+            color: white;
+        }
+        
+        .show-password input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .loginButton {
+            width: 100%;
+            padding: 12px;
+            background-color: white;
+            color: black;
+            border: 1px solid white;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .loginButton:hover {
+            background-color: orangered;
+            color: white;
+            border-color: orangered;
+        }
+        
+        .signup-link {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            color: orangered;
+        }
+        
+        #divFooter {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .social-icons a {
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        
+        .social-icons a:hover {
+            transform: translateY(-3px);
+        }
+        
+        .social-icons img {
+            height: 25px;
+            width: 25px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .social-icons a:hover img {
+            filter: brightness(0) invert(0.6) sepia(1) saturate(5) hue-rotate(0deg);
+        }
+        
+        p {
+            margin: 15px 0;
+        }
+        
+        /* Flash messages */
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .flash-message.success {
+            background-color: rgba(40, 167, 69, 0.9);
+            color: white;
+        }
+        
+        .flash-message.error {
+            background-color: rgba(220, 53, 69, 0.9);
+            color: white;
+        }
+        
+        .flash-message.info {
+            background-color: rgba(23, 162, 184, 0.9);
+            color: white;
+        }
+        
+        .flash-message.warning {
+            background-color: rgba(255, 193, 7, 0.9);
+            color: black;
+        }
+        
+        @media (max-width: 480px) {
+            .login {
+                width: 90%;
+                margin: 20px;
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <form class="login-form" method="POST" action="{{ url_for('auth.signin') }}">
+        <div class="login">
+            <h1>Login</h1>
+            
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="your.email@lsu.ac.zw" class="userName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" class="userName" required>
+            </div>
+            
+            <div class="show-password">
+                <input type="checkbox" id="showPassword">
+                <label for="showPassword">Show Password</label>
+            </div>
+            
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember" style="color: white;">Remember me</label>
+            </div>
+            
+            <button type="submit" class="loginButton">Sign In</button>
+            
+            <div class="signup-link">
+                <a href="{{ url_for('auth.signup') }}">Don't have an account? Sign up here</a>
+            </div>
+            
+            <footer id="divFooter">
+                <div class="social-icons">
+                    <a href="#">
+                        <img src="{{ url_for('static', filename='Icons/LinkedIn.png') }}" alt="LinkedIn">
+                    </a>
+                    <a href="#">
+                        <img src="{{ url_for('static', filename='Icons/instagram (1).png') }}" alt="Instagram">
+                    </a>
+                    <a href="#">
+                        <img src="{{ url_for('static', filename='Icons/Github (2).png') }}" alt="GitHub">
+                    </a>
+                    <a href="#">
+                        <img src="{{ url_for('static', filename='Icons/facebook.png') }}" alt="Facebook">
+                    </a>
+                </div>
+            </footer>
+        </div>
+    </form>
+
+    <script>
+        // Show/Hide Password functionality
+        const showPasswordCheckbox = document.getElementById('showPassword');
+        const passwordInput = document.getElementById('password');
+        
+        showPasswordCheckbox.addEventListener('change', function() {
+            passwordInput.type = this.checked ? 'text' : 'password';
+        });
+    </script>
+</body>
+</html>

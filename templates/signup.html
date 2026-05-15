@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Innovation Hub | LSU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-area img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .logo-area h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .logo-area p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: #ff4444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #0066cc;
+            background: white;
+        }
+
+        .name-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .skills-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 5px;
+        }
+
+        .skills-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .skill-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-option {
+            background: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .skill-option:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .skill-option.selected {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .selected-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .selected-skill {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .remove-skill {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .remove-skill:hover {
+            color: #ff4444;
+        }
+
+        .terms {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .terms input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .terms label {
+            margin-bottom: 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .terms a {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        .signup-btn {
+            width: 100%;
+            padding: 14px;
+            background: #0066cc;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .signup-btn:hover {
+            background: #0052a3;
+        }
+
+        .login-link {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #0066cc;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .field-error {
+            border-color: #ff4444 !important;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .signup-container {
+                padding: 30px 20px;
+            }
+
+            .name-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="logo-area">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
+            <h1>Create Account</h1>
+            <p>Join the Innovation Hub community</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.signup') }}" id="signupForm">
+            <!-- Name Row -->
+            <div class="name-row">
+                <div class="form-group">
+                    <label>First Name <span class="required">*</span></label>
+                    <input type="text" name="first_name" id="first_name" placeholder="Petros" required>
+                    <div class="error-message" id="firstNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name <span class="required">*</span></label>
+                    <input type="text" name="last_name" id="last_name" placeholder="Mush" required>
+                    <div class="error-message" id="lastNameError"></div>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label>Email Address <span class="required">*</span></label>
+                <input type="email" name="email" id="email" placeholder="peter@lsu.ac.zw" required>
+                <div class="error-message" id="emailError"></div>
+            </div>
+
+            <!-- Student ID -->
+            <div class="form-group">
+                <label>Student ID <span class="required">*</span></label>
+                <input type="text" name="student_id" id="student_id" placeholder="L02XXXXXX" required>
+                <div class="error-message" id="studentIdError"></div>
+            </div>
+
+            <!-- Faculty -->
+            <div class="form-group">
+                <label>Faculty <span class="required">*</span></label>
+                <select name="faculty" id="faculty" required>
+                    <option value="">Select your faculty</option>
+                    <option value="Engineering & Technology">Engineering & Technology</option>
+                    <option value="Agriculture">Agriculture</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Humanities">Humanities</option>
+                    <option value="Science">Science</option>
+                </select>
+                <div class="error-message" id="facultyError"></div>
+            </div>
+
+            <!-- Skills -->
+            <div class="form-group">
+                <label>Skills (optional)</label>
+                <input type="text" name="skills" id="skills" placeholder="e.g., Python, Java, Design (comma separated)">
+                <div class="error-message" id="skillsError"></div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label>Password <span class="required">*</span></label>
+                <input type="password" name="password" id="password" placeholder="••••••••" required>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group">
+                <label>Confirm Password <span class="required">*</span></label>
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="••••••••" required>
+                <div class="error-message" id="confirmError"></div>
+            </div>
+
+            <!-- Terms -->
+            <div class="terms">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+            </div>
+            <div class="error-message" id="termsError"></div>
+
+            <!-- Sign Up Button -->
+            <button type="submit" class="signup-btn">Create Account</button>
+
+            <!-- Login Link -->
+            <div class="login-link">
+                Already have an account? <a href="{{ url_for('auth.signin') }}">Sign In</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Auto-hide flash messages -->
+    <script>
+        // Auto-hide flash messages after 3 seconds
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Client-side form validation
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Clear all previous error messages
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+                el.classList.remove('visible');
+            });
+            document.querySelectorAll('input, select').forEach(el => {
+                el.classList.remove('field-error');
+            });
+
+            // Validate first name
+            const firstName = document.getElementById('first_name').value.trim();
+            if (!firstName) {
+                showError('firstNameError', 'First name is required');
+                document.getElementById('first_name').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate last name
+            const lastName = document.getElementById('last_name').value.trim();
+            if (!lastName) {
+                showError('lastNameError', 'Last name is required');
+                document.getElementById('last_name').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate email
+            const email = document.getElementById('email').value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email) {
+                showError('emailError', 'Email is required');
+                document.getElementById('email').classList.add('field-error');
+                isValid = false;
+            } else if (!emailPattern.test(email)) {
+                showError('emailError', 'Please enter a valid email address');
+                document.getElementById('email').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate student ID
+            const studentId = document.getElementById('student_id').value.trim();
+            if (!studentId) {
+                showError('studentIdError', 'Student ID is required');
+                document.getElementById('student_id').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate faculty
+            const faculty = document.getElementById('faculty').value;
+            if (!faculty) {
+                showError('facultyError', 'Please select your faculty');
+                document.getElementById('faculty').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate password
+            const password = document.getElementById('password').value;
+            if (!password) {
+                showError('passwordError', 'Password is required');
+                document.getElementById('password').classList.add('field-error');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError('passwordError', 'Password must be at least 6 characters');
+                document.getElementById('password').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate confirm password
+            const confirmPassword = document.getElementById('confirm_password').value;
+            if (!confirmPassword) {
+                showError('confirmError', 'Please confirm your password');
+                document.getElementById('confirm_password').classList.add('field-error');
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                showError('confirmError', 'Passwords do not match');
+                document.getElementById('confirm_password').classList.add('field-error');
+                isValid = false;
+            }
+
+            // Validate terms
+            const terms = document.getElementById('terms').checked;
+            if (!terms) {
+                showError('termsError', 'You must agree to the terms and conditions');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('visible');
+            }
+        }
+
+        // Real-time validation for password match
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirm = this.value;
+            const errorElement = document.getElementById('confirmError');
+            
+            if (confirm && password !== confirm) {
+                errorElement.textContent = 'Passwords do not match';
+                errorElement.classList.add('visible');
+                this.classList.add('field-error');
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.remove('visible');
+                this.classList.remove('field-error');
+            }
+        });
+
+        // Email format validation
+        document.getElementById('email').addEventListener('input', function() {
+            const email = this.value.trim();
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const errorElement = document.getElementById('emailError');
+            
+            if (email && !emailPattern.test(email)) {
+                errorElement.textContent = 'Please enter a valid email address';
+                errorElement.classList.add('visible');
+                this.classList.add('field-error');
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.remove('visible');
+                this.classList.remove('field-error');
+            }
+        });
+
+        // Password strength indicator (optional)
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const errorElement = document.getElementById('passwordError');
+            
+            if (password && password.length < 6) {
+                errorElement.textContent = 'Password must be at least 6 characters';
+                errorElement.classList.add('visible');
+                this.classList.add('field-error');
+            } else {
+                errorElement.textContent = '';
+                errorElement.classList.remove('visible');
+                this.classList.remove('field-error');
+            }
+        });
+    </script>
+</body>
+</html>

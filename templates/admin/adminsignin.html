@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign In - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background: #2d2d2d;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border: 1px solid #404040;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-area img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 2px solid #0066cc;
+        }
+
+        .logo-area h1 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .logo-area p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: #3d3d3d;
+            border: 1px solid #4d4d4d;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #0066cc;
+            background: #454545;
+            outline: none;
+        }
+
+        .admin-btn {
+            width: 100%;
+            padding: 14px;
+            background: #0066cc;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 10px 0;
+            border: none;
+        }
+
+        .admin-btn:hover {
+            background: #0052a3;
+        }
+
+        .admin-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .admin-links a {
+            color: #aaa;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .admin-links a:hover {
+            color: #0066cc;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #666;
+            font-size: 13px;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        .back-link:hover {
+            color: #888;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #404040;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="logo-area">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
+            <h1>Admin Portal</h1>
+            <p>Innovation Hub Management</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.signin') }}">
+            <div class="form-group">
+                <label>Admin Email</label>
+                <input type="email" name="email" placeholder="admin@innovationhub.lsu" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="admin-btn">Access Admin Panel</button>
+
+            <div class="admin-links">
+                <a href="#">Forgot Password?</a>
+            </div>
+
+            <hr>
+
+            <a href="{{ url_for('index') }}" class="back-link">← Back to Innovation Hub</a>
+        </form>
+    </div>
+</body>
+</html>

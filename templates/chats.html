@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Project Chat - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Fixed Sidebar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .projects-sidebar {
+            width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        @media (max-width: 768px) {
+            .projects-sidebar {
+                width: 100%;
+            }
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h3 {
+            color: #333;
+        }
+
+        .project-count {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .project-item a {
+            display: block;
+            color: inherit;
+        }
+
+        .project-item:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+        }
+
+        .project-item.active {
+            background: #e6f2ff;
+            border-color: #0066cc;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .unread-badge {
+            background: #ff4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .chat-area {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+        }
+
+        @media (max-width: 768px) {
+            .chat-area {
+                height: calc(100vh - 160px);
+            }
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: relative;
+        }
+
+        .chat-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Three dots menu */
+        .menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .menu-trigger {
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: 600;
+            color: #555;
+            padding: 0 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-trigger:hover {
+            background: #f0f0f0;
+            color: #0066cc;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 35px;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .dropdown-item.danger {
+            color: #ff4444;
+        }
+
+        .dropdown-item.danger:hover {
+            background: #fdeded;
+            color: #ff4444;
+        }
+
+        .team-members {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .member-avatars {
+            display: flex;
+            align-items: center;
+        }
+
+        .member-avatar {
+            width: 30px;
+            height: 30px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            font-weight: 600;
+            font-size: 12px;
+            margin-right: -5px;
+            border: 2px solid white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            display: flex;
+            gap: 15px;
+            max-width: 80%;
+        }
+
+        .message.own-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        @media (max-width: 768px) {
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            background: #e6f2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 15px;
+            border-top-left-radius: 0;
+        }
+
+        .own-message .message-content {
+            background: #0066cc;
+            color: white;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 0;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .own-message .message-author {
+            color: white;
+        }
+
+        .message-time {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .own-message .message-time {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .resource-share {
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .own-message .resource-share {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .resource-icon {
+            width: 35px;
+            height: 35px;
+            background: #e6f2ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .resource-info {
+            flex: 1;
+        }
+
+        .resource-name {
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .own-message .resource-name {
+            color: white;
+        }
+
+        .resource-size {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .own-message .resource-size {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .download-btn {
+            color: #0066cc;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .download-btn:hover {
+            text-decoration: underline;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+            background: white;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .input-tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            color: #555;
+            font-size: 13px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-btn:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .message-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 25px;
+            font-size: 14px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            background: #0066cc;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .send-btn:hover {
+            background: #0052a3;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .flash-message {
+                position: fixed !important;
+                top: 70px !important;
+                right: 15px !important;
+                left: 15px !important;
+                width: auto;
+                z-index: 2000;
+            }
+        }
+
+        /* Team Management Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h3 {
+            color: #333;
+            font-size: 20px;
+        }
+
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .close-modal:hover {
+            color: #ff4444;
+        }
+
+        .team-member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .team-member-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .team-member-avatar {
+            width: 40px;
+            height: 40px;
+            background: #0066cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .team-member-details {
+            flex: 1;
+        }
+
+        .team-member-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .team-member-role {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .team-member-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .status-muted {
+            background: #ffe0b2;
+            color: #e65100;
+        }
+
+        .team-member-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-icon {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+        }
+
+        .action-icon:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+        }
+
+        .action-icon.danger {
+            color: #ff4444;
+        }
+
+        .action-icon.danger:hover {
+            background: #fdeded;
+            border-color: #ff4444;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .modal-btn-primary {
+            background: #0066cc;
+            color: white;
+            border: none;
+        }
+
+        .modal-btn-secondary {
+            background: #f8f9fa;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+
+        <div class="nav-menu">
+            <ul>
+                <li><a href="{{ url_for('dashboard.dashboard') }}"><img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard"><span class="nav-item">Dashboard</span></a></li>
+                <li><a href="{{ url_for('auth.profile') }}"><img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile"><span class="nav-item">Profile</span></a></li>
+                <li><a href="{{ url_for('projects') }}"><img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects"><span class="nav-item">Projects</span></a></li>
+                <li><a href="{{ url_for('chat.chats') }}" class="active"><img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats"><span class="nav-item">Chats</span></a></li>
+                <li><a href="{{ url_for('forum') }}"><img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum"><span class="nav-item">Forum</span></a></li>
+                {% if current_user.is_authenticated and current_user.is_supervisor %}
+                <li><a href="{{ url_for('supervisor.dashboard') }}"><img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Supervisor"><span class="nav-item">Supervisor Panel</span></a></li>
+                {% endif %}
+            </ul>
+
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn"><img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout"><span class="nav-item">Log out</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; animation: slideIn 0.3s ease;" class="flash-message flash-{{ category }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="projects-sidebar">
+            <div class="sidebar-header">
+                <h3>My Project Chats</h3>
+                <span class="project-count">{{ user_projects|length if user_projects else 0 }}</span>
+            </div>
+
+            <ul class="project-list" id="projectList">
+                {% if user_projects %}
+                    {% for project in user_projects %}
+                    <li class="project-item {% if current_project and current_project.id == project.id %}active{% endif %}" data-project-id="{{ project.id }}">
+                        <a href="{{ url_for('chat.project_chat', project_id=project.id) }}">
+                            <div class="project-name">{{ project.title }}</div>
+                            <div class="project-meta">
+                                <span>Team members</span>
+                                <span class="unread-badge-container" id="badge-container-{{ project.id }}">
+                                    {% if project.unread_count and project.unread_count > 0 %}
+                                    <span class="unread-badge">{{ project.unread_count }} new</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li style="color: #888; text-align: center; padding: 20px;">
+                        No project chats yet.<br>
+                        <a href="{{ url_for('projects') }}" style="color: #0066cc;">Join a project</a> to start chatting.
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        {% if current_project %}
+        <div class="chat-area" id="chatArea" data-project-id="{{ current_project.id }}">
+            <div class="chat-header">
+                <div class="header-left">
+                    <h2>{{ current_project.title }}</h2>
+                    <div class="team-members">
+                        <span>{{ team_members|length if team_members else 1 }} team members</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="member-avatars">
+                        {% if team_members %}
+                            {% for member in team_members[:4] %}
+                            <div class="member-avatar">{{ (member.get_full_name() or member.username)[:2]|upper if member else '?' }}</div>
+                            {% endfor %}
+                            {% if team_members|length > 4 %}
+                            <div class="member-avatar">+{{ team_members|length - 4 }}</div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Three dots menu - UPDATED WITH WORKING LINKS -->
+                    <div class="menu-container">
+                        <div class="menu-trigger" onclick="toggleMenuDropdown()">⋮</div>
+                        <div class="dropdown-menu" id="chatDropdownMenu">
+                            {% if current_user.id == current_project.student_id %}
+                                <div class="dropdown-item" onclick="window.location.href='/chat/team-members/{{ current_project.id }}'">👥 Manage Team Members</div>
+                                <div class="dropdown-item" onclick="window.location.href='/chat/group-info/{{ current_project.id }}'">ℹ️ View Group Info</div>
+                                <div class="dropdown-item" id="muteNotificationsBtn">🔕 Mute Notifications</div>
+                            {% else %}
+                                <div class="dropdown-item" onclick="window.location.href='/chat/team-members/{{ current_project.id }}'">👥 View Team Members</div>
+                                <div class="dropdown-item" onclick="window.location.href='/chat/group-info/{{ current_project.id }}'">ℹ️ View Group Info</div>
+                                <div class="dropdown-item danger" onclick="leaveGroup()">🚪 Leave Group</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="message {% if message.sender_id == current_user.id %}own-message{% endif %}" data-message-id="{{ message.id }}">
+                        <div class="message-avatar">{{ (message.sender.get_full_name() or message.sender.username)[:2]|upper if message.sender else '?' }}</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">{{ message.sender.get_full_name() or message.sender.username if message.sender else 'Unknown' }}</span>
+                                <span class="message-time">{{ message.created_at.strftime('%I:%M %p, %d %b') if message.created_at else '' }}</span>
+                            </div>
+                            <div class="message-text">{{ message.content }}</div>
+                            {% if message.resource %}
+                            <div class="resource-share">
+                                <div class="resource-icon">
+                                    {% if message.resource.file_type in ['png','jpg','jpeg','gif'] %}🖼️
+                                    {% elif message.resource.file_type == 'pdf' %}📄
+                                    {% else %}📎{% endif %}
+                                </div>
+                                <div class="resource-info">
+                                    <div class="resource-name">{{ message.resource.original_filename }}</div>
+                                    <div class="resource-size">{{ message.resource.file_size }}</div>
+                                </div>
+                                <button onclick="downloadResource({{ message.resource.id }})" class="download-btn">Download</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <h3>No messages yet</h3>
+                    <p>Start the conversation with your team!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Share Modals -->
+            <div class="modal" id="resourceModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share Resource</h3>
+                        <span class="close-modal" onclick="closeModal('resourceModal')">&times;</span>
+                    </div>
+                    <form id="resourceForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>Resource Name <span style="color: #888;">(optional)</span></label>
+                            <input type="text" name="resource_name" placeholder="e.g., Project Proposal">
+                        </div>
+                        <div class="form-group">
+                            <label>Description <span style="color: #888;">(optional)</span></label>
+                            <textarea name="description" placeholder="What's this file about?"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Select File <span class="required">*</span></label>
+                            <input type="file" name="file" required>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('resourceModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Upload & Share</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal" id="linkModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share Link</h3>
+                        <span class="close-modal" onclick="closeModal('linkModal')">&times;</span>
+                    </div>
+                    <form id="linkForm">
+                        <div class="form-group">
+                            <label>Link URL</label>
+                            <input type="url" name="link" required placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Description (Optional)</label>
+                            <textarea name="description" placeholder="What's this link about?"></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('linkModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Share Link</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal" id="codeModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share Code Snippet</h3>
+                        <span class="close-modal" onclick="closeModal('codeModal')">&times;</span>
+                    </div>
+                    <form id="codeForm">
+                        <div class="form-group">
+                            <label>Language</label>
+                            <select name="language">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="html">HTML</option>
+                                <option value="css">CSS</option>
+                                <option value="java">Java</option>
+                                <option value="cpp">C++</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Code</label>
+                            <textarea name="code" required placeholder="Paste your code here..."></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('codeModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Share Code</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Team Management Modal (Keep for backwards compatibility) -->
+            <div class="modal" id="teamManagementModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>
+                            {% if current_user.id == current_project.student_id %}
+                                Manage Team Members
+                            {% else %}
+                                Team Members
+                            {% endif %}
+                        </h3>
+                        <span class="close-modal" onclick="closeTeamManagementModal()">&times;</span>
+                    </div>
+                    <div id="teamMembersList">
+                        <div style="text-align: center; padding: 20px;">Loading team members...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-tools">
+                    <span class="tool-btn" onclick="openModal('resourceModal')">Share Resource</span>
+                    <span class="tool-btn" onclick="openModal('linkModal')">Link</span>
+                    <span class="tool-btn" onclick="openModal('codeModal')">Code Snippet</span>
+                </div>
+                <form id="messageForm">
+                    <div class="message-input-wrapper">
+                        <input type="text" class="message-input" name="message" placeholder="Type your message..." autocomplete="off" required>
+                        <button type="submit" class="send-btn">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="chat-area">
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <h3>Select a project chat</h3>
+                <p>Choose a project from the sidebar to start messaging</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const currentProjectId = {{ current_project.id if current_project else 'null' }};
+        const currentUserId = {{ current_user.id }};
+        const isProjectOwner = {{ (current_user.id == current_project.student_id) if current_project else 'false' }};
+        const projectOwnerId = {{ current_project.student_id if current_project else 0 }};
+        const projectSupervisorId = {{ current_project.supervisor_id if current_project else 0 }};
+
+        // Download resource
+        async function downloadResource(resourceId) {
+            if (!resourceId) {
+                showNotification('Error: No resource specified', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/chat/api/download-resource/${resourceId}`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'download';
+                    if (contentDisposition) {
+                        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                        if (match) filename = match[1];
+                    }
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showNotification('Download started', 'success');
+                } else {
+                    showNotification('Download failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Error downloading file', 'error');
+            }
+        }
+
+        // Send message
+        document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`/chat/api/send-message/${currentProjectId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    e.target.reset();
+                    await loadMessages();
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Failed to send message', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sending message', 'error');
+            }
+        });
+
+        // Load messages
+        async function loadMessages() {
+            if (!currentProjectId) return;
+            try {
+                const response = await fetch(`/chat/api/messages/${currentProjectId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateMessagesDisplay(data.messages);
+                    markMessagesAsRead();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        function updateMessagesDisplay(messages) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No messages yet</h3>
+                        <p>Start the conversation with your team!</p>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = messages.map(msg => {
+                let resourceHtml = '';
+                if (msg.resource) {
+                    resourceHtml = `
+                        <div class="resource-share">
+                            <div class="resource-icon">📎</div>
+                            <div class="resource-info">
+                                <div class="resource-name">${escapeHtml(msg.resource.name)}</div>
+                                <div class="resource-size">${escapeHtml(msg.resource.size)}</div>
+                            </div>
+                            <button onclick="downloadResource(${msg.resource.id})" class="download-btn">Download</button>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="message ${msg.is_own ? 'own-message' : ''}" data-message-id="${msg.id}">
+                        <div class="message-avatar">${(msg.sender_name || '?').substring(0, 2).toUpperCase()}</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">${escapeHtml(msg.sender_name)}</span>
+                                <span class="message-time">${escapeHtml(msg.time)}</span>
+                            </div>
+                            <div class="message-text">${escapeHtml(msg.content)}</div>
+                            ${resourceHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            scrollToBottom();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Mark messages as read
+        async function markMessagesAsRead() {
+            if (!currentProjectId) return;
+            try {
+                await fetch(`/chat/api/mark-project-read/${currentProjectId}`, { method: 'POST' });
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `flash-message flash-${type}`;
+            notification.textContent = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '3000';
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Dropdown menu functions
+        function toggleMenuDropdown() {
+            const menu = document.getElementById('chatDropdownMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const menuContainer = document.querySelector('.menu-container');
+            if (menuContainer && !menuContainer.contains(event.target)) {
+                const menu = document.getElementById('chatDropdownMenu');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+
+        // Mute notifications for current user
+        document.getElementById('muteNotificationsBtn')?.addEventListener('click', async function() {
+            try {
+                const statusResponse = await fetch(`/chat/api/mute-status/${currentProjectId}`);
+                const statusData = await statusResponse.json();
+                const newMuteState = !statusData.is_muted;
+
+                const response = await fetch(`/chat/api/toggle-mute/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ muted: newMuteState })
+                });
+
+                if (response.ok) {
+                    showNotification(newMuteState ? '🔇 Notifications muted' : '🔔 Notifications unmuted', 'success');
+                    // Close dropdown
+                    document.getElementById('chatDropdownMenu').classList.remove('show');
+                } else {
+                    showNotification('Failed to change mute status', 'error');
+                }
+            } catch (error) {
+                showNotification('Error updating mute status', 'error');
+            }
+        });
+
+        // Team Management Modal (for backwards compatibility)
+        async function openTeamManagementModal() {
+            const modal = document.getElementById('teamManagementModal');
+            modal.classList.add('active');
+
+            try {
+                const response = await fetch(`/chat/api/members/${currentProjectId}`);
+                if (response.ok) {
+                    const members = await response.json();
+                    displayTeamMembers(members);
+                } else {
+                    document.getElementById('teamMembersList').innerHTML = '<div style="text-align: center; padding: 20px;">Failed to load team members</div>';
+                }
+            } catch (error) {
+                document.getElementById('teamMembersList').innerHTML = '<div style="text-align: center; padding: 20px;">Error loading team members</div>';
+            }
+        }
+
+        function displayTeamMembers(members) {
+            const container = document.getElementById('teamMembersList');
+            if (!members || members.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px;">No team members found</div>';
+                return;
+            }
+
+            container.innerHTML = members.map(member => {
+                let roleBadge = '';
+                if (member.user_id == projectOwnerId) {
+                    roleBadge = '<span style="font-size: 11px; color: #0066cc; margin-left: 5px;">(Project Lead)</span>';
+                } else if (member.user_id == projectSupervisorId) {
+                    roleBadge = '<span style="font-size: 11px; color: #6c757d; margin-left: 5px;">(Supervisor)</span>';
+                }
+
+                let mutedBadge = '';
+                if (member.is_muted) {
+                    mutedBadge = '<span class="team-member-status status-muted">Muted</span>';
+                }
+
+                let actionButtons = '';
+                if (isProjectOwner && member.user_id != currentUserId) {
+                    if (member.is_muted) {
+                        actionButtons = `
+                            <div class="team-member-actions">
+                                <button class="action-icon" onclick="toggleMemberMute(${member.user_id}, false)">Unmute</button>
+                                ${member.user_id != projectOwnerId ? `<button class="action-icon danger" onclick="removeTeamMember(${member.user_id})">Remove</button>` : ''}
+                            </div>
+                        `;
+                    } else {
+                        actionButtons = `
+                            <div class="team-member-actions">
+                                <button class="action-icon" onclick="toggleMemberMute(${member.user_id}, true)">Mute</button>
+                                ${member.user_id != projectOwnerId ? `<button class="action-icon danger" onclick="removeTeamMember(${member.user_id})">Remove</button>` : ''}
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                    <div class="team-member-item" data-user-id="${member.user_id}">
+                        <div class="team-member-info">
+                            <div class="team-member-avatar">${(member.name || member.username).substring(0, 2).toUpperCase()}</div>
+                            <div class="team-member-details">
+                                <div class="team-member-name">
+                                    ${escapeHtml(member.name || member.username)}
+                                    ${roleBadge}
+                                    ${mutedBadge}
+                                </div>
+                                <div class="team-member-role">${getMemberRole(member)}</div>
+                            </div>
+                        </div>
+                        ${actionButtons}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getMemberRole(member) {
+            if (member.user_id == projectOwnerId) {
+                return 'Project Lead';
+            }
+            if (member.user_id == projectSupervisorId) {
+                return 'Faculty Supervisor';
+            }
+            return 'Team Member';
+        }
+
+        async function toggleMemberMute(userId, mute) {
+            try {
+                const response = await fetch(`/chat/api/mute-member/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, mute: mute })
+                });
+                if (response.ok) {
+                    showNotification(mute ? 'User muted' : 'User unmuted', 'success');
+                    openTeamManagementModal();
+                } else {
+                    showNotification('Action failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Error', 'error');
+            }
+        }
+
+        async function removeTeamMember(userId) {
+            if (!confirm('Remove this member from the project? They will lose access to project resources and chat.')) return;
+            try {
+                const response = await fetch(`/chat/api/remove-member/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                if (response.ok) {
+                    showNotification('Member removed', 'success');
+                    openTeamManagementModal();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('Failed to remove member', 'error');
+                }
+            } catch (error) {
+                showNotification('Error', 'error');
+            }
+        }
+
+        async function leaveGroup() {
+            if (!confirm('Are you sure you want to leave this project? You will lose access to the project and chat.')) return;
+            try {
+                const response = await fetch(`/chat/api/leave-group/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    showNotification('You have left the project', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/chat/chats';
+                    }, 1000);
+                } else {
+                    showNotification('Failed to leave group', 'error');
+                }
+            } catch (error) {
+                showNotification('Error', 'error');
+            }
+        }
+
+        function closeTeamManagementModal() {
+            document.getElementById('teamManagementModal').classList.remove('active');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Share resource
+        document.getElementById('resourceForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`/chat/api/share-resource/${currentProjectId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    closeModal('resourceModal');
+                    await loadMessages();
+                    showNotification('Resource shared successfully', 'success');
+                    e.target.reset();
+                } else {
+                    showNotification('Failed to share resource', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sharing resource', 'error');
+            }
+        });
+
+        // Share link
+        document.getElementById('linkForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            try {
+                const response = await fetch(`/chat/api/share-link/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    closeModal('linkModal');
+                    await loadMessages();
+                    showNotification('Link shared successfully', 'success');
+                    e.target.reset();
+                } else {
+                    showNotification('Failed to share link', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sharing link', 'error');
+            }
+        });
+
+        // Share code
+        document.getElementById('codeForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            try {
+                const response = await fetch(`/chat/api/share-code/${currentProjectId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    closeModal('codeModal');
+                    await loadMessages();
+                    showNotification('Code shared successfully', 'success');
+                    e.target.reset();
+                } else {
+                    showNotification('Failed to share code', 'error');
+                }
+            } catch (error) {
+                showNotification('Error sharing code', 'error');
+            }
+        });
+
+        // Auto-refresh messages every 5 seconds
+        if (currentProjectId) {
+            setInterval(loadMessages, 5000);
+            setTimeout(() => {
+                scrollToBottom();
+                loadMessages();
+            }, 500);
+        }
+
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

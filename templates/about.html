@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>About - Innovation Hub | LSU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Header/Navigation */
+        header {
+            background: white;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-container img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .logo-text:hover {
+            color: #0066cc;
+        }
+
+        /* Auth Buttons - Desktop */
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login, .btn-signup {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-login:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .btn-signup {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-signup:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,102,204,0.3);
+        }
+
+        /* User Info - Show when logged in */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .welcome-text {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .welcome-text strong {
+            color: #0066cc;
+        }
+
+        .btn-dashboard {
+            background: #28a745;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-dashboard:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+        }
+
+        /* Desktop Secondary Nav */
+        .main-nav {
+            background: white;
+            padding-top: 75px;
+            padding-bottom: 0;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-inner {
+            padding: 10px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #555;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #0066cc;
+        }
+
+        .nav-links a.active {
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        /* Mobile Slide-in Menu */
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+
+        .mobile-nav-menu {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 2001;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .mobile-nav-menu.active {
+            right: 0;
+        }
+
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .close-menu {
+            font-size: 28px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .close-menu:hover {
+            color: #ff4444;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            flex: 1;
+        }
+
+        .mobile-nav-links li {
+            margin: 15px 0;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 10px;
+            color: #555;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .mobile-nav-links a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .mobile-auth {
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-auth .btn-login,
+        .mobile-auth .btn-signup {
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
+
+        /* Page Body */
+        .page-body {
+            padding-top: 120px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            padding: 0 30px;
+        }
+
+        .about-box {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 480px) {
+            .about-box {
+                padding: 25px;
+            }
+        }
+
+        .about-box h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .about-box h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: #0066cc;
+            border-radius: 3px;
+        }
+
+        .about-box h2 {
+            color: #0066cc;
+            font-size: 24px;
+            margin: 30px 0 15px 0;
+        }
+
+        .about-box p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .about-box ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .about-box li {
+            color: #666;
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .about-box li::before {
+            content: "•";
+            color: #0066cc;
+            font-weight: bold;
+            position: absolute;
+            left: 5px;
+            font-size: 18px;
+        }
+
+        .about-box li strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .team-member {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,102,204,0.1);
+        }
+
+        .team-member h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .team-member p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .supervisor {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e6f2ff;
+            border-radius: 10px;
+        }
+
+        .supervisor h4 {
+            color: #0066cc;
+            font-size: 18px;
+        }
+
+        footer {
+            background: white;
+            padding: 30px;
+            margin-top: 60px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .copyright {
+            font-size: 14px;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #888;
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #0066cc;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .auth-buttons {
+                display: none;
+            }
+
+            .main-nav {
+                display: none;
+            }
+
+            .page-body {
+                padding-top: 75px;
+            }
+
+            header {
+                padding: 12px 20px;
+                height: 70px;
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+
+            .logo-container img {
+                width: 36px;
+                height: 36px;
+            }
+
+            .main-content {
+                padding: 0 15px;
+            }
+
+            .about-box h1 {
+                font-size: 26px;
+            }
+
+            .about-box h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="openMobileMenu()">☰</div>
+
+    <!-- Mobile Overlay + Slide-in Menu -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
+
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <div class="mobile-nav-header">
+            <h3>Innovation Hub</h3>
+            <span class="close-menu" onclick="closeMobileMenu()">×</span>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+            <li><a href="{{ url_for('services') }}">Services</a></li>
+            <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
+            <li><a href="{{ url_for('terms') }}">Terms & Privacy</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+        <div class="mobile-auth">
+            <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+        </div>
+    </div>
+
+    <!-- Fixed Header -->
+    <header>
+        <div class="header-top">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
+                <a href="{{ url_for('index') }}" class="logo-text">Innovation Hub</a>
+            </div>
+
+            {% if current_user.is_authenticated %}
+            <div class="user-info">
+                <span class="welcome-text">Welcome, <strong>{{ current_user.username }}</strong></span>
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">Dashboard</a>
+            </div>
+            {% else %}
+            <div class="auth-buttons">
+                <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
+                <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Desktop Secondary Nav (hidden on mobile) -->
+    <div class="main-nav">
+        <div class="nav-inner">
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+                <li><a href="{{ url_for('services') }}">Services</a></li>
+                <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
+                <li><a href="{{ url_for('terms') }}">Terms & Privacy</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+        <div class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="about-box">
+                <h1>About Innovation Hub</h1>
+
+                <h2>Our Mission</h2>
+                <p>The Innovation Hub is a university-wide digital ecosystem designed to harness the collective intelligence of the LSU community. We bridge the gap between academic theory and industry-ready problem solving by providing a space where students can continuously apply skills from their modules to long-term projects.</p>
+
+                <h2>The Problem</h2>
+                <ul>
+                    <li><strong>Flash Learning</strong> - Students learn just enough to pass exams, then forget</li>
+                    <li><strong>Skill Atrophy</strong> - Technical skills deteriorate when not practiced</li>
+                    <li><strong>Portfolio Gap</strong> - Students graduate without tangible proof of work</li>
+                    <li><strong>Departmental Silos</strong> - Limited collaboration across faculties</li>
+                </ul>
+
+                <h2>Our Solution</h2>
+                <ul>
+                    <li>Create interdisciplinary project teams</li>
+                    <li>Match students based on skills and interests</li>
+                    <li>Build portfolios before industry attachment</li>
+                    <li>Reinforce learning through continuous practice</li>
+                </ul>
+
+                <h2>Faculties Involved</h2>
+                <ul>
+                    <li>Engineering & Technology</li>
+                    <li>Agriculture</li>
+                    <li>Commerce</li>
+                    <li>Humanities</li>
+                </ul>
+
+                <h2>Meet the Team</h2>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <h4>Itai Vera</h4>
+                        <p>L0248997W</p>
+                    </div>
+                    <div class="team-member">
+                        <h4>Mqhele Ncube</h4>
+                        <p>L0249051C</p>
+                    </div>
+                    <div class="team-member">
+                        <h4>Petros Mushambadzi</h4>
+                        <p>L0248876V</p>
+                    </div>
+                </div>
+
+                <div class="supervisor">
+                    <h4>Supervisor: Mr. Dovi</h4>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="copyright">
+                © 2026 LSU Innovation Hub. All rights reserved.
+            </div>
+            <div class="footer-links">
+                <a href="{{ url_for('terms') }}">Terms of Use</a>
+                <a href="{{ url_for('privacy') }}">Privacy Policy</a>
+                <a href="{{ url_for('contact') }}">Contact Us</a>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        function openMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'block';
+            document.getElementById('mobileNavMenu').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'none';
+            document.getElementById('mobileNavMenu').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

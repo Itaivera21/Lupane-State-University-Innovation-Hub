@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Manage Applications - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Fixed Sidebar - White (Student Theme) */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            width: 250px;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                transform: translateX(-100%);
+            }
+            nav.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+        }
+
+        ul {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            background: #f5f5f5;
+        }
+
+        li a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+            border-left: 4px solid #0066cc;
+        }
+
+        li a img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .nav-item {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .logout-section {
+            padding: 20px;
+            border-top: 2px solid #f0f0f0;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #fee;
+            color: #ff4444;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .logout-btn img {
+            width: 25px;
+            height: 25px;
+            margin-right: 15px;
+        }
+
+        .logout-btn:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+                width: 100%;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Tabs - Pill style */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 24px;
+            background: white;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+        }
+
+        .tab:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .tab.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .application-card, .member-card {
+            border-left: 4px solid #0066cc;
+        }
+
+        .application-header, .member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .applicant-name, .member-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0066cc;
+        }
+
+        .project-name, .project-ref {
+            background: #e6f2ff;
+            color: #0066cc;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .application-detail, .member-detail {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .application-detail strong, .member-detail strong {
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+            background: white;
+            border-radius: 15px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .tab {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
+
+    <nav id="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+
+        <div class="nav-menu">
+            <ul>
+                <li><a href="{{ url_for('dashboard.dashboard') }}"><img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard"><span class="nav-item">Dashboard</span></a></li>
+                <li><a href="{{ url_for('auth.profile') }}"><img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile"><span class="nav-item">Profile</span></a></li>
+                <li><a href="{{ url_for('projects') }}"><img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects"><span class="nav-item">Projects</span></a></li>
+                <li><a href="{{ url_for('chat.chats') }}"><img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats"><span class="nav-item">Chats</span></a></li>
+                <li><a href="{{ url_for('forum') }}"><img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum"><span class="nav-item">Forum</span></a></li>
+                <li><a href="{{ url_for('manage_applications') }}" class="active"><img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Manage"><span class="nav-item">Manage Applications</span></a></li>
+                {% if current_user.is_authenticated and current_user.is_supervisor %}
+                <li><a href="{{ url_for('supervisor.dashboard') }}"><img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Supervisor"><span class="nav-item">Supervisor Panel</span></a></li>
+                {% endif %}
+            </ul>
+
+            <div class="logout-section">
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn"><img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout"><span class="nav-item">Log out</span></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <div>
+                    <h1>Manage Applications</h1>
+                    <p class="subtitle">Review and manage join requests for your projects</p>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="applications">Pending Applications</button>
+                <button class="tab" data-tab="approved">Team Members</button>
+            </div>
+
+            <!-- Tab 1: Pending Applications -->
+            <div id="applications-tab" class="tab-content active">
+                {% if pending_applications %}
+                    {% for app in pending_applications %}
+                    <div class="card application-card">
+                        <div class="application-header">
+                            <span class="applicant-name">{{ app.applicant.get_full_name() if app.applicant else app.applicant.username if app.applicant else 'Unknown' }}</span>
+                            <span class="project-name">{{ app.project.title if app.project else 'Unknown Project' }}</span>
+                        </div>
+
+                        <div class="application-detail">
+                            <strong>Email:</strong> {{ app.applicant.email if app.applicant else 'N/A' }}
+                        </div>
+
+                        <div class="application-detail">
+                            <strong>Faculty/Department:</strong> {{ app.applicant.department or app.applicant.faculty or 'Not specified' if app.applicant else 'N/A' }}
+                        </div>
+
+                        {% if app.message %}
+                        <div class="application-detail">
+                            <strong>Message:</strong> {{ app.message }}
+                        </div>
+                        {% endif %}
+
+                        <div class="application-detail">
+                            <strong>Applied:</strong> {{ app.applied_at.strftime('%B %d, %Y at %I:%M %p') if app.applied_at else 'Recently' }}
+                        </div>
+
+                        <span class="status-badge status-pending">
+                            PENDING
+                        </span>
+
+                        <div class="action-buttons">
+                            <form action="{{ url_for('handle_application', application_id=app.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" name="action" value="approve" class="btn btn-approve">Approve</button>
+                            </form>
+                            <form action="{{ url_for('handle_application', application_id=app.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" name="action" value="reject" class="btn btn-reject">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No pending applications for your projects.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Tab 2: Team Members (FIXED: use applicant not user) -->
+            <div id="approved-tab" class="tab-content">
+                {% if approved_members %}
+                    {% for member in approved_members %}
+                    <div class="card member-card">
+                        <div class="member-header">
+                            <span class="member-name">{{ member.applicant.get_full_name() if member.applicant else member.applicant.username if member.applicant else 'Unknown' }}</span>
+                            <span class="project-ref">{{ member.project.title if member.project else 'Unknown Project' }}</span>
+                        </div>
+
+                        <div class="member-detail">
+                            <strong>Email:</strong> {{ member.applicant.email if member.applicant else 'N/A' }}
+                        </div>
+
+                        <div class="member-detail">
+                            <strong>Role:</strong>
+                            {% if member.applicant.id == member.project.student_id %}
+                            Project Lead
+                            {% elif member.applicant.is_supervisor %}
+                            Supervisor
+                            {% else %}
+                            Team Member
+                            {% endif %}
+                        </div>
+
+                        <div class="member-detail">
+                            <strong>Joined:</strong> {{ member.approved_at.strftime('%B %d, %Y') if member.approved_at else 'Recently' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No team members yet. Approve applications to build your team.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('dashboard.dashboard') }}" class="back-link">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                var tabName = this.getAttribute('data-tab');
+
+                document.querySelectorAll('.tab').forEach(function(t) {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                document.querySelectorAll('.tab-content').forEach(function(content) {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabName + '-tab').classList.add('active');
+            });
+        });
+
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

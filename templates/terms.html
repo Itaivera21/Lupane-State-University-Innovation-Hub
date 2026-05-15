@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Terms of Service & Privacy Policy - Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #dfe9f5;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            background: white;
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 75px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-container img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .logo-text:hover { color: #0066cc; }
+
+        /* ── Desktop Auth Buttons ── */
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-login, .btn-signup {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-login:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        .btn-signup {
+            background: #0066cc;
+            color: white;
+        }
+
+        .btn-signup:hover { background: #0052a3; }
+
+        /* ── Desktop Secondary Nav ── */
+        .main-nav {
+            background: white;
+            padding-top: 75px;
+            padding-bottom: 0;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-inner {
+            padding: 10px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #555;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover { color: #0066cc; }
+
+        .nav-links a.active {
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+        }
+
+        /* ── Mobile Menu Button ── */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* ── Mobile Slide-in Menu ── */
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+
+        .mobile-nav-menu {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 2001;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .mobile-nav-menu.active { right: 0; }
+
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav-header h3 { color: #333; font-size: 18px; }
+
+        .close-menu { font-size: 28px; cursor: pointer; color: #888; }
+        .close-menu:hover { color: #ff4444; }
+
+        .mobile-nav-links { list-style: none; flex: 1; }
+        .mobile-nav-links li { margin: 15px 0; }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 10px;
+            color: #555;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .mobile-auth {
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-auth .btn-login,
+        .mobile-auth .btn-signup {
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
+
+        /* ── Page Body wrapper ── */
+        .page-body {
+            padding-top: 120px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 900px;
+            margin: 0 auto 60px auto;
+            padding: 0 30px;
+        }
+
+        .terms-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .terms-container {
+                padding: 25px;
+            }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: #0066cc;
+            border-radius: 3px;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #0066cc;
+            font-size: 20px;
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        h3 {
+            color: #333;
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        ul {
+            margin: 10px 0 15px 30px;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #0066cc;
+            margin: 20px 0;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(to right, #e0e0e0, #0066cc, #e0e0e0);
+            margin: 40px 0 20px 0;
+        }
+
+        footer {
+            background: white;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 40px;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #888;
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #0066cc;
+        }
+
+        .admin-hint {
+            margin-top: 15px;
+            font-size: 9px;
+            color: #f9f9f9;
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+            user-select: none;
+        }
+
+        .admin-hint:hover { opacity: 0.4; color: #999; }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: flex; }
+            .auth-buttons    { display: none; }
+            .main-nav        { display: none; }
+
+            .page-body { padding-top: 75px; }
+
+            header {
+                padding: 12px 20px;
+                height: 70px;
+            }
+
+            .logo-text { font-size: 16px; }
+
+            .logo-container img {
+                width: 36px;
+                height: 36px;
+            }
+
+            h1 { font-size: 26px; }
+            h2 { font-size: 18px; }
+
+            .main-content {
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hamburger (mobile only) -->
+    <div class="mobile-menu-btn" onclick="openMobileMenu()">&#9776;</div>
+
+    <!-- Mobile overlay + slide-in -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
+
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <div class="mobile-nav-header">
+            <h3>Innovation Hub</h3>
+            <span class="close-menu" onclick="closeMobileMenu()">&times;</span>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('services') }}">Services</a></li>
+            <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
+            <li><a href="{{ url_for('terms') }}" class="active">Terms & Privacy</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+        <div class="mobile-auth">
+            <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+        </div>
+    </div>
+
+    <!-- Fixed header -->
+    <header>
+        <div class="logo-container" id="logoContainer" onclick="window.location.href='{{ url_for('index') }}'">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
+            <span class="logo-text">Innovation Hub</span>
+        </div>
+        <div class="auth-buttons">
+            <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+        </div>
+    </header>
+
+    <!-- Desktop secondary nav (hidden on mobile) -->
+    <div class="main-nav">
+        <div class="nav-inner">
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                <li><a href="{{ url_for('services') }}">Services</a></li>
+                <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
+                <li><a href="{{ url_for('terms') }}" class="active">Terms & Privacy</a></li>
+                <li><a href="{{ url_for('contact') }}">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Everything below the navs -->
+    <div class="page-body">
+
+        <div class="main-content">
+            <div class="terms-container">
+                <h1>Terms of Service & Privacy Policy</h1>
+                <div class="last-updated">Last Updated: May 2026</div>
+
+                <p>Welcome to the LSU Innovation Hub ("Platform", "We", "Us", "Our"). By accessing or using the Innovation Hub platform, you agree to be bound by these Terms of Service and Privacy Policy. If you do not agree with any part of these terms, you may not use our platform.</p>
+
+                <div class="highlight">
+                    <strong>Quick Summary:</strong> This platform is for LSU students, faculty, and staff to collaborate on projects, share ideas, and build portfolios. You own your content, but you grant us permission to display it. Be respectful, don't steal others' work, and follow LSU policies. Your data is protected and not sold to third parties.
+                </div>
+
+                <!-- ==================== PART 1: TERMS OF SERVICE ==================== -->
+                <h2>Part 1: Terms of Service</h2>
+
+                <h3>1. Acceptance of Terms</h3>
+                <p>By registering for an account, accessing, or using the Innovation Hub platform, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service, our Privacy Policy, and any additional guidelines or rules applicable to specific services, which are incorporated herein by reference.</p>
+
+                <h3>2. Eligibility</h3>
+                <p>To use the Innovation Hub platform, you must:</p>
+                <ul>
+                    <li>Be a registered student, faculty member, or staff of Lupane State University (LSU)</li>
+                    <li>Have a valid LSU email address (@lsu.ac.zw) for account verification</li>
+                    <li>Be at least 18 years old or have parental consent</li>
+                    <li>Provide accurate and complete registration information</li>
+                </ul>
+
+                <h3>3. User Accounts</h3>
+                <p><strong>3.1 Account Creation</strong> — You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized use of your account.</p>
+                <p><strong>3.2 Account Types</strong></p>
+                <ul>
+                    <li><strong>Student Accounts:</strong> For LSU students to create and join projects, collaborate with peers, and build portfolios.</li>
+                    <li><strong>Supervisor Accounts:</strong> For LSU faculty to supervise student projects, provide guidance, and track progress.</li>
+                    <li><strong>Admin Accounts:</strong> For platform administrators to manage users, projects, and system settings.</li>
+                    <li><strong>Developer Accounts:</strong> For core developers to manage system operations and maintenance.</li>
+                </ul>
+
+                <p><strong>3.3 Account Termination</strong> — We reserve the right to suspend or terminate any account that violates these Terms, engages in harmful behavior, or remains inactive for an extended period.</p>
+
+                <h3>4. User Conduct and Responsibilities</h3>
+                <p>You agree not to:</p>
+                <ul>
+                    <li>Post or share content that is illegal, offensive, defamatory, or violates others' rights</li>
+                    <li>Impersonate another person or entity</li>
+                    <li>Use the platform to spam, harass, or threaten others</li>
+                    <li>Attempt to gain unauthorized access to other accounts or systems</li>
+                    <li>Upload malware, viruses, or other harmful code</li>
+                    <li>Copy or steal other users' project ideas or content without permission</li>
+                    <li>Violate any applicable laws or LSU policies</li>
+                </ul>
+
+                <h3>5. Projects and Intellectual Property</h3>
+                <p><strong>5.1 Ownership</strong> — You retain all ownership rights to the projects, content, and ideas you submit to the Innovation Hub platform. You grant the Innovation Hub a non-exclusive, royalty-free license to display, store, and share your content as necessary to provide the platform's services.</p>
+
+                <p><strong>5.2 Project Completion and Portfolio</strong> — When you mark a project as "Completed," it may be displayed on the public Portfolio page for potential investors, industry partners, and stakeholders to view. You can keep projects as "Active" if you do not wish them to be publicly visible.</p>
+
+                <p><strong>5.3 Respect for Others' Work</strong> — You agree not to copy, reproduce, or claim ownership of other users' project ideas or content without their explicit permission. Violations may result in account termination.</p>
+
+                <h3>6. Supervision and Mentorship</h3>
+                <ul>
+                    <li>Supervisors must hold valid LSU faculty credentials</li>
+                    <li>Supervisors agree to provide constructive guidance and support to students</li>
+                    <li>Students may request supervision, and supervisors may accept or reject such requests</li>
+                    <li>Supervisors have access to project chats and team communications for the projects they supervise</li>
+                </ul>
+
+                <h3>7. Platform Availability and Modifications</h3>
+                <p>We strive to keep the Innovation Hub platform available 24/7, but we do not guarantee uninterrupted access. We reserve the right to modify, suspend, or discontinue any part of the platform at any time without prior notice.</p>
+
+                <h3>8. Limitation of Liability</h3>
+                <p>To the maximum extent permitted by law, the LSU Innovation Hub and its administrators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the platform, including but not limited to loss of data, project ideas, or collaboration opportunities.</p>
+
+                <h3>9. Disclaimer of Warranties</h3>
+                <p>The platform is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee that the platform will meet your requirements or be error-free.</p>
+
+                <h3>10. Indemnification</h3>
+                <p>You agree to indemnify and hold harmless the LSU Innovation Hub, its administrators, and affiliated parties from any claims, damages, or expenses arising from your use of the platform or violation of these Terms.</p>
+
+                <h3>11. Changes to Terms</h3>
+                <p>We may update these Terms of Service from time to time. We will notify users of significant changes via email or platform notification. Continued use of the platform after changes constitutes acceptance of the revised Terms.</p>
+
+                <h3>12. Governing Law</h3>
+                <p>These Terms shall be governed by and construed in accordance with the laws of Zimbabwe and Lupane State University policies.</p>
+
+                <!-- Divider between Terms and Privacy -->
+                <div class="section-divider"></div>
+
+                <!-- ==================== PART 2: PRIVACY POLICY ==================== -->
+                <h2>Part 2: Privacy Policy</h2>
+
+                <h3>13. Information We Collect</h3>
+                <p>When you register for the Innovation Hub, we collect:</p>
+                <ul>
+                    <li><strong>Personal Information:</strong> Name, email address, student ID, faculty, department</li>
+                    <li><strong>Account Information:</strong> Username, password (encrypted, never stored in plain text)</li>
+                    <li><strong>User Content:</strong> Projects, messages, forum posts, uploaded files</li>
+                    <li><strong>Usage Data:</strong> Login times, pages visited, features used</li>
+                </ul>
+
+                <h3>14. How We Use Your Information</h3>
+                <ul>
+                    <li>To provide and improve platform services</li>
+                    <li>To facilitate project collaboration and communication</li>
+                    <li>To display project portfolios (with your consent)</li>
+                    <li>To communicate important updates and notifications</li>
+                    <li>To ensure platform security and prevent abuse</li>
+                </ul>
+
+                <h3>15. Data Sharing and Disclosure</h3>
+                <p>We do not sell your personal information. We may share your information:</p>
+                <ul>
+                    <li>With your project team members (name, skills, contact)</li>
+                    <li>With project supervisors (when assigned to your project)</li>
+                    <li>With industry partners (portfolio projects only, with appropriate consent)</li>
+                    <li>When required by law or to protect rights and safety</li>
+                </ul>
+
+                <h3>16. Data Security</h3>
+                <p>We implement reasonable security measures to protect your information, including:</p>
+                <ul>
+                    <li>Password hashing (bcrypt) — never stored in plain text</li>
+                    <li>HTTPS encryption for all data transmission</li>
+                    <li>Database access controls and regular security reviews</li>
+                    <li>Secure cloud hosting with TiDB Cloud</li>
+                </ul>
+
+                <h3>17. Your Rights</h3>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access and update your personal information</li>
+                    <li>Request deletion of your account and associated data</li>
+                    <li>Control visibility of your projects (private vs public)</li>
+                    <li>Opt out of promotional communications</li>
+                </ul>
+
+                <h3>18. Data Retention</h3>
+                <p>We retain your information as long as your account is active. Account deletion will remove your personal data, but some anonymized data may be retained for analytical purposes. Project data may be retained for academic and research purposes.</p>
+
+                <h3>19. Children's Privacy</h3>
+                <p>The Innovation Hub is intended for university students and faculty. We do not knowingly collect information from children under 13.</p>
+
+                <h3>20. International Data Transfer</h3>
+                <p>Your information may be stored on servers located outside Zimbabwe (TiDB Cloud infrastructure). By using the platform, you consent to such transfer, understanding that data protection laws may differ from those in Zimbabwe.</p>
+
+                <h3>21. Cookies and Tracking</h3>
+                <p>We use session cookies to keep you logged in and remember your preferences. These are essential for platform functionality. We do not use third-party tracking cookies for advertising.</p>
+
+                <h3>22. Third-Party Services</h3>
+                <p>The platform may use third-party services such as:</p>
+                <ul>
+                    <li><strong>Render:</strong> Web hosting and deployment</li>
+                    <li><strong>TiDB Cloud:</strong> Database hosting</li>
+                    <li><strong>GitHub:</strong> Code repository and version control</li>
+                </ul>
+                <p>These services have their own privacy policies which we recommend you review.</p>
+
+                <h3>23. Changes to Privacy Policy</h3>
+                <p>We will notify users of any material changes to this Privacy Policy via email or platform notification. The "Last Updated" date at the top of this page will reflect the latest changes.</p>
+
+                <h3>24. Contact Information</h3>
+                <p>If you have any questions about these Terms of Service or Privacy Policy, please contact us:</p>
+                <ul>
+                    <li><strong>Email:</strong> innovation@lsu.ac.zw</li>
+                    <li><strong>Location:</strong> Innovation Hub Office, Lupane State University Main Campus</li>
+                    <li><strong>Phone:</strong> +263 123 456 789</li>
+                </ul>
+
+                <div class="highlight">
+                    <strong>Important:</strong> By using the Innovation Hub platform, you acknowledge that you have read, understood, and agree to these Terms of Service and Privacy Policy. Thank you for being part of our innovation community!
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="copyright">
+                © 2026 LSU Innovation Hub. All rights reserved.
+            </div>
+            <div class="footer-links">
+                <a href="{{ url_for('terms') }}">Terms of Use</a>
+                <a href="{{ url_for('privacy') }}">Privacy Policy</a>
+                <a href="{{ url_for('contact') }}">Contact Us</a>
+            </div>
+            <div class="admin-hint">
+                Type ADMIN, DEV or SUPERV &middot; Click the corners
+            </div>
+        </footer>
+
+    </div><!-- /page-body -->
+
+    <script>
+        function openMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'block';
+            document.getElementById('mobileNavMenu').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'none';
+            document.getElementById('mobileNavMenu').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    </script>
+</body>
+</html>

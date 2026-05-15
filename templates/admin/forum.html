@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Forum Moderation - Admin | Innovation Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #3498db;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #2c3e50;
+            color: #fff;
+            min-height: 100vh;
+            position: fixed;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+            height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            margin: 4px 0;
+            cursor: pointer;
+            color: #ecf0f1;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: #34495e;
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-item.logout {
+            margin-top: auto;
+            border-top: 1px solid #34495e;
+            padding-top: 20px;
+        }
+
+        .nav-item img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+
+        .nav-item:hover img {
+            opacity: 1;
+        }
+
+        .nav-item.active img {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .admin-badge {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .admin-badge {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+            }
+            
+            .stat-number {
+                font-size: 24px;
+                margin-bottom: 0;
+            }
+            
+            .stat-label {
+                margin-bottom: 0;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.topics {
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-card.posts {
+            border-left: 4px solid #27ae60;
+        }
+
+        .stat-card.reported {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .stat-card.users {
+            border-left: 4px solid #f39c12;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 480px) {
+            .tabs {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .tab {
+                width: 100%;
+            }
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+
+        /* Desktop Table */
+        .desktop-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .desktop-table {
+                display: none;
+            }
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            color: #555;
+            font-weight: 500;
+            font-size: 13px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Mobile Cards */
+        .mobile-cards {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-cards {
+                display: block;
+            }
+            
+            .topic-card {
+                background: white;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                border-left: 4px solid #3498db;
+            }
+            
+            .topic-card.pinned {
+                border-left-color: #f39c12;
+            }
+            
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 10px;
+            }
+            
+            .card-title {
+                font-weight: 600;
+                color: #2c3e50;
+                font-size: 16px;
+                flex: 1;
+            }
+            
+            .card-badges {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+            
+            .card-author {
+                color: #3498db;
+                font-weight: 500;
+                font-size: 14px;
+                margin-bottom: 5px;
+            }
+            
+            .card-meta {
+                display: flex;
+                gap: 15px;
+                margin: 10px 0;
+                font-size: 13px;
+                color: #666;
+                flex-wrap: wrap;
+            }
+            
+            .card-project {
+                background: #e3f2fd;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #3498db;
+                display: inline-block;
+            }
+            
+            .card-stats {
+                display: flex;
+                gap: 15px;
+                margin: 10px 0;
+                padding: 10px 0;
+                border-top: 1px solid #f0f0f0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .card-stat {
+                flex: 1;
+                text-align: center;
+            }
+            
+            .card-stat-value {
+                font-weight: 600;
+                color: #333;
+            }
+            
+            .card-stat-label {
+                font-size: 11px;
+                color: #888;
+            }
+            
+            .card-actions {
+                display: flex;
+                gap: 8px;
+                margin-top: 15px;
+                flex-wrap: wrap;
+            }
+            
+            .card-actions .action-btn {
+                flex: 1;
+                text-align: center;
+                min-width: 70px;
+            }
+        }
+
+        .topic-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .topic-title a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .topic-title a:hover {
+            color: #3498db;
+        }
+
+        .author-name {
+            color: #3498db;
+            font-weight: 500;
+        }
+
+        .post-preview {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #666;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .badge.project {
+            background: #e3f2fd;
+            color: #3498db;
+        }
+
+        .badge.reported {
+            background: #fdeded;
+            color: #e74c3c;
+        }
+
+        .badge.pinned {
+            background: #fff3e0;
+            color: #f39c12;
+        }
+
+        .action-cell {
+            white-space: nowrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        @media (max-width: 480px) {
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn.view {
+            background: #3498db;
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .action-btn.pin {
+            background: #f39c12;
+            color: white;
+        }
+
+        .action-btn.unpin {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Reported Items */
+        .reported-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+        }
+
+        .reported-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .reported-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .reported-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        .reported-content {
+            flex: 1;
+        }
+
+        .reported-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .reported-meta {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .reported-reason {
+            background: #fdeded;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #e74c3c;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .reported-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Flash Messages */
+        .flash-message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .flash-message {
+                position: fixed;
+                top: 70px;
+                right: 15px;
+                left: 15px;
+                z-index: 2000;
+            }
+        }
+
+        .flash-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" onclick="toggleSidebar()">☰</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Innovation Hub</h2>
+            <p>Admin Panel</p>
+        </div>
+
+        <div class="nav-menu">
+            <a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
+                Dashboard
+            </a>
+            <a href="{{ url_for('admin.users') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/group.png') }}" alt="Users">
+                Users
+            </a>
+            <a href="{{ url_for('admin.projects') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/layers.png') }}" alt="Projects">
+                Projects
+            </a>
+            <a href="{{ url_for('admin.applications') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/form.png') }}" alt="Applications">
+                Applications
+            </a>
+            <a href="{{ url_for('admin.forum') }}" class="nav-item active">
+                <img src="{{ url_for('static', filename='Icons/discussion.png') }}" alt="Forum">
+                Forum
+            </a>
+            <a href="{{ url_for('admin.settings') }}" class="nav-item">
+                <img src="{{ url_for('static', filename='Icons/settings.png') }}" alt="Settings">
+                Settings
+            </a>
+            <a href="{{ url_for('admin.signout') }}" class="nav-item logout">
+                <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout">
+                Sign Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Forum Moderation</h1>
+                <p>Manage discussions and moderate content</p>
+            </div>
+            <div class="admin-badge">
+                {{ current_user.email }}
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card topics">
+                <div class="stat-label">Total Topics</div>
+                <div class="stat-number">{{ total_topics }}</div>
+            </div>
+            <div class="stat-card posts">
+                <div class="stat-label">Total Posts</div>
+                <div class="stat-number">{{ total_posts }}</div>
+            </div>
+            <div class="stat-card reported">
+                <div class="stat-label">Reported</div>
+                <div class="stat-number">{{ reported_count }}</div>
+            </div>
+            <div class="stat-card users">
+                <div class="stat-label">Active Users</div>
+                <div class="stat-number">{{ active_users }}</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('topics')">📋 Topics</button>
+            <button class="tab" onclick="showTab('reported')">🚨 Reported</button>
+            <button class="tab" onclick="showTab('pinned')">📌 Pinned</button>
+        </div>
+
+        <!-- Topics Tab -->
+        <div id="topics-tab" class="tab-content">
+            <!-- Desktop Table -->
+            <table class="desktop-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Project</th>
+                        <th>Posts</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topic in topics %}
+                    <tr>
+                        <td>
+                            <div class="topic-title">
+                                <a href="{{ url_for('view_topic', topic_id=topic.id) }}" target="_blank">
+                                    {{ topic.title }}
+                                </a>
+                            </div>
+                            {% if topic.is_pinned %}
+                            <span class="badge pinned">📌 Pinned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="author-name">{{ topic.author.username if topic.author else 'Unknown' }}</span>
+                            <div style="font-size: 11px; color: #888;">{{ topic.author.email if topic.author }}</div>
+                        </td>
+                        <td>
+                            {% if topic.project %}
+                            <span class="badge project">{{ topic.project.title }}</span>
+                            {% else %}
+                            <span style="color: #888; font-size: 12px;">General</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ topic.posts|length }}</td>
+                        <td>{{ topic.created_at.strftime('%Y-%m-%d') if topic.created_at else '—' }}</td>
+                        <td class="action-cell">
+                            <div class="action-buttons">
+                                <a href="{{ url_for('view_topic', topic_id=topic.id) }}" target="_blank">
+                                    <button class="action-btn view">View</button>
+                                </a>
+                                {% if not topic.is_pinned %}
+                                <form action="{{ url_for('admin.pin_topic', topic_id=topic.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="action-btn pin" onclick="return confirm('Pin this topic?')">📌 Pin</button>
+                                </form>
+                                {% endif %}
+                                <form action="{{ url_for('admin.delete_topic', topic_id=topic.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="action-btn delete" onclick="return confirm('Delete this topic? All posts will be deleted.')">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>No topics yet</h3>
+                            <p>When users create forum topics, they'll appear here</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Mobile Cards -->
+            <div class="mobile-cards">
+                {% for topic in topics %}
+                <div class="topic-card {% if topic.is_pinned %}pinned{% endif %}">
+                    <div class="card-header">
+                        <div class="card-title">{{ topic.title }}</div>
+                        <div class="card-badges">
+                            {% if topic.is_pinned %}
+                            <span class="badge pinned">📌 Pinned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-author">{{ topic.author.username if topic.author else 'Unknown' }}</div>
+                    
+                    <div class="card-meta">
+                        <span>📧 {{ topic.author.email if topic.author }}</span>
+                        <span>📅 {{ topic.created_at.strftime('%Y-%m-%d') if topic.created_at }}</span>
+                    </div>
+                    
+                    <div>
+                        {% if topic.project %}
+                        <span class="card-project">{{ topic.project.title }}</span>
+                        {% else %}
+                        <span class="badge" style="background: #f0f0f0;">General</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-stats">
+                        <div class="card-stat">
+                            <div class="card-stat-value">{{ topic.posts|length }}</div>
+                            <div class="card-stat-label">Posts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <a href="{{ url_for('view_topic', topic_id=topic.id) }}" target="_blank" style="flex: 1;">
+                            <button class="action-btn view" style="width: 100%;">View</button>
+                        </a>
+                        {% if not topic.is_pinned %}
+                        <form action="{{ url_for('admin.pin_topic', topic_id=topic.id) }}" method="POST" style="flex: 1;">
+                            <button type="submit" class="action-btn pin" style="width: 100%;" onclick="return confirm('Pin this topic?')">📌 Pin</button>
+                        </form>
+                        {% endif %}
+                        <form action="{{ url_for('admin.delete_topic', topic_id=topic.id) }}" method="POST" style="flex: 1;">
+                            <button type="submit" class="action-btn delete" style="width: 100%;" onclick="return confirm('Delete this topic?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No topics yet</h3>
+                    <p>When users create forum topics, they'll appear here</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reported Tab (Hidden by default) -->
+        <div id="reported-tab" class="tab-content" style="display: none;">
+            <div class="table-container">
+                {% if reported_items %}
+                    {% for item in reported_items %}
+                    <div class="reported-item">
+                        <div class="reported-content">
+                            <div class="reported-title">{{ item.title }}</div>
+                            <div class="reported-meta">
+                                <span class="reported-reason">{{ item.reason }}</span>
+                                Reported by {{ item.reported_by }} • {{ item.reported_at }}
+                            </div>
+                        </div>
+                        <div class="reported-actions">
+                            <button class="action-btn view">View</button>
+                            <button class="action-btn delete">Delete</button>
+                            <button class="action-btn pin">Dismiss</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🚨</div>
+                        <h3>No reported content</h3>
+                        <p>All clean! No reports to review</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pinned Tab (Hidden by default) -->
+        <div id="pinned-tab" class="tab-content" style="display: none;">
+            <!-- Desktop Table -->
+            <table class="desktop-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Project</th>
+                        <th>Pinned Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topic in pinned_topics %}
+                    <tr>
+                        <td>
+                            <div class="topic-title">
+                                <a href="{{ url_for('view_topic', topic_id=topic.id) }}" target="_blank">
+                                    {{ topic.title }}
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="author-name">{{ topic.author.username if topic.author else 'Unknown' }}</span>
+                        </td>
+                        <td>
+                            {% if topic.project %}
+                            <span class="badge project">{{ topic.project.title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ topic.pinned_at.strftime('%Y-%m-%d') if topic.pinned_at else '—' }}</td>
+                        <td>
+                            <form action="{{ url_for('admin.unpin_topic', topic_id=topic.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="action-btn unpin">Unpin</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="empty-state-icon">📌</div>
+                            <h3>No pinned topics</h3>
+                            <p>Pin important topics to keep them at the top</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Mobile Cards for Pinned -->
+            <div class="mobile-cards">
+                {% for topic in pinned_topics %}
+                <div class="topic-card pinned">
+                    <div class="card-header">
+                        <div class="card-title">{{ topic.title }}</div>
+                    </div>
+                    
+                    <div class="card-author">{{ topic.author.username if topic.author else 'Unknown' }}</div>
+                    
+                    <div class="card-meta">
+                        <span>📌 Pinned on {{ topic.pinned_at.strftime('%Y-%m-%d') if topic.pinned_at }}</span>
+                    </div>
+                    
+                    {% if topic.project %}
+                    <div>
+                        <span class="card-project">{{ topic.project.title }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-actions">
+                        <form action="{{ url_for('admin.unpin_topic', topic_id=topic.id) }}" method="POST" style="flex: 1;">
+                            <button type="submit" class="action-btn unpin" style="width: 100%;">Unpin</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📌</div>
+                    <h3>No pinned topics</h3>
+                    <p>Pin important topics to keep them at the top</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Auto-hide flash messages
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 3000);
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        // Close sidebar when a link is clicked (mobile)
+        document.querySelectorAll('#sidebar a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

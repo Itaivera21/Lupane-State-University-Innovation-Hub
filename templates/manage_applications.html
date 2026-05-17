@@ -14,16 +14,100 @@
 
         body {
             background: #dfe9f5;
-            display: flex;
             min-height: 100vh;
         }
 
-        /* Mobile Menu Button */
+        /* Simple Header - No Sidebar */
+        .top-header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-area img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .logo-text:hover {
+            color: #0066cc;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .user-greeting {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .user-greeting strong {
+            color: #0066cc;
+        }
+
+        .btn-logout {
+            background: #fee;
+            color: #ff4444;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #ff4444;
+            color: white;
+        }
+
+        .btn-dashboard {
+            background: #f8f9fa;
+            color: #333;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .btn-dashboard:hover {
+            background: #e6f2ff;
+            border-color: #0066cc;
+            color: #0066cc;
+        }
+
+        /* Mobile Menu Button for Top Header */
         .mobile-menu-btn {
             display: none;
             position: fixed;
             top: 15px;
-            left: 15px;
+            right: 15px;
             z-index: 1001;
             background: #0066cc;
             color: white;
@@ -37,147 +121,115 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        /* Fixed Sidebar - White (Student Theme) */
-        nav {
+        /* Mobile Slide-in Menu */
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+
+        .mobile-nav-menu {
             position: fixed;
             top: 0;
-            left: 0;
-            background: #fff;
-            width: 250px;
-            height: 100vh;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 2001;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
-            z-index: 1000;
-            transition: transform 0.3s ease;
+        }
+
+        .mobile-nav-menu.active {
+            right: 0;
+        }
+
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav-header h3 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .close-menu {
+            font-size: 28px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .close-menu:hover {
+            color: #ff4444;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            flex: 1;
+        }
+
+        .mobile-nav-links li {
+            margin: 15px 0;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 10px;
+            color: #555;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: #e6f2ff;
+            color: #0066cc;
+        }
+
+        .mobile-auth {
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-auth a {
+            text-align: center;
         }
 
         @media (max-width: 768px) {
-            nav {
-                transform: translateX(-100%);
-            }
-            nav.active {
-                transform: translateX(0);
-            }
             .mobile-menu-btn {
                 display: flex;
             }
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .logo img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-
-        .logo-text {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 120px);
-            justify-content: space-between;
-        }
-
-        ul {
-            list-style: none;
-            padding: 20px 0;
-        }
-
-        li {
-            margin: 5px 0;
-        }
-
-        li a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: #555;
-            transition: all 0.3s ease;
-        }
-
-        li a:hover {
-            background: #f5f5f5;
-        }
-
-        li a.active {
-            background: #e6f2ff;
-            color: #0066cc;
-            border-left: 4px solid #0066cc;
-        }
-
-        li a img {
-            width: 25px;
-            height: 25px;
-            margin-right: 15px;
-        }
-
-        .nav-item {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .logout-section {
-            padding: 20px;
-            border-top: 2px solid #f0f0f0;
-            margin-top: auto;
-        }
-
-        .logout-btn {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            background: #fee;
-            color: #ff4444;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .logout-btn:hover {
-            background: #ff4444;
-            color: white;
-        }
-
-        .logout-btn img {
-            width: 25px;
-            height: 25px;
-            margin-right: 15px;
-        }
-
-        .logout-btn:hover img {
-            filter: brightness(0) invert(1);
+            .top-header .header-actions {
+                display: none;
+            }
         }
 
         .main-content {
-            flex: 1;
-            margin-left: 250px;
             padding: 30px;
-            transition: margin-left 0.3s ease;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 0;
                 padding: 70px 15px 20px 15px;
-                width: 100%;
             }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
         }
 
         .page-header {
@@ -200,7 +252,7 @@
             margin-top: 5px;
         }
 
-        /* Tabs - Pill style */
+        /* Tabs */
         .tabs {
             display: flex;
             gap: 10px;
@@ -394,7 +446,6 @@
 
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 0;
                 padding: 70px 15px 20px 15px;
             }
 
@@ -424,147 +475,157 @@
     </style>
 </head>
 <body>
-    <div class="mobile-menu-btn" onclick="toggleMenu()">☰</div>
 
-    <nav id="sidebar">
-        <div class="logo">
+    <!-- Mobile Menu Button (for mobile only) -->
+    <div class="mobile-menu-btn" onclick="openMobileMenu()">☰</div>
+
+    <!-- Mobile Slide-in Menu -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <div class="mobile-nav-header">
+            <h3>Innovation Hub</h3>
+            <span class="close-menu" onclick="closeMobileMenu()">×</span>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
+            <li><a href="{{ url_for('projects') }}">Projects</a></li>
+            <li><a href="{{ url_for('chat.chats') }}">Chats</a></li>
+            <li><a href="{{ url_for('forum') }}">Forum</a></li>
+            <li><a href="{{ url_for('manage_applications') }}" class="active">Manage Applications</a></li>
+        </ul>
+        <div class="mobile-auth">
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout">Log out</a>
+        </div>
+    </div>
+
+    <!-- Top Header (Desktop) -->
+    <div class="top-header">
+        <div class="logo-area" onclick="window.location.href='{{ url_for('dashboard.dashboard') }}'">
             <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="Logo">
             <span class="logo-text">Innovation Hub</span>
         </div>
-
-        <div class="nav-menu">
-            <ul>
-                <li><a href="{{ url_for('dashboard.dashboard') }}"><img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard"><span class="nav-item">Dashboard</span></a></li>
-                <li><a href="{{ url_for('auth.profile') }}"><img src="{{ url_for('static', filename='Icons/profile.png') }}" alt="Profile"><span class="nav-item">Profile</span></a></li>
-                <li><a href="{{ url_for('projects') }}"><img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Projects"><span class="nav-item">Projects</span></a></li>
-                <li><a href="{{ url_for('chat.chats') }}"><img src="{{ url_for('static', filename='Icons/conversation.png') }}" alt="Chats"><span class="nav-item">Chats</span></a></li>
-                <li><a href="{{ url_for('forum') }}"><img src="{{ url_for('static', filename='Icons/About.png') }}" alt="Forum"><span class="nav-item">Forum</span></a></li>
-                <li><a href="{{ url_for('manage_applications') }}" class="active"><img src="{{ url_for('static', filename='Icons/projects.png') }}" alt="Manage"><span class="nav-item">Manage Applications</span></a></li>
-                {% if current_user.is_authenticated and current_user.is_supervisor %}
-                <li><a href="{{ url_for('supervisor.dashboard') }}"><img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Supervisor"><span class="nav-item">Supervisor Panel</span></a></li>
-                {% endif %}
-            </ul>
-
-            <div class="logout-section">
-                <a href="{{ url_for('auth.logout') }}" class="logout-btn"><img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="Logout"><span class="nav-item">Log out</span></a>
-            </div>
+        <div class="header-actions">
+            <span class="user-greeting">Welcome, <strong>{{ current_user.get_full_name() or current_user.username }}</strong></span>
+            <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout">Log out</a>
         </div>
-    </nav>
+    </div>
 
     <div class="main-content">
-        <div class="container">
-            <div class="page-header">
-                <div>
-                    <h1>Manage Applications</h1>
-                    <p class="subtitle">Review and manage join requests for your projects</p>
-                </div>
+        <div class="page-header">
+            <div>
+                <h1>Manage Applications</h1>
+                <p class="subtitle">Review and manage join requests for your projects</p>
             </div>
-
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Tabs -->
-            <div class="tabs">
-                <button class="tab active" data-tab="applications">Pending Applications</button>
-                <button class="tab" data-tab="approved">Team Members</button>
-            </div>
-
-            <!-- Tab 1: Pending Applications -->
-            <div id="applications-tab" class="tab-content active">
-                {% if pending_applications %}
-                    {% for app in pending_applications %}
-                    <div class="card application-card">
-                        <div class="application-header">
-                            <span class="applicant-name">{{ app.applicant.get_full_name() if app.applicant else app.applicant.username if app.applicant else 'Unknown' }}</span>
-                            <span class="project-name">{{ app.project.title if app.project else 'Unknown Project' }}</span>
-                        </div>
-
-                        <div class="application-detail">
-                            <strong>Email:</strong> {{ app.applicant.email if app.applicant else 'N/A' }}
-                        </div>
-
-                        <div class="application-detail">
-                            <strong>Faculty/Department:</strong> {{ app.applicant.department or app.applicant.faculty or 'Not specified' if app.applicant else 'N/A' }}
-                        </div>
-
-                        {% if app.message %}
-                        <div class="application-detail">
-                            <strong>Message:</strong> {{ app.message }}
-                        </div>
-                        {% endif %}
-
-                        <div class="application-detail">
-                            <strong>Applied:</strong> {{ app.applied_at.strftime('%B %d, %Y at %I:%M %p') if app.applied_at else 'Recently' }}
-                        </div>
-
-                        <span class="status-badge status-pending">
-                            PENDING
-                        </span>
-
-                        <div class="action-buttons">
-                            <form action="{{ url_for('handle_application', application_id=app.id) }}" method="POST" style="display: inline;">
-                                <button type="submit" name="action" value="approve" class="btn btn-approve">Approve</button>
-                            </form>
-                            <form action="{{ url_for('handle_application', application_id=app.id) }}" method="POST" style="display: inline;">
-                                <button type="submit" name="action" value="reject" class="btn btn-reject">Reject</button>
-                            </form>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="no-data">
-                        <p>No pending applications for your projects.</p>
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- Tab 2: Team Members (FIXED: use applicant not user) -->
-            <div id="approved-tab" class="tab-content">
-                {% if approved_members %}
-                    {% for member in approved_members %}
-                    <div class="card member-card">
-                        <div class="member-header">
-                            <span class="member-name">{{ member.applicant.get_full_name() if member.applicant else member.applicant.username if member.applicant else 'Unknown' }}</span>
-                            <span class="project-ref">{{ member.project.title if member.project else 'Unknown Project' }}</span>
-                        </div>
-
-                        <div class="member-detail">
-                            <strong>Email:</strong> {{ member.applicant.email if member.applicant else 'N/A' }}
-                        </div>
-
-                        <div class="member-detail">
-                            <strong>Role:</strong>
-                            {% if member.applicant.id == member.project.student_id %}
-                            Project Lead
-                            {% elif member.applicant.is_supervisor %}
-                            Supervisor
-                            {% else %}
-                            Team Member
-                            {% endif %}
-                        </div>
-
-                        <div class="member-detail">
-                            <strong>Joined:</strong> {{ member.approved_at.strftime('%B %d, %Y') if member.approved_at else 'Recently' }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="no-data">
-                        <p>No team members yet. Approve applications to build your team.</p>
-                    </div>
-                {% endif %}
-            </div>
-
-            <a href="{{ url_for('dashboard.dashboard') }}" class="back-link">← Back to Dashboard</a>
         </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="applications">Pending Applications</button>
+            <button class="tab" data-tab="approved">Team Members</button>
+        </div>
+
+        <!-- Tab 1: Pending Applications -->
+        <div id="applications-tab" class="tab-content active">
+            {% if pending_applications %}
+                {% for app in pending_applications %}
+                <div class="card application-card">
+                    <div class="application-header">
+                        <span class="applicant-name">{{ app.applicant.get_full_name() if app.applicant else app.applicant.username if app.applicant else 'Unknown' }}</span>
+                        <span class="project-name">{{ app.project.title if app.project else 'Unknown Project' }}</span>
+                    </div>
+
+                    <div class="application-detail">
+                        <strong>Email:</strong> {{ app.applicant.email if app.applicant else 'N/A' }}
+                    </div>
+
+                    <div class="application-detail">
+                        <strong>Faculty/Department:</strong> {{ app.applicant.department or app.applicant.faculty or 'Not specified' if app.applicant else 'N/A' }}
+                    </div>
+
+                    {% if app.message %}
+                    <div class="application-detail">
+                        <strong>Message:</strong> {{ app.message }}
+                    </div>
+                    {% endif %}
+
+                    <div class="application-detail">
+                        <strong>Applied:</strong> {{ app.applied_at.strftime('%B %d, %Y at %I:%M %p') if app.applied_at else 'Recently' }}
+                    </div>
+
+                    <span class="status-badge status-pending">
+                        PENDING
+                    </span>
+
+                    <div class="action-buttons">
+                        <form action="{{ url_for('handle_application', application_id=app.id) }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="btn btn-approve">Approve</button>
+                        </form>
+                        <form action="{{ url_for('handle_application', application_id=app.id) }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn btn-reject">Reject</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <p>No pending applications for your projects.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Tab 2: Team Members -->
+        <div id="approved-tab" class="tab-content">
+            {% if approved_members %}
+                {% for member in approved_members %}
+                <div class="card member-card">
+                    <div class="member-header">
+                        <span class="member-name">{{ member.applicant.get_full_name() if member.applicant else member.applicant.username if member.applicant else 'Unknown' }}</span>
+                        <span class="project-ref">{{ member.project.title if member.project else 'Unknown Project' }}</span>
+                    </div>
+
+                    <div class="member-detail">
+                        <strong>Email:</strong> {{ member.applicant.email if member.applicant else 'N/A' }}
+                    </div>
+
+                    <div class="member-detail">
+                        <strong>Role:</strong>
+                        {% if member.applicant.id == member.project.student_id %}
+                        Project Lead
+                        {% elif member.applicant.is_supervisor %}
+                        Supervisor
+                        {% else %}
+                        Team Member
+                        {% endif %}
+                    </div>
+
+                    <div class="member-detail">
+                        <strong>Joined:</strong> {{ member.approved_at.strftime('%B %d, %Y') if member.approved_at else 'Recently' }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <p>No team members yet. Approve applications to build your team.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('dashboard.dashboard') }}" class="back-link">← Back to Dashboard</a>
     </div>
 
     <script>
@@ -597,27 +658,30 @@
             });
         }, 3000);
 
-        // Mobile menu toggle
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
+        // Mobile menu functions
+        function openMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'block';
+            document.getElementById('mobileNavMenu').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
+        function closeMobileMenu() {
+            document.getElementById('mobileNavOverlay').style.display = 'none';
+            document.getElementById('mobileNavMenu').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close mobile menu when clicking outside
         document.addEventListener('click', function(event) {
-            var sidebar = document.getElementById('sidebar');
-            var menuBtn = document.querySelector('.mobile-menu-btn');
+            const overlay = document.getElementById('mobileNavOverlay');
+            const menu = document.getElementById('mobileNavMenu');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
             if (window.innerWidth <= 768) {
-                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
+                if (overlay && menu && menuBtn && !menu.contains(event.target) && !menuBtn.contains(event.target) && menu.classList.contains('active')) {
+                    closeMobileMenu();
                 }
             }
-        });
-
-        document.querySelectorAll('#sidebar a').forEach(function(link) {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    document.getElementById('sidebar').classList.remove('active');
-                }
-            });
         });
     </script>
 </body>

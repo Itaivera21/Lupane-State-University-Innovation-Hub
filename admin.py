@@ -629,7 +629,8 @@ def unpin_topic(topic_id):
     flash(f'Topic "{topic.title}" unpinned', 'success')
     return redirect(url_for('admin.forum'))
 
-@admin_bp.route('/forum/topic/<int:topic_id>/delete', methods(['POST'])
+# FIXED: Corrected syntax error - changed methods(['POST']) to methods=['POST']
+@admin_bp.route('/forum/topic/<int:topic_id>/delete', methods=['POST'])
 @login_required
 @admin_required
 def delete_topic(topic_id):

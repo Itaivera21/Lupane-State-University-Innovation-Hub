@@ -2,7 +2,7 @@
 # This file handles all dashboard-related routes for the Innovation Hub
 # It works alongside your main app.py but keeps dashboard logic separate
 
-from flask import Blueprint, render_template, jsonify, session, request
+from flask import Blueprint, render_template, jsonify, session, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from models import db, User, Project, ProjectApplication, ForumTopic, ForumPost
 from datetime import datetime, timedelta
@@ -32,10 +32,10 @@ def dashboard():
 
 def render_student_dashboard():
     """Render dashboard for regular students"""
-    # Get user's active projects (projects they created OR joined)
-    created_projects = Project.query.filter_by(
-        student_id=current_user.id, 
-        status='active'
+    # Get user's projects (both active AND completed - FIXED)
+    created_projects = Project.query.filter(
+        Project.student_id == current_user.id,
+        Project.status.in_(['active', 'completed'])
     ).all()
     
     # Get projects they applied to and were approved
@@ -67,7 +67,7 @@ def render_student_dashboard():
     if user_skills:
         all_active_projects = Project.query.filter(
             and_(
-                Project.status == 'active',
+                Project.status.in_(['active', 'completed']),
                 Project.student_id != current_user.id
             )
         ).all()
@@ -106,9 +106,10 @@ def render_student_dashboard():
 
 def render_supervisor_dashboard():
     """Render dashboard for supervisors"""
-    # Get projects supervised by this supervisor
-    supervised_projects = Project.query.filter_by(
-        supervisor_id=current_user.id
+    # Get projects supervised by this supervisor (both active AND completed)
+    supervised_projects = Project.query.filter(
+        Project.supervisor_id == current_user.id,
+        Project.status.in_(['active', 'completed', 'pending_supervision'])
     ).all()
     
     # Get pending supervision requests (projects assigned to this supervisor but pending)
@@ -172,8 +173,11 @@ def get_dashboard_stats():
     """
     try:
         if current_user.is_supervisor:
-            # Supervisor stats
-            supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
+            # Supervisor stats (include completed projects - FIXED)
+            supervised_projects = Project.query.filter(
+                Project.supervisor_id == current_user.id,
+                Project.status.in_(['active', 'completed', 'pending_supervision'])
+            ).all()
             pending_requests = Project.query.filter_by(
                 supervisor_id=current_user.id,
                 status='pending_supervision'
@@ -190,11 +194,11 @@ def get_dashboard_stats():
                 }
             })
         else:
-            # Student stats
+            # Student stats (include completed projects - FIXED)
             active_projects = Project.query.filter(
                 and_(
                     Project.student_id == current_user.id,
-                    Project.status == 'active'
+                    Project.status.in_(['active', 'completed'])
                 )
             ).count()
             
@@ -250,13 +254,16 @@ def refresh_projects():
     Useful for when user completes a task
     """
     if current_user.is_supervisor:
-        supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
+        supervised_projects = Project.query.filter(
+            Project.supervisor_id == current_user.id,
+            Project.status.in_(['active', 'completed', 'pending_supervision'])
+        ).all()
         return render_template('partials/supervisor_projects.html', 
                              projects=supervised_projects[:3])
     else:
-        created_projects = Project.query.filter_by(
-            student_id=current_user.id, 
-            status='active'
+        created_projects = Project.query.filter(
+            Project.student_id == current_user.id,
+            Project.status.in_(['active', 'completed'])
         ).all()
         
         approved_apps = ProjectApplication.query.filter_by(
@@ -330,7 +337,7 @@ def get_time_based_greeting():
     hour = datetime.now().hour
     if hour < 12:
         return "Good morning"
-    elif hour < 17:
+    elif hour < 18:
         return "Good afternoon"
     else:
         return "Good evening"

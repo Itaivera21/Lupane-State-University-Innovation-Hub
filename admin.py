@@ -595,7 +595,16 @@ def forum():
     total_topics = ForumTopic.query.count()
     total_posts = ForumPost.query.count()
     reported_count = 0
-    active_users = User.query.filter_by(is_dev=False).filter(User.last_login > (datetime.utcnow() - timedelta(days=7))).count()
+    
+    # FIXED: Handle None values in last_login for active users
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    active_users = User.query.filter(
+        and_(
+            User.is_dev == False,
+            User.last_login.isnot(None),
+            User.last_login > week_ago
+        )
+    ).count()
 
     return render_template('admin/forum.html',
         topics=topics,

@@ -952,7 +952,7 @@
                         {% endif %}
                     </div>
 
-                    <!-- Three dots menu - UPDATED WITH WORKING LINKS -->
+                    <!-- Three dots menu -->
                     <div class="menu-container">
                         <div class="menu-trigger" onclick="toggleMenuDropdown()">⋮</div>
                         <div class="dropdown-menu" id="chatDropdownMenu">
@@ -1134,9 +1134,10 @@
     </div>
 
     <script>
-        const currentProjectId = {{ current_project.id if current_project else 'null' }};
+        // FIXED: Removed quotes around null and false - these are JavaScript values, not strings
+        const currentProjectId = {{ current_project.id if current_project else null }};
         const currentUserId = {{ current_user.id }};
-        const isProjectOwner = {{ (current_user.id == current_project.student_id) if current_project else 'false' }};
+        const isProjectOwner = {{ (current_user.id == current_project.student_id) if current_project else false }};
         const projectOwnerId = {{ current_project.student_id if current_project else 0 }};
         const projectSupervisorId = {{ current_project.supervisor_id if current_project else 0 }};
 
@@ -1323,7 +1324,6 @@
 
                 if (response.ok) {
                     showNotification(newMuteState ? '🔇 Notifications muted' : '🔔 Notifications unmuted', 'success');
-                    // Close dropdown
                     document.getElementById('chatDropdownMenu').classList.remove('show');
                 } else {
                     showNotification('Failed to change mute status', 'error');

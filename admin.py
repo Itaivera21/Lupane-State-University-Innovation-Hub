@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
+from sqlalchemy import and_
 from models import db, User, Project, ProjectApplication, ForumTopic, ForumPost, Announcement, SystemVariable, Group, GroupMember, ChatMessage, ChatResource
 from datetime import datetime, timedelta
 import secrets
@@ -269,7 +270,8 @@ def users():
     elif filter_type == 'admins':
         query = query.filter_by(is_admin=True)
     elif filter_type == 'active':
-        query = query.filter(User.last_login >= month_ago)
+        # FIXED: Handle None values in last_login
+        query = query.filter(and_(User.last_login.isnot(None), User.last_login >= month_ago))
     elif filter_type == 'new':
         query = query.filter(User.created_at >= month_ago)
 
@@ -627,7 +629,7 @@ def unpin_topic(topic_id):
     flash(f'Topic "{topic.title}" unpinned', 'success')
     return redirect(url_for('admin.forum'))
 
-@admin_bp.route('/forum/topic/<int:topic_id>/delete', methods=['POST'])
+@admin_bp.route('/forum/topic/<int:topic_id>/delete', methods(['POST'])
 @login_required
 @admin_required
 def delete_topic(topic_id):

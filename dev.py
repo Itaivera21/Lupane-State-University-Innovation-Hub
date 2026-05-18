@@ -11,6 +11,7 @@ import sys
 import platform
 import shutil
 import subprocess
+import io
 
 # Try to import optional dependencies
 try:
@@ -32,21 +33,36 @@ def dev_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Helper function to get database size for SQLite
+# Helper function to get database size for MySQL/TiDB
 def get_database_size():
-    """Get database file size and table count for SQLite"""
+    """Get database size and table count for MySQL/TiDB"""
     try:
+        # Get database name from connection URI
         db_uri = current_app.config['SQLALCHEMY_DATABASE_URI']
-        # Extract file path from sqlite:///innovation_hub.db
-        if db_uri.startswith('sqlite:///'):
-            db_path = db_uri.replace('sqlite:///', '')
-            if os.path.exists(db_path):
-                size_bytes = os.path.getsize(db_path)
-                size_mb = size_bytes / (1024 * 1024)
-                # Get table count
-                result = db.session.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'")
-                table_count = result.scalar()
+        
+        # Extract database name from MySQL URI
+        match = re.search(r'mysql\+pymysql://[^:]+:[^@]+@[^/]+/([^?]+)', db_uri)
+        if match:
+            db_name = match.group(1)
+            
+            # Get table count
+            result = db.session.execute(f"""
+                SELECT COUNT(*) FROM information_schema.tables 
+                WHERE table_schema = '{db_name}'
+            """)
+            table_count = result.scalar()
+            
+            # Get database size
+            result = db.session.execute(f"""
+                SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
+                FROM information_schema.tables 
+                WHERE table_schema = '{db_name}'
+            """)
+            size_mb = result.scalar()
+            
+            if size_mb:
                 return f"{size_mb:.2f} MB", table_count
+        
         return "Unknown", 0
     except Exception as e:
         print(f"Error getting DB size: {e}")
@@ -80,7 +96,7 @@ def get_server_uptime():
 def get_last_backup():
     backup_dir = os.path.join(current_app.root_path, 'backups')
     if os.path.exists(backup_dir):
-        backups = [f for f in os.listdir(backup_dir) if f.endswith('.db') or f.endswith('.sql')]
+        backups = [f for f in os.listdir(backup_dir) if f.endswith('.sql')]
         if backups:
             latest = max(backups, key=lambda x: os.path.getctime(os.path.join(backup_dir, x)))
             ctime = os.path.getctime(os.path.join(backup_dir, latest))
@@ -103,6 +119,65 @@ def get_log_count():
 def setup_logging():
     log_dir = os.path.join(current_app.root_path, 'logs')
     os.makedirs(log_dir, exist_ok=True)
+
+# Helper function to get database tables for SQL dump
+def get_all_tables():
+    """Get all table names from the database"""
+    result = db.session.execute("SHOW TABLES")
+    return [row[0] for row in result.fetchall()]
+
+# Helper function to generate SQL dump
+def generate_sql_dump():
+    """Generate SQL dump of entire database"""
+    dump_lines = []
+    
+    # Add header
+    dump_lines.append("-- Innovation Hub Database Backup")
+    dump_lines.append(f"-- Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    dump_lines.append("-- ------------------------------------------------------")
+    dump_lines.append("")
+    
+    # Get all tables
+    tables = get_all_tables()
+    
+    for table in tables:
+        # Get CREATE TABLE statement
+        result = db.session.execute(f"SHOW CREATE TABLE `{table}`")
+        row = result.fetchone()
+        if row:
+            create_stmt = row[1]
+            dump_lines.append(f"-- Table structure for `{table}`")
+            dump_lines.append(create_stmt + ";")
+            dump_lines.append("")
+            
+            # Get table data
+            result = db.session.execute(f"SELECT * FROM `{table}`")
+            columns = result.keys()
+            
+            # Generate INSERT statements
+            for row_data in result.fetchall():
+                values = []
+                for col in columns:
+                    val = row_data[col]
+                    if val is None:
+                        values.append("NULL")
+                    elif isinstance(val, (int, float)):
+                        values.append(str(val))
+                    elif isinstance(val, datetime):
+                        values.append(f"'{val.strftime('%Y-%m-%d %H:%M:%S')}'")
+                    else:
+                        # Escape single quotes
+                        escaped_val = str(val).replace("'", "''")
+                        values.append(f"'{escaped_val}'")
+                
+                insert_stmt = f"INSERT INTO `{table}` ({', '.join(columns)}) VALUES ({', '.join(values)});"
+                dump_lines.append(insert_stmt)
+            
+            dump_lines.append("")
+            dump_lines.append("-- ------------------------------------------------------")
+            dump_lines.append("")
+    
+    return "\n".join(dump_lines)
 
 # Developer signin route
 @dev_bp.route('/signin', methods=['GET', 'POST'])
@@ -346,9 +421,9 @@ def backup():
 
     if os.path.exists(backup_dir):
         files = os.listdir(backup_dir)
-        db_files = [f for f in files if f.endswith('.db') or f.endswith('.sql')]
+        sql_files = [f for f in files if f.endswith('.sql')]
 
-        for file in sorted(db_files, key=lambda x: os.path.getctime(os.path.join(backup_dir, x)), reverse=True)[:10]:
+        for file in sorted(sql_files, key=lambda x: os.path.getctime(os.path.join(backup_dir, x)), reverse=True)[:10]:
             file_path = os.path.join(backup_dir, file)
             stat = os.stat(file_path)
             is_full = 'backup' in file
@@ -371,27 +446,31 @@ def create_backup():
         os.makedirs(backup_dir, exist_ok=True)
 
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_filename = f'innovation_hub_backup_{timestamp}.sql'
+        backup_filepath = os.path.join(backup_dir, backup_filename)
 
-        # Get database file path from SQLite URI
-        db_uri = current_app.config['SQLALCHEMY_DATABASE_URI']
-        db_path = db_uri.replace('sqlite:///', '')
+        # Generate SQL dump
+        sql_dump = generate_sql_dump()
+        
+        # Write to file
+        with open(backup_filepath, 'w', encoding='utf-8') as f:
+            f.write(sql_dump)
 
-        if os.path.exists(db_path):
-            backup_file = os.path.join(backup_dir, f'innovation_hub_backup_{timestamp}.db')
-            shutil.copy2(db_path, backup_file)
+        file_size = os.path.getsize(backup_filepath)
+        latest_file = os.path.join(backup_dir, 'latest_backup.sql')
+        shutil.copy2(backup_filepath, latest_file)
 
-            file_size = os.path.getsize(backup_file)
-            latest_file = os.path.join(backup_dir, 'latest_backup.db')
-            shutil.copy2(backup_file, latest_file)
-
-            flash(f'Backup created successfully. Size: {file_size/1024:.1f} KB', 'success')
-            return send_file(backup_file, as_attachment=True, download_name=f'backup_{timestamp}.db', mimetype='application/x-sqlite3')
-        else:
-            flash('Database file not found', 'error')
+        flash(f'Backup created successfully. Size: {file_size/1024:.1f} KB', 'success')
+        return send_file(
+            backup_filepath, 
+            as_attachment=True, 
+            download_name=backup_filename, 
+            mimetype='application/sql'
+        )
+        
     except Exception as e:
         flash(f'Error creating backup: {str(e)}', 'error')
-
-    return redirect(url_for('dev.backup'))
+        return redirect(url_for('dev.backup'))
 
 @dev_bp.route('/backup/download/<filename>')
 @login_required
@@ -405,7 +484,7 @@ def download_backup(filename):
             flash('Backup file not found', 'error')
             return redirect(url_for('dev.backup'))
 
-        return send_file(backup_file, as_attachment=True, download_name=filename, mimetype='application/x-sqlite3', max_age=0)
+        return send_file(backup_file, as_attachment=True, download_name=filename, mimetype='application/sql', max_age=0)
     except Exception as e:
         flash(f'Error downloading backup: {str(e)}', 'error')
         return redirect(url_for('dev.backup'))
@@ -530,21 +609,24 @@ def system_config():
 
     db_size, table_count = get_database_size()
 
-    # Get database info for SQLite
+    # Get database info from connection URI
     db_uri = current_app.config['SQLALCHEMY_DATABASE_URI']
-    db_type = "SQLite"
-    db_name = "innovation_hub.db"
-    db_host = "localhost"
-    db_user = "current_user"
-
-    if db_uri.startswith('sqlite:///'):
-        db_path = db_uri.replace('sqlite:///', '')
-        db_name = os.path.basename(db_path)
-        db_host = "Local file"
-        db_user = "N/A"
+    
+    # Parse MySQL/TiDB URI
+    db_type = "MySQL / TiDB"
+    db_name = "innovation_hub"
+    db_host = "Unknown"
+    db_user = "Unknown"
+    
+    match = re.search(r'mysql\+pymysql://([^:]+):[^@]+@([^/]+)/([^?]+)', db_uri)
+    if match:
+        db_user = match.group(1)
+        db_host = match.group(2)
+        db_name = match.group(3)
+        db_type = "TiDB Cloud"
 
     db_info = {
-        'type': 'sqlite',
+        'type': 'tidb',
         'name': db_name,
         'host': db_host,
         'user': db_user,
@@ -556,7 +638,7 @@ def system_config():
         'python_version': sys.version.split()[0],
         'python_path': sys.executable,
         'flask_version': flask_version,
-        'database': 'SQLite',
+        'database': 'TiDB Cloud',
         'environment': 'Development' if current_app.debug else 'Production',
         'debug': current_app.debug,
         'platform': platform.platform(),
@@ -624,13 +706,13 @@ def clear_sessions():
 @dev_required
 def check_database():
     try:
-        # Check SQLite integrity
-        result = db.session.execute("PRAGMA integrity_check").scalar()
-
-        if result == 'ok':
-            flash('Database integrity check passed. All tables OK.', 'success')
+        # Check database connectivity
+        result = db.session.execute('SELECT 1').scalar()
+        
+        if result == 1:
+            flash('Database connection test passed. Database is accessible.', 'success')
         else:
-            flash(f'Database integrity issues found: {result}', 'warning')
+            flash('Database connection test failed.', 'warning')
 
         # Get counts
         user_count = User.query.count()
@@ -660,7 +742,6 @@ def health_check():
         # Check disk space
         try:
             import shutil
-            # Get disk usage of current directory
             disk_usage = shutil.disk_usage(os.getcwd())
             free_gb = disk_usage.free / (1024**3)
             total_gb = disk_usage.total / (1024**3)
@@ -699,15 +780,14 @@ def health_check():
 @dev_required
 def optimize_database():
     try:
-        # VACUUM for SQLite - rebuilds database file
-        db.session.execute("VACUUM")
+        # For MySQL/TiDB, analyze tables
+        tables = get_all_tables()
+        for table in tables:
+            db.session.execute(f"ANALYZE TABLE `{table}`")
+        
         db.session.commit()
-
-        # Get table count
-        result = db.session.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'")
-        table_count = result.scalar()
-
-        flash(f'Database optimized successfully ({table_count} tables vacuumed)', 'success')
+        
+        flash(f'Database optimized successfully ({len(tables)} tables analyzed)', 'success')
     except Exception as e:
         flash(f'Optimization failed: {str(e)}', 'error')
     return redirect(url_for('dev.tools'))

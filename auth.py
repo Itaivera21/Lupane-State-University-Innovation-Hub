@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Project, ProjectApplication
+from models import db, User, Project, ProjectApplication, Group, GroupMember
 from datetime import datetime
 import json
 import re
@@ -98,17 +98,14 @@ def signin():
     """Student user login page"""
     if request.method == 'POST':
         try:
-            # Get form data
             email = request.form.get('email', '').strip()
             password = request.form.get('password', '')
             remember = True if request.form.get('remember') else False
             
-            # Validation
             if not email or not password:
                 flash('Email and password are required', 'error')
                 return redirect(url_for('auth.signin'))
             
-            # Find user by email
             user = User.query.filter_by(email=email).first()
             
             if not user or not check_password_hash(user.password, password):
@@ -118,9 +115,16 @@ def signin():
             # Check if user is trying to sign in to wrong portal
             if user.is_supervisor:
                 flash('This is a supervisor account. Please use Supervisor Sign In.', 'error')
-                return redirect(url_for('auth.signin'))
+                return redirect(url_for('supervisor.signin'))
             
-            # Log the user in
+            if user.is_admin:
+                flash('This is an admin account. Please use Admin Sign In.', 'error')
+                return redirect(url_for('admin.signin'))
+            
+            if user.is_dev:
+                flash('This is a developer account. Please use Developer Sign In.', 'error')
+                return redirect(url_for('dev.signin'))
+            
             login_user(user, remember=remember)
             user.last_login = datetime.utcnow()
             db.session.commit()
@@ -140,13 +144,12 @@ def logout():
     """Log out current user"""
     logout_user()
     flash('You have been logged out successfully', 'success')
-    return redirect(url_for('auth.signin'))
+    return redirect(url_for('index'))
 
 @auth_bp.route('/profile')
 @login_required
 def profile():
     """User profile page - works for both students and supervisors"""
-    # Get user's projects (for students)
     created_projects = []
     joined_projects = []
     applications = []
@@ -235,39 +238,31 @@ def edit_profile():
                 else:
                     current_user.set_skills([])
             
-            # ============ PASSWORD CHANGE HANDLING ============
+            # Password change handling
             current_password = request.form.get('current_password', '')
             new_password = request.form.get('new_password', '')
             confirm_password = request.form.get('confirm_password', '')
             
-            # If user wants to change password
             if current_password or new_password or confirm_password:
-                # Validate current password
                 if not check_password_hash(current_user.password, current_password):
                     flash('Current password is incorrect', 'error')
                     return redirect(url_for('auth.edit_profile'))
                 
-                # Check if new password is provided
                 if not new_password:
                     flash('New password is required', 'error')
                     return redirect(url_for('auth.edit_profile'))
                 
-                # Check password length
                 if len(new_password) < 6:
                     flash('New password must be at least 6 characters', 'error')
                     return redirect(url_for('auth.edit_profile'))
                 
-                # Check if passwords match
                 if new_password != confirm_password:
                     flash('New passwords do not match', 'error')
                     return redirect(url_for('auth.edit_profile'))
                 
-                # Update password
                 current_user.password = generate_password_hash(new_password)
                 flash('Password changed successfully!', 'success')
-            # ==================================================
             
-            # Save changes
             db.session.commit()
             
             flash('Profile updated successfully!', 'success')
@@ -278,7 +273,6 @@ def edit_profile():
             flash(f'Error updating profile: {str(e)}', 'error')
             return redirect(url_for('auth.edit_profile'))
     
-    # GET request - pre-fill form with current user data
     return render_template('edit_profile.html', user=current_user)
 
 @auth_bp.route('/profile/update-skills', methods=['POST'])
@@ -286,23 +280,18 @@ def edit_profile():
 def update_skills():
     """API endpoint to update skills"""
     try:
-        # Check if request has JSON content type
         if not request.is_json:
             return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
             
-        # Get JSON data
         data = request.get_json()
         if data is None:
             return jsonify({'success': False, 'error': 'Invalid JSON data'}), 400
             
-        # Get skills list from data
         skills = data.get('skills', [])
         
-        # Validate skills is a list
         if not isinstance(skills, list):
             return jsonify({'success': False, 'error': 'Skills must be a list'}), 400
         
-        # Update user skills
         current_user.set_skills(skills)
         db.session.commit()
         
@@ -327,7 +316,6 @@ def view_supervisor_profile(supervisor_id):
         flash('User is not a supervisor', 'error')
         return redirect(url_for('projects'))
     
-    # Get projects this supervisor is assigned to
     supervised_projects = Project.query.filter_by(
         supervisor_id=supervisor.id,
         status='active'
@@ -352,12 +340,10 @@ def request_supervisor(project_id):
     """Request a supervisor for a project"""
     project = Project.query.get_or_404(project_id)
     
-    # Only project owner can request
     if project.student_id != current_user.id:
         flash('You do not have permission to request supervision for this project', 'error')
         return redirect(url_for('project_detail', project_id=project.id))
     
-    # Check if project already has a supervisor
     if project.supervisor_id:
         flash('This project already has a supervisor', 'error')
         return redirect(url_for('project_detail', project_id=project.id))
@@ -374,7 +360,6 @@ def request_supervisor(project_id):
         flash('Invalid supervisor selected', 'error')
         return redirect(url_for('project_detail', project_id=project.id))
     
-    # Update project with supervisor request
     project.supervisor_id = supervisor.id
     project.status = 'pending_supervision'
     project.supervision_requested_at = datetime.utcnow()
@@ -426,3 +411,73 @@ def mark_project_active(project_id):
     
     flash('Project marked as active again.', 'success')
     return redirect(url_for('project_detail', project_id=project.id))
+
+# ==================== FORGOT PASSWORD ====================
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Request password reset - sends email to admin"""
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        
+        if not email:
+            flash('Please enter your email address', 'error')
+            return redirect(url_for('auth.forgot_password'))
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Log the request (for admin to see)
+            print(f"[PASSWORD RESET REQUEST] User: {user.username} ({user.email}) at {datetime.now()}")
+            
+            # Store request in database or file for admin review
+            # For now, flash message to user
+            flash('Your password reset request has been sent to the administrator. You will be contacted shortly.', 'success')
+        else:
+            # Don't reveal if email exists or not for security
+            flash('If an account exists with that email, a reset request has been sent.', 'success')
+        
+        return redirect(url_for('auth.signin'))
+    
+    return render_template('forgot_password.html')
+
+# ==================== PASSWORD RESET (Admin only) ====================
+
+@auth_bp.route('/reset-password/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def reset_password(user_id):
+    """Admin-only password reset page"""
+    # Check if current user is admin or developer
+    if not current_user.is_admin and not current_user.is_dev:
+        flash('Access denied. Only administrators can reset passwords.', 'error')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        if not new_password:
+            flash('New password is required', 'error')
+            return redirect(url_for('auth.reset_password', user_id=user_id))
+        
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters', 'error')
+            return redirect(url_for('auth.reset_password', user_id=user_id))
+        
+        if new_password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return redirect(url_for('auth.reset_password', user_id=user_id))
+        
+        user.password = generate_password_hash(new_password)
+        db.session.commit()
+        
+        flash(f'Password reset for {user.email}. New password: {new_password}', 'success')
+        
+        if current_user.is_admin:
+            return redirect(url_for('admin.users'))
+        else:
+            return redirect(url_for('dev.dashboard'))
+    
+    return render_template('reset_password.html', user=user)

@@ -281,10 +281,9 @@
         </div>
 
         <div class="info-badge">
-            <p>📧 <span>@lsu.ac.zw email required</span> — Only lecturers with valid LSU email can register as supervisors</p>
+            <p><span>@lsu.ac.zw email required</span> - Only lecturers with valid LSU email can register as supervisors</p>
         </div>
 
-        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -299,20 +298,20 @@
             <div class="row">
                 <div class="form-group">
                     <label>First Name <span class="required">*</span></label>
-                    <input type="text" name="first_name" id="first_name" placeholder="John" required>
+                    <input type="text" name="first_name" id="first_name" value="Petros" required>
                     <div class="error-message" id="firstNameError"></div>
                 </div>
 
                 <div class="form-group">
                     <label>Last Name <span class="required">*</span></label>
-                    <input type="text" name="last_name" id="last_name" placeholder="Doe" required>
+                    <input type="text" name="last_name" id="last_name" value="Mush" required>
                     <div class="error-message" id="lastNameError"></div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Email Address <span class="required">*</span></label>
-                <input type="email" name="email" id="email" placeholder="john.doe@lsu.ac.zw" required>
+                <input type="email" name="email" id="email" value="petros@lsu.ac.zw" required>
                 <div class="error-message" id="emailError"></div>
                 <small>Must be a valid @lsu.ac.zw email address</small>
             </div>
@@ -332,13 +331,13 @@
 
             <div class="form-group">
                 <label>Specialization / Expertise</label>
-                <input type="text" name="specialization" id="specialization" placeholder="e.g., Software Engineering, IoT, Data Science">
+                <input type="text" name="specialization" id="specialization" value="Software Engineering, IoT, Data Science">
                 <div class="error-message" id="specializationError"></div>
             </div>
 
             <div class="form-group">
                 <label>Skills / Areas of Interest</label>
-                <input type="text" name="skills" id="skillsInput" placeholder="Python, IoT, Research, Project Management (comma separated)">
+                <input type="text" name="skills" id="skillsInput" value="Python, IoT, Research, Project Management">
                 <div class="error-message" id="skillsError"></div>
                 
                 <div class="suggested-skills">
@@ -354,19 +353,19 @@
 
             <div class="form-group">
                 <label>Bio / Professional Background</label>
-                <textarea name="bio" id="bio" placeholder="Brief introduction about yourself, research interests, and supervision experience..."></textarea>
+                <textarea name="bio" id="bio">Senior lecturer in the Department of Engineering & Technology with over 10 years of experience in IoT systems and project supervision. Published multiple research papers in international journals.</textarea>
             </div>
 
             <div class="row">
                 <div class="form-group">
                     <label>Password <span class="required">*</span></label>
-                    <input type="password" name="password" id="password" placeholder="••••••••" required>
+                    <input type="password" name="password" id="password" required>
                     <div class="error-message" id="passwordError"></div>
                 </div>
 
                 <div class="form-group">
                     <label>Confirm Password <span class="required">*</span></label>
-                    <input type="password" name="confirm_password" id="confirm_password" placeholder="••••••••" required>
+                    <input type="password" name="confirm_password" id="confirm_password" required>
                     <div class="error-message" id="confirmError"></div>
                 </div>
             </div>
@@ -386,7 +385,6 @@
     </div>
 
     <script>
-        // Auto-hide flash messages
         setTimeout(function() {
             var flashes = document.querySelectorAll('.flash-message');
             flashes.forEach(function(flash) {
@@ -398,7 +396,6 @@
             });
         }, 5000);
 
-        // Add skill function
         function addSkill(skill) {
             let input = document.getElementById('skillsInput');
             let currentSkills = input.value.trim();
@@ -414,11 +411,9 @@
             input.dispatchEvent(new Event('input'));
         }
 
-        // Form validation
         document.getElementById('supervisorSignupForm').addEventListener('submit', function(e) {
             let isValid = true;
             
-            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => {
                 el.textContent = '';
                 el.classList.remove('visible');
@@ -427,7 +422,6 @@
                 el.classList.remove('field-error');
             });
 
-            // First name
             const firstName = document.getElementById('first_name').value.trim();
             if (!firstName) {
                 showError('firstNameError', 'First name is required');
@@ -435,7 +429,6 @@
                 isValid = false;
             }
 
-            // Last name
             const lastName = document.getElementById('last_name').value.trim();
             if (!lastName) {
                 showError('lastNameError', 'Last name is required');
@@ -443,7 +436,6 @@
                 isValid = false;
             }
 
-            // Email with @lsu.ac.zw validation
             const email = document.getElementById('email').value.trim();
             const emailPattern = /^[^\s@]+@([^\s@]+\.)?lsu\.ac\.zw$/;
             if (!email) {
@@ -456,7 +448,6 @@
                 isValid = false;
             }
 
-            // Department
             const department = document.getElementById('department').value;
             if (!department) {
                 showError('departmentError', 'Please select your department');
@@ -464,7 +455,6 @@
                 isValid = false;
             }
 
-            // Password
             const password = document.getElementById('password').value;
             if (!password) {
                 showError('passwordError', 'Password is required');
@@ -476,7 +466,6 @@
                 isValid = false;
             }
 
-            // Confirm password
             const confirmPassword = document.getElementById('confirm_password').value;
             if (!confirmPassword) {
                 showError('confirmError', 'Please confirm your password');
@@ -488,7 +477,6 @@
                 isValid = false;
             }
 
-            // Terms
             const terms = document.getElementById('terms').checked;
             if (!terms) {
                 showError('termsError', 'You must agree to the Terms of Service and Privacy Policy');
@@ -508,7 +496,6 @@
             }
         }
 
-        // Real-time password match validation
         document.getElementById('confirm_password').addEventListener('input', function() {
             const password = document.getElementById('password').value;
             const confirm = this.value;
@@ -525,7 +512,6 @@
             }
         });
 
-        // Email domain validation
         document.getElementById('email').addEventListener('input', function() {
             const email = this.value.trim();
             const emailPattern = /^[^\s@]+@([^\s@]+\.)?lsu\.ac\.zw$/;

@@ -278,107 +278,9 @@ def team_members(project_id):
 @login_required
 def send_message(project_id):
     """Send a message via AJAX"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
-
-    if not has_access:
-        return jsonify({'error': 'Access denied'}), 403
-
-    # CHECK IF USER IS MUTED
-    group = Group.query.filter_by(project_id=project_id).first()
-    if group:
-        group_member = GroupMember.query.filter_by(
-            group_id=group.id,
-            user_id=current_user.id
-        ).first()
-        if group_member and group_member.is_muted:
-            return jsonify({'error': 'You are muted in this chat. You cannot send messages.'}), 403
-
-    content = request.form.get('message', '').strip()
-    if not content:
-        return jsonify({'error': 'Message cannot be empty'}), 400
-
-    message = ChatMessage(
-        content=content,
-        sender_id=current_user.id,
-        project_id=project_id,
-        is_read=False
-    )
-    db.session.add(message)
-    db.session.commit()
-
-    return jsonify({
-        'success': True,
-        'message': {
-            'id': message.id,
-            'content': message.content,
-            'sender_name': current_user.get_full_name() or current_user.username,
-            'time': message.created_at.strftime('%I:%M %p'),
-            'is_own': True
-        }
-    })
-
-@chat_bp.route('/api/messages/<int:project_id>')
-@login_required
-def get_messages(project_id):
-    """Get messages for a project via AJAX"""
-    project = Project.query.get_or_404(project_id)
-
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
-
-    if not has_access:
-        return jsonify({'error': 'Access denied'}), 403
-
-    messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
-
-    messages_data = []
-    for m in messages:
-        message_data = {
-            'id': m.id,
-            'content': m.content,
-            'sender_name': m.sender.get_full_name() or m.sender.username if m.sender else 'System',
-            'time': m.created_at.strftime('%I:%M %p, %d %b'),
-            'is_own': m.sender_id == current_user.id if m.sender_id else False
-        }
-
-        if m.resource_id:
-            resource = ChatResource.query.get(m.resource_id)
-            if resource:
-                message_data['resource'] = {
-                    'id': resource.id,
-                    'name': resource.original_filename,
-                    'size': resource.file_size,
-                    'type': resource.file_type
-                }
-
-        messages_data.append(message_data)
-
-    return jsonify({'messages': messages_data})
-
-@chat_bp.route('/api/mark-project-read/<int:project_id>', methods=['POST'])
-@login_required
-def mark_project_read(project_id):
-    """Mark all messages in a project as read"""
-    ChatMessage.query.filter_by(
-        project_id=project_id,
-        is_read=False
-    ).filter(ChatMessage.sender_id != current_user.id).update({'is_read': True})
-    db.session.commit()
-    return jsonify({'success': True})
-
-@chat_bp.route('/api/download-resource/<int:resource_id>')
-@login_required
-def download_resource(resource_id):
-    """Download a shared resource"""
-    resource = ChatResource.query.get_or_404(resource_id)
-
-    project = Project.query.get(resource.project_id)
-    if project:
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
                       current_user.is_admin)
@@ -386,144 +288,283 @@ def download_resource(resource_id):
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
 
-    file_path = resource.file_path
-    if not os.path.exists(file_path):
-        return jsonify({'error': 'File not found'}), 404
+        # CHECK IF USER IS MUTED
+        group = Group.query.filter_by(project_id=project_id).first()
+        if group:
+            group_member = GroupMember.query.filter_by(
+                group_id=group.id,
+                user_id=current_user.id
+            ).first()
+            if group_member and group_member.is_muted:
+                return jsonify({'error': 'You are muted in this chat. You cannot send messages.'}), 403
 
-    return send_file(file_path, as_attachment=True, download_name=resource.original_filename)
+        content = request.form.get('message', '').strip()
+        if not content:
+            return jsonify({'error': 'Message cannot be empty'}), 400
+
+        message = ChatMessage(
+            content=content,
+            sender_id=current_user.id,
+            project_id=project_id,
+            is_read=False
+        )
+        db.session.add(message)
+        db.session.commit()
+
+        # FIXED: Return proper JSON with lowercase booleans
+        return jsonify({
+            'success': True,
+            'message': {
+                'id': message.id,
+                'content': message.content,
+                'sender_name': current_user.get_full_name() or current_user.username,
+                'time': message.created_at.strftime('%I:%M %p'),
+                'is_own': True
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error sending message: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+
+@chat_bp.route('/api/messages/<int:project_id>')
+@login_required
+def get_messages(project_id):
+    """Get messages for a project via AJAX"""
+    try:
+        project = Project.query.get_or_404(project_id)
+
+        has_access = (project.student_id == current_user.id or
+                      project.supervisor_id == current_user.id or
+                      current_user.is_admin)
+
+        if not has_access:
+            return jsonify({'error': 'Access denied'}), 403
+
+        messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
+
+        messages_data = []
+        for m in messages:
+            message_data = {
+                'id': m.id,
+                'content': m.content,
+                'sender_name': m.sender.get_full_name() or m.sender.username if m.sender else 'System',
+                'time': m.created_at.strftime('%I:%M %p, %d %b'),
+                'is_own': m.sender_id == current_user.id if m.sender_id else False
+            }
+
+            if m.resource_id:
+                resource = ChatResource.query.get(m.resource_id)
+                if resource:
+                    message_data['resource'] = {
+                        'id': resource.id,
+                        'name': resource.original_filename,
+                        'size': resource.file_size,
+                        'type': resource.file_type
+                    }
+
+            messages_data.append(message_data)
+
+        return jsonify({'messages': messages_data})
+        
+    except Exception as e:
+        print(f"Error getting messages: {str(e)}")
+        return jsonify({'messages': [], 'error': str(e)}), 500
+
+@chat_bp.route('/api/mark-project-read/<int:project_id>', methods=['POST'])
+@login_required
+def mark_project_read(project_id):
+    """Mark all messages in a project as read"""
+    try:
+        ChatMessage.query.filter_by(
+            project_id=project_id,
+            is_read=False
+        ).filter(ChatMessage.sender_id != current_user.id).update({'is_read': True})
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error marking messages as read: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@chat_bp.route('/api/download-resource/<int:resource_id>')
+@login_required
+def download_resource(resource_id):
+    """Download a shared resource"""
+    try:
+        resource = ChatResource.query.get_or_404(resource_id)
+
+        project = Project.query.get(resource.project_id)
+        if project:
+            has_access = (project.student_id == current_user.id or
+                          project.supervisor_id == current_user.id or
+                          current_user.is_admin)
+
+            if not has_access:
+                return jsonify({'error': 'Access denied'}), 403
+
+        file_path = resource.file_path
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        return send_file(file_path, as_attachment=True, download_name=resource.original_filename)
+        
+    except Exception as e:
+        print(f"Error downloading resource: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/share-resource/<int:project_id>', methods=['POST'])
 @login_required
 def share_resource(project_id):
     """Share a file resource in chat"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
+        has_access = (project.student_id == current_user.id or
+                      project.supervisor_id == current_user.id or
+                      current_user.is_admin)
 
-    if not has_access:
-        return jsonify({'error': 'Access denied'}), 403
+        if not has_access:
+            return jsonify({'error': 'Access denied'}), 403
 
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
 
-    if not allowed_file(file.filename):
-        return jsonify({'error': 'File type not allowed'}), 400
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'File type not allowed'}), 400
 
-    filename = secure_filename(file.filename)
-    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
 
-    upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'chat')
-    os.makedirs(upload_dir, exist_ok=True)
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'chat')
+        os.makedirs(upload_dir, exist_ok=True)
 
-    file_path = os.path.join(upload_dir, unique_filename)
-    file.save(file_path)
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
 
-    file_size = os.path.getsize(file_path)
-    size_kb = round(file_size / 1024, 1)
-    size_str = f"{size_kb} KB" if size_kb < 1024 else f"{round(size_kb / 1024, 1)} MB"
+        file_size = os.path.getsize(file_path)
+        size_kb = round(file_size / 1024, 1)
+        size_str = f"{size_kb} KB" if size_kb < 1024 else f"{round(size_kb / 1024, 1)} MB"
 
-    resource = ChatResource(
-        name=request.form.get('resource_name', filename),
-        original_filename=filename,
-        file_path=file_path,
-        file_size=size_str,
-        file_type=filename.rsplit('.', 1)[1].lower(),
-        project_id=project_id,
-        uploaded_by=current_user.id
-    )
-    db.session.add(resource)
-    db.session.flush()
+        resource = ChatResource(
+            name=request.form.get('resource_name', filename),
+            original_filename=filename,
+            file_path=file_path,
+            file_size=size_str,
+            file_type=filename.rsplit('.', 1)[1].lower(),
+            project_id=project_id,
+            uploaded_by=current_user.id
+        )
+        db.session.add(resource)
+        db.session.flush()
 
-    description = request.form.get('description', '')
-    content = f"Shared file: {filename}"
-    if description:
-        content += f"\n\n{description}"
+        description = request.form.get('description', '')
+        content = f"Shared file: {filename}"
+        if description:
+            content += f"\n\n{description}"
 
-    message = ChatMessage(
-        content=content,
-        sender_id=current_user.id,
-        project_id=project_id,
-        resource_id=resource.id,
-        is_read=False
-    )
-    db.session.add(message)
-    db.session.commit()
+        message = ChatMessage(
+            content=content,
+            sender_id=current_user.id,
+            project_id=project_id,
+            resource_id=resource.id,
+            is_read=False
+        )
+        db.session.add(message)
+        db.session.commit()
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error sharing resource: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/share-link/<int:project_id>', methods=['POST'])
 @login_required
 def share_link(project_id):
     """Share a link in chat"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
+        has_access = (project.student_id == current_user.id or
+                      project.supervisor_id == current_user.id or
+                      current_user.is_admin)
 
-    if not has_access:
-        return jsonify({'error': 'Access denied'}), 403
+        if not has_access:
+            return jsonify({'error': 'Access denied'}), 403
 
-    data = request.get_json()
-    link = data.get('link', '').strip()
-    description = data.get('description', '').strip()
+        data = request.get_json()
+        link = data.get('link', '').strip()
+        description = data.get('description', '').strip()
 
-    if not link:
-        return jsonify({'error': 'Link is required'}), 400
+        if not link:
+            return jsonify({'error': 'Link is required'}), 400
 
-    content = f"Shared link: {link}"
-    if description:
-        content += f"\n\n{description}"
+        content = f"Shared link: {link}"
+        if description:
+            content += f"\n\n{description}"
 
-    message = ChatMessage(
-        content=content,
-        sender_id=current_user.id,
-        project_id=project_id,
-        is_read=False
-    )
-    db.session.add(message)
-    db.session.commit()
+        message = ChatMessage(
+            content=content,
+            sender_id=current_user.id,
+            project_id=project_id,
+            is_read=False
+        )
+        db.session.add(message)
+        db.session.commit()
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error sharing link: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/share-code/<int:project_id>', methods=['POST'])
 @login_required
 def share_code(project_id):
     """Share a code snippet in chat"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
+        has_access = (project.student_id == current_user.id or
+                      project.supervisor_id == current_user.id or
+                      current_user.is_admin)
 
-    if not has_access:
-        return jsonify({'error': 'Access denied'}), 403
+        if not has_access:
+            return jsonify({'error': 'Access denied'}), 403
 
-    data = request.get_json()
-    language = data.get('language', 'text')
-    code = data.get('code', '').strip()
+        data = request.get_json()
+        language = data.get('language', 'text')
+        code = data.get('code', '').strip()
 
-    if not code:
-        return jsonify({'error': 'Code is required'}), 400
+        if not code:
+            return jsonify({'error': 'Code is required'}), 400
 
-    content = f"Shared {language} code:\n```{language}\n{code}\n```"
+        content = f"Shared {language} code:\n```{language}\n{code}\n```"
 
-    message = ChatMessage(
-        content=content,
-        sender_id=current_user.id,
-        project_id=project_id,
-        is_read=False
-    )
-    db.session.add(message)
-    db.session.commit()
+        message = ChatMessage(
+            content=content,
+            sender_id=current_user.id,
+            project_id=project_id,
+            is_read=False
+        )
+        db.session.add(message)
+        db.session.commit()
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error sharing code: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 # ==================== GROUP MANAGEMENT API ====================
@@ -532,317 +573,366 @@ def share_code(project_id):
 @login_required
 def get_project_info(project_id):
     """Get project information for group info page"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
+        has_access = (project.student_id == current_user.id or
+                      project.supervisor_id == current_user.id or
+                      current_user.is_admin)
 
-    if not has_access:
-        approved_app = ProjectApplication.query.filter_by(
+        if not has_access:
+            approved_app = ProjectApplication.query.filter_by(
+                project_id=project_id,
+                applicant_id=current_user.id,
+                status='approved'
+            ).first()
+            if not approved_app:
+                return jsonify({'error': 'Access denied'}), 403
+
+        member_count = 1
+        if project.supervisor:
+            member_count += 1
+
+        approved_apps = ProjectApplication.query.filter_by(
             project_id=project_id,
-            applicant_id=current_user.id,
             status='approved'
-        ).first()
-        if not approved_app:
-            return jsonify({'error': 'Access denied'}), 403
+        ).all()
+        member_count += len(approved_apps)
 
-    member_count = 1
-    if project.supervisor:
-        member_count += 1
-
-    approved_apps = ProjectApplication.query.filter_by(
-        project_id=project_id,
-        status='approved'
-    ).all()
-    member_count += len(approved_apps)
-
-    return jsonify({
-        'id': project.id,
-        'title': project.title,
-        'description': project.description or 'No description provided',
-        'owner_id': project.student_id,
-        'supervisor_id': project.supervisor_id,
-        'member_count': member_count,
-        'created_date': project.created_at.strftime('%b %Y') if project.created_at else 'Unknown'
-    })
+        return jsonify({
+            'id': project.id,
+            'title': project.title,
+            'description': project.description or 'No description provided',
+            'owner_id': project.student_id,
+            'supervisor_id': project.supervisor_id,
+            'member_count': member_count,
+            'created_date': project.created_at.strftime('%b %Y') if project.created_at else 'Unknown'
+        })
+        
+    except Exception as e:
+        print(f"Error getting project info: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/mute-status/<int:project_id>')
 @login_required
 def get_mute_status(project_id):
     """Get current user's mute status for a project"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    group = Group.query.filter_by(project_id=project_id).first()
-    is_muted = False
+        group = Group.query.filter_by(project_id=project_id).first()
+        is_muted = False
 
-    if group:
-        group_member = GroupMember.query.filter_by(
-            group_id=group.id,
-            user_id=current_user.id
-        ).first()
-        if group_member and group_member.is_muted:
-            is_muted = True
+        if group:
+            group_member = GroupMember.query.filter_by(
+                group_id=group.id,
+                user_id=current_user.id
+            ).first()
+            if group_member and group_member.is_muted:
+                is_muted = True
 
-    return jsonify({'is_muted': is_muted})
+        return jsonify({'is_muted': is_muted})
+        
+    except Exception as e:
+        print(f"Error getting mute status: {str(e)}")
+        return jsonify({'is_muted': False}), 200
 
 @chat_bp.route('/api/toggle-mute/<int:project_id>', methods=['POST'])
 @login_required
 def toggle_mute(project_id):
     """Toggle mute status for current user on a project"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    data = request.get_json()
-    muted = data.get('muted', False)
+        data = request.get_json()
+        muted = data.get('muted', False)
 
-    group = Group.query.filter_by(project_id=project_id).first()
-    if not group:
-        # FIXED: Removed 'created_by' parameter
-        group = Group(
-            name=f"{project.title} Chat",
-            project_id=project_id
-        )
-        db.session.add(group)
-        db.session.flush()
+        group = Group.query.filter_by(project_id=project_id).first()
+        if not group:
+            group = Group(
+                name=f"{project.title} Chat",
+                project_id=project_id
+            )
+            db.session.add(group)
+            db.session.flush()
 
-    group_member = GroupMember.query.filter_by(
-        group_id=group.id,
-        user_id=current_user.id
-    ).first()
+        group_member = GroupMember.query.filter_by(
+            group_id=group.id,
+            user_id=current_user.id
+        ).first()
 
-    if group_member:
-        group_member.is_muted = muted
-    else:
-        group_member = GroupMember(group_id=group.id, user_id=current_user.id, is_muted=muted)
-        db.session.add(group_member)
+        if group_member:
+            group_member.is_muted = muted
+        else:
+            group_member = GroupMember(group_id=group.id, user_id=current_user.id, is_muted=muted)
+            db.session.add(group_member)
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({'success': True, 'is_muted': muted})
+        return jsonify({'success': True, 'is_muted': muted})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error toggling mute: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/members/<int:project_id>')
 @login_required
 def get_members(project_id):
     """Get all members of a project chat group"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    members = get_team_members(project)
-    if project.supervisor and project.supervisor not in members:
-        members.append(project.supervisor)
+        members = get_team_members(project)
+        if project.supervisor and project.supervisor not in members:
+            members.append(project.supervisor)
 
-    members_data = []
-    for member in members:
-        group = Group.query.filter_by(project_id=project_id).first()
-        group_member = None
-        if group:
-            group_member = GroupMember.query.filter_by(
-                group_id=group.id,
-                user_id=member.id
-            ).first()
+        members_data = []
+        for member in members:
+            group = Group.query.filter_by(project_id=project_id).first()
+            group_member = None
+            if group:
+                group_member = GroupMember.query.filter_by(
+                    group_id=group.id,
+                    user_id=member.id
+                ).first()
 
-        members_data.append({
-            'user_id': member.id,
-            'username': member.username,
-            'name': member.get_full_name() if hasattr(member, 'get_full_name') else member.username,
-            'email': member.email,
-            'is_muted': group_member.is_muted if group_member else False,
-            'is_supervisor': member.id == project.supervisor_id,
-            'can_remove': member.id != project.student_id
-        })
+            members_data.append({
+                'user_id': member.id,
+                'username': member.username,
+                'name': member.get_full_name() if hasattr(member, 'get_full_name') else member.username,
+                'email': member.email,
+                'is_muted': group_member.is_muted if group_member else False,
+                'is_supervisor': member.id == project.supervisor_id,
+                'can_remove': member.id != project.student_id
+            })
 
-    return jsonify(members_data)
+        return jsonify(members_data)
+        
+    except Exception as e:
+        print(f"Error getting members: {str(e)}")
+        return jsonify([]), 200
 
 @chat_bp.route('/api/mute-member/<int:project_id>', methods=['POST'])
 @login_required
 def mute_member(project_id):
     """Mute or unmute a member in chat"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    if project.student_id != current_user.id and not current_user.is_admin:
-        return jsonify({'error': 'Access denied'}), 403
+        if project.student_id != current_user.id and not current_user.is_admin:
+            return jsonify({'error': 'Access denied'}), 403
 
-    data = request.get_json()
-    user_id = data.get('user_id')
-    mute = data.get('mute', True)
+        data = request.get_json()
+        user_id = data.get('user_id')
+        mute = data.get('mute', True)
 
-    group = Group.query.filter_by(project_id=project_id).first()
-    if not group:
-        # FIXED: Removed 'created_by' parameter
-        group = Group(name=f"{project.title} Chat", project_id=project_id)
-        db.session.add(group)
-        db.session.flush()
+        group = Group.query.filter_by(project_id=project_id).first()
+        if not group:
+            group = Group(name=f"{project.title} Chat", project_id=project_id)
+            db.session.add(group)
+            db.session.flush()
 
-    group_member = GroupMember.query.filter_by(group_id=group.id, user_id=user_id).first()
-    if group_member:
-        group_member.is_muted = mute
-    else:
-        group_member = GroupMember(group_id=group.id, user_id=user_id, is_muted=mute)
-        db.session.add(group_member)
+        group_member = GroupMember.query.filter_by(group_id=group.id, user_id=user_id).first()
+        if group_member:
+            group_member.is_muted = mute
+        else:
+            group_member = GroupMember(group_id=group.id, user_id=user_id, is_muted=mute)
+            db.session.add(group_member)
 
-    db.session.commit()
+        db.session.commit()
 
-    if mute:
-        user = User.query.get(user_id)
-        send_system_message(project_id, f"{user.get_full_name() or user.username} has been muted by the project owner.")
+        if mute:
+            user = User.query.get(user_id)
+            send_system_message(project_id, f"{user.get_full_name() or user.username} has been muted by the project owner.")
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error muting member: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/remove-member/<int:project_id>', methods=['POST'])
 @login_required
 def remove_member(project_id):
     """Remove a member from chat group and project"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    if project.student_id != current_user.id and not current_user.is_admin:
-        return jsonify({'error': 'Access denied'}), 403
+        if project.student_id != current_user.id and not current_user.is_admin:
+            return jsonify({'error': 'Access denied'}), 403
 
-    data = request.get_json()
-    user_id = data.get('user_id')
+        data = request.get_json()
+        user_id = data.get('user_id')
 
-    if user_id == project.student_id:
-        return jsonify({'error': 'Cannot remove project owner'}), 400
+        if user_id == project.student_id:
+            return jsonify({'error': 'Cannot remove project owner'}), 400
 
-    user = User.query.get(user_id)
+        user = User.query.get(user_id)
 
-    group = Group.query.filter_by(project_id=project_id).first()
-    if group:
-        GroupMember.query.filter_by(group_id=group.id, user_id=user_id).delete()
+        group = Group.query.filter_by(project_id=project_id).first()
+        if group:
+            GroupMember.query.filter_by(group_id=group.id, user_id=user_id).delete()
 
-    app = ProjectApplication.query.filter_by(
-        project_id=project_id,
-        applicant_id=user_id,
-        status='approved'
-    ).first()
-    if app:
-        db.session.delete(app)
+        app = ProjectApplication.query.filter_by(
+            project_id=project_id,
+            applicant_id=user_id,
+            status='approved'
+        ).first()
+        if app:
+            db.session.delete(app)
 
-    if user and user.is_supervisor and project.supervisor_id == user_id:
-        project.supervisor_id = None
+        if user and user.is_supervisor and project.supervisor_id == user_id:
+            project.supervisor_id = None
 
-    db.session.commit()
+        db.session.commit()
 
-    if user:
-        send_system_message(project_id, f"{user.get_full_name() or user.username} has been removed from the project by the project owner.")
+        if user:
+            send_system_message(project_id, f"{user.get_full_name() or user.username} has been removed from the project by the project owner.")
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error removing member: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/add-member/<int:project_id>', methods=['POST'])
 @login_required
 def add_member(project_id):
     """Add a new member to the project chat group"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    if project.student_id != current_user.id and not current_user.is_admin:
-        return jsonify({'error': 'Only project owner can add members'}), 403
+        if project.student_id != current_user.id and not current_user.is_admin:
+            return jsonify({'error': 'Only project owner can add members'}), 403
 
-    data = request.get_json()
-    email = data.get('email', '').strip()
+        data = request.get_json()
+        email = data.get('email', '').strip()
 
-    if not email:
-        return jsonify({'error': 'Email is required'}), 400
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
 
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'error': f'No user found with email: {email}'}), 404
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({'error': f'No user found with email: {email}'}), 404
 
-    if user.id == project.student_id:
-        return jsonify({'error': 'This is the project owner'}), 400
+        if user.id == project.student_id:
+            return jsonify({'error': 'This is the project owner'}), 400
 
-    existing_app = ProjectApplication.query.filter_by(
-        project_id=project_id,
-        applicant_id=user.id,
-        status='approved'
-    ).first()
-    if existing_app:
-        return jsonify({'error': 'User is already a team member'}), 400
-
-    if project.supervisor_id == user.id:
-        return jsonify({'error': 'User is already the supervisor'}), 400
-
-    new_app = ProjectApplication(
-        project_id=project_id,
-        applicant_id=user.id,
-        message=f"Added by project owner {current_user.get_full_name() or current_user.username}",
-        status='approved',
-        reviewed_by=current_user.id,
-        reviewed_at=datetime.utcnow()
-    )
-    db.session.add(new_app)
-
-    group = Group.query.filter_by(project_id=project_id).first()
-    if group:
-        group_member = GroupMember.query.filter_by(
-            group_id=group.id,
-            user_id=user.id
+        existing_app = ProjectApplication.query.filter_by(
+            project_id=project_id,
+            applicant_id=user.id,
+            status='approved'
         ).first()
-        if not group_member:
-            new_member = GroupMember(group_id=group.id, user_id=user.id, is_muted=False)
-            db.session.add(new_member)
+        if existing_app:
+            return jsonify({'error': 'User is already a team member'}), 400
 
-    db.session.commit()
+        if project.supervisor_id == user.id:
+            return jsonify({'error': 'User is already the supervisor'}), 400
 
-    send_system_message(project_id, f"{user.get_full_name() or user.username} has been added to the project by {current_user.get_full_name() or current_user.username}.")
+        new_app = ProjectApplication(
+            project_id=project_id,
+            applicant_id=user.id,
+            message=f"Added by project owner {current_user.get_full_name() or current_user.username}",
+            status='approved',
+            reviewed_by=current_user.id,
+            reviewed_at=datetime.utcnow()
+        )
+        db.session.add(new_app)
 
-    return jsonify({'success': True, 'message': f'{user.get_full_name() or user.username} added to project'})
+        group = Group.query.filter_by(project_id=project_id).first()
+        if group:
+            group_member = GroupMember.query.filter_by(
+                group_id=group.id,
+                user_id=user.id
+            ).first()
+            if not group_member:
+                new_member = GroupMember(group_id=group.id, user_id=user.id, is_muted=False)
+                db.session.add(new_member)
+
+        db.session.commit()
+
+        send_system_message(project_id, f"{user.get_full_name() or user.username} has been added to the project by {current_user.get_full_name() or current_user.username}.")
+
+        return jsonify({'success': True, 'message': f'{user.get_full_name() or user.username} added to project'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error adding member: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/update-role/<int:project_id>', methods=['POST'])
 @login_required
 def update_member_role(project_id):
     """Update a member's role (promote to supervisor or demote to member)"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    if project.student_id != current_user.id and not current_user.is_admin:
-        return jsonify({'error': 'Only project owner can update roles'}), 403
+        if project.student_id != current_user.id and not current_user.is_admin:
+            return jsonify({'error': 'Only project owner can update roles'}), 403
 
-    data = request.get_json()
-    user_id = data.get('user_id')
-    is_supervisor = data.get('is_supervisor', False)
+        data = request.get_json()
+        user_id = data.get('user_id')
+        is_supervisor = data.get('is_supervisor', False)
 
-    user = User.query.get_or_404(user_id)
+        user = User.query.get_or_404(user_id)
 
-    if user_id == project.student_id:
-        return jsonify({'error': 'Cannot change project owner\'s role'}), 400
+        if user_id == project.student_id:
+            return jsonify({'error': 'Cannot change project owner\'s role'}), 400
 
-    if is_supervisor:
-        project.supervisor_id = user_id
-        send_system_message(project_id, f"{user.get_full_name() or user.username} has been promoted to Supervisor.")
-    else:
-        if project.supervisor_id == user_id:
-            project.supervisor_id = None
-            send_system_message(project_id, f"{user.get_full_name() or user.username} is no longer a Supervisor.")
+        if is_supervisor:
+            project.supervisor_id = user_id
+            send_system_message(project_id, f"{user.get_full_name() or user.username} has been promoted to Supervisor.")
+        else:
+            if project.supervisor_id == user_id:
+                project.supervisor_id = None
+                send_system_message(project_id, f"{user.get_full_name() or user.username} is no longer a Supervisor.")
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating role: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @chat_bp.route('/api/leave-group/<int:project_id>', methods=['POST'])
 @login_required
 def leave_group(project_id):
     """Allow a user to leave a project group"""
-    project = Project.query.get_or_404(project_id)
+    try:
+        project = Project.query.get_or_404(project_id)
 
-    if project.student_id == current_user.id:
-        return jsonify({'error': 'Project owner cannot leave the project. You must delete the project or transfer ownership.'}), 403
+        if project.student_id == current_user.id:
+            return jsonify({'error': 'Project owner cannot leave the project. You must delete the project or transfer ownership.'}), 403
 
-    user = current_user
+        user = current_user
 
-    group = Group.query.filter_by(project_id=project_id).first()
-    if group:
-        GroupMember.query.filter_by(group_id=group.id, user_id=user.id).delete()
+        group = Group.query.filter_by(project_id=project_id).first()
+        if group:
+            GroupMember.query.filter_by(group_id=group.id, user_id=user.id).delete()
 
-    app = ProjectApplication.query.filter_by(
-        project_id=project_id,
-        applicant_id=user.id,
-        status='approved'
-    ).first()
-    if app:
-        db.session.delete(app)
+        app = ProjectApplication.query.filter_by(
+            project_id=project_id,
+            applicant_id=user.id,
+            status='approved'
+        ).first()
+        if app:
+            db.session.delete(app)
 
-    if user.is_supervisor and project.supervisor_id == user.id:
-        project.supervisor_id = None
+        if user.is_supervisor and project.supervisor_id == user.id:
+            project.supervisor_id = None
 
-    db.session.commit()
+        db.session.commit()
 
-    send_system_message(project_id, f"{user.get_full_name() or user.username} has left the group.")
+        send_system_message(project_id, f"{user.get_full_name() or user.username} has left the group.")
 
-    return jsonify({'success': True})
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error leaving group: {str(e)}")
+        return jsonify({'error': str(e)}), 500

@@ -55,6 +55,37 @@
             font-size: 14px;
         }
 
+        .flash-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #0a3d2a;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+
+        .flash-error {
+            background: #4a1a1a;
+            color: #ff6666;
+            border: 1px solid #ff6666;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -147,6 +178,17 @@
             <p>Innovation Hub Management</p>
         </div>
 
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <form method="POST" action="{{ url_for('admin.signin') }}">
             <div class="form-group">
                 <label>Admin Email</label>
@@ -155,19 +197,28 @@
 
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
+                <input type="password" name="password" placeholder="Enter your password" required>
             </div>
 
             <button type="submit" class="admin-btn">Access Admin Panel</button>
 
-            <div class="admin-links">
-                <a href="#">Forgot Password?</a>
-            </div>
-
             <hr>
 
-            <a href="{{ url_for('index') }}" class="back-link">← Back to Innovation Hub</a>
+            <a href="{{ url_for('index') }}" class="back-link">Back to Innovation Hub</a>
         </form>
     </div>
+
+    <script>
+        setTimeout(function() {
+            var flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() {
+                    flash.style.display = 'none';
+                }, 300);
+            });
+        }, 5000);
+    </script>
 </body>
 </html>

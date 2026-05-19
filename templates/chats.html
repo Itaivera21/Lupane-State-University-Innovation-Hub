@@ -952,18 +952,17 @@
                         {% endif %}
                     </div>
 
-                    <!-- Three dots menu -->
                     <div class="menu-container">
                         <div class="menu-trigger" onclick="toggleMenuDropdown()">⋮</div>
                         <div class="dropdown-menu" id="chatDropdownMenu">
                             {% if current_user.id == current_project.student_id %}
-                                <div class="dropdown-item" onclick="window.location.href='/chat/team-members/{{ current_project.id }}'">👥 Manage Team Members</div>
-                                <div class="dropdown-item" onclick="window.location.href='/chat/group-info/{{ current_project.id }}'">ℹ️ View Group Info</div>
-                                <div class="dropdown-item" id="muteNotificationsBtn">🔕 Mute Notifications</div>
+                                <div class="dropdown-item" onclick="window.location.href='/chat/team-members/{{ current_project.id }}'">Manage Team Members</div>
+                                <div class="dropdown-item" onclick="window.location.href='/chat/group-info/{{ current_project.id }}'">View Group Info</div>
+                                <div class="dropdown-item" id="muteNotificationsBtn">Mute Notifications</div>
                             {% else %}
-                                <div class="dropdown-item" onclick="window.location.href='/chat/team-members/{{ current_project.id }}'">👥 View Team Members</div>
-                                <div class="dropdown-item" onclick="window.location.href='/chat/group-info/{{ current_project.id }}'">ℹ️ View Group Info</div>
-                                <div class="dropdown-item danger" onclick="leaveGroup()">🚪 Leave Group</div>
+                                <div class="dropdown-item" onclick="window.location.href='/chat/team-members/{{ current_project.id }}'">View Team Members</div>
+                                <div class="dropdown-item" onclick="window.location.href='/chat/group-info/{{ current_project.id }}'">View Group Info</div>
+                                <div class="dropdown-item danger" onclick="leaveGroup()">Leave Group</div>
                             {% endif %}
                         </div>
                     </div>
@@ -983,11 +982,7 @@
                             <div class="message-text">{{ message.content }}</div>
                             {% if message.resource %}
                             <div class="resource-share">
-                                <div class="resource-icon">
-                                    {% if message.resource.file_type in ['png','jpg','jpeg','gif'] %}🖼️
-                                    {% elif message.resource.file_type == 'pdf' %}📄
-                                    {% else %}📎{% endif %}
-                                </div>
+                                <div class="resource-icon">File</div>
                                 <div class="resource-info">
                                     <div class="resource-name">{{ message.resource.original_filename }}</div>
                                     <div class="resource-size">{{ message.resource.file_size }}</div>
@@ -1007,7 +1002,6 @@
                 {% endif %}
             </div>
 
-            <!-- Share Modals -->
             <div class="modal" id="resourceModal">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1089,7 +1083,6 @@
                 </div>
             </div>
 
-            <!-- Team Management Modal (Keep for backwards compatibility) -->
             <div class="modal" id="teamManagementModal">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1111,8 +1104,8 @@
             <div class="chat-input-area">
                 <div class="input-tools">
                     <span class="tool-btn" onclick="openModal('resourceModal')">Share Resource</span>
-                    <span class="tool-btn" onclick="openModal('linkModal')">Link</span>
-                    <span class="tool-btn" onclick="openModal('codeModal')">Code Snippet</span>
+                    <span class="tool-btn" onclick="openModal('linkModal')">Share Link</span>
+                    <span class="tool-btn" onclick="openModal('codeModal')">Share Code</span>
                 </div>
                 <form id="messageForm">
                     <div class="message-input-wrapper">
@@ -1134,14 +1127,12 @@
     </div>
 
     <script>
-        // FIXED: Removed quotes around null and false - these are JavaScript values, not strings
         const currentProjectId = {{ current_project.id if current_project else null }};
         const currentUserId = {{ current_user.id }};
         const isProjectOwner = {{ (current_user.id == current_project.student_id) if current_project else false }};
         const projectOwnerId = {{ current_project.student_id if current_project else 0 }};
         const projectSupervisorId = {{ current_project.supervisor_id if current_project else 0 }};
 
-        // Download resource
         async function downloadResource(resourceId) {
             if (!resourceId) {
                 showNotification('Error: No resource specified', 'error');
@@ -1175,7 +1166,6 @@
             }
         }
 
-        // Send message
         document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1196,7 +1186,6 @@
             }
         });
 
-        // Load messages
         async function loadMessages() {
             if (!currentProjectId) return;
             try {
@@ -1229,7 +1218,7 @@
                 if (msg.resource) {
                     resourceHtml = `
                         <div class="resource-share">
-                            <div class="resource-icon">📎</div>
+                            <div class="resource-icon">File</div>
                             <div class="resource-info">
                                 <div class="resource-name">${escapeHtml(msg.resource.name)}</div>
                                 <div class="resource-size">${escapeHtml(msg.resource.size)}</div>
@@ -1262,7 +1251,6 @@
             return div.innerHTML;
         }
 
-        // Mark messages as read
         async function markMessagesAsRead() {
             if (!currentProjectId) return;
             try {
@@ -1294,13 +1282,11 @@
             }, 3000);
         }
 
-        // Dropdown menu functions
         function toggleMenuDropdown() {
             const menu = document.getElementById('chatDropdownMenu');
             menu.classList.toggle('show');
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const menuContainer = document.querySelector('.menu-container');
             if (menuContainer && !menuContainer.contains(event.target)) {
@@ -1309,7 +1295,6 @@
             }
         });
 
-        // Mute notifications for current user
         document.getElementById('muteNotificationsBtn')?.addEventListener('click', async function() {
             try {
                 const statusResponse = await fetch(`/chat/api/mute-status/${currentProjectId}`);
@@ -1323,7 +1308,7 @@
                 });
 
                 if (response.ok) {
-                    showNotification(newMuteState ? '🔇 Notifications muted' : '🔔 Notifications unmuted', 'success');
+                    showNotification(newMuteState ? 'Notifications muted' : 'Notifications unmuted', 'success');
                     document.getElementById('chatDropdownMenu').classList.remove('show');
                 } else {
                     showNotification('Failed to change mute status', 'error');
@@ -1333,7 +1318,6 @@
             }
         });
 
-        // Team Management Modal (for backwards compatibility)
         async function openTeamManagementModal() {
             const modal = document.getElementById('teamManagementModal');
             modal.classList.add('active');
@@ -1481,7 +1465,6 @@
             document.getElementById('teamManagementModal').classList.remove('active');
         }
 
-        // Modal functions
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'flex';
             document.getElementById(modalId).classList.add('active');
@@ -1492,7 +1475,6 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // Share resource
         document.getElementById('resourceForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1514,7 +1496,6 @@
             }
         });
 
-        // Share link
         document.getElementById('linkForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1538,7 +1519,6 @@
             }
         });
 
-        // Share code
         document.getElementById('codeForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1562,7 +1542,6 @@
             }
         });
 
-        // Auto-refresh messages every 5 seconds
         if (currentProjectId) {
             setInterval(loadMessages, 5000);
             setTimeout(() => {
@@ -1571,7 +1550,6 @@
             }, 500);
         }
 
-        // Auto-hide flash messages
         setTimeout(function() {
             var flashes = document.querySelectorAll('.flash-message');
             flashes.forEach(function(flash) {

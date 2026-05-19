@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, current_app, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, current_app, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
@@ -28,6 +28,8 @@ def dev_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_dev:
+            # Clear any stale flash messages before redirecting
+            session.pop('_flashes', None)
             flash('Access denied. Developer privileges required.', 'error')
             return redirect(url_for('dev.signin'))
         return f(*args, **kwargs)
@@ -185,6 +187,9 @@ def signin():
     if current_user.is_authenticated and current_user.is_dev:
         return redirect(url_for('dev.dashboard'))
 
+    # Clear any stale flash messages when loading the signin page
+    session.pop('_flashes', None)
+
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -198,6 +203,8 @@ def signin():
             flash('Welcome to Developer Portal', 'success')
             return redirect(url_for('dev.dashboard'))
         else:
+            # Clear flashes before adding new one to avoid duplicates
+            session.pop('_flashes', None)
             flash('Invalid developer credentials', 'error')
             return redirect(url_for('dev.signin'))
 
@@ -798,5 +805,6 @@ def optimize_database():
 @login_required
 def signout():
     logout_user()
+    session.pop('_flashes', None)
     flash('Logged out successfully', 'success')
     return redirect(url_for('dev.signin'))

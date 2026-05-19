@@ -1,7 +1,7 @@
 # auth.py
 # Handles user authentication (signup, signin, logout, profile) for Innovation Hub
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Project, ProjectApplication, Group, GroupMember
@@ -113,16 +113,18 @@ def signin():
                 return redirect(url_for('auth.signin'))
             
             # Check if user is trying to sign in to wrong portal
+            # Redirect to appropriate portal without flash message (clean redirect)
             if user.is_supervisor:
-                flash('This is a supervisor account. Please use Supervisor Sign In.', 'error')
+                # Clear any existing flash messages before redirect
+                session.pop('_flashes', None)
                 return redirect(url_for('supervisor.signin'))
             
             if user.is_admin:
-                flash('This is an admin account. Please use Admin Sign In.', 'error')
+                session.pop('_flashes', None)
                 return redirect(url_for('admin.signin'))
             
             if user.is_dev:
-                flash('This is a developer account. Please use Developer Sign In.', 'error')
+                session.pop('_flashes', None)
                 return redirect(url_for('dev.signin'))
             
             login_user(user, remember=remember)
@@ -136,6 +138,8 @@ def signin():
             flash(f'Error signing in: {str(e)}', 'error')
             return redirect(url_for('auth.signin'))
     
+    # Clear any stale flash messages when loading the signin page
+    session.pop('_flashes', None)
     return render_template('signin.html')
 
 @auth_bp.route('/logout')
@@ -143,6 +147,7 @@ def signin():
 def logout():
     """Log out current user"""
     logout_user()
+    session.pop('_flashes', None)
     flash('You have been logged out successfully', 'success')
     return redirect(url_for('index'))
 

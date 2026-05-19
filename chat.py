@@ -19,7 +19,6 @@ def allowed_file(filename):
 def get_team_members(project):
     """Get all team members for a project"""
     members = [project.student] if project.student else []
-    # Add approved members from applications
     approved_apps = ProjectApplication.query.filter_by(
         project_id=project.id,
         status='approved'
@@ -31,48 +30,30 @@ def get_team_members(project):
 
 def get_system_user():
     """Get or create system user for system messages"""
-    # First try to get existing system user
     system_user = User.query.filter_by(username='system').first()
     if system_user:
         return system_user
 
-    # If no system user, use the first admin user
     admin_user = User.query.filter_by(is_admin=True).first()
     if admin_user:
         return admin_user
 
-    # If no admin, use the first user
     first_user = User.query.first()
     if first_user:
         return first_user
 
-    # Last resort - create a system user without password
     system_user = User(
         username='system',
         email='system@innovationhub.com',
         is_admin=False,
         is_supervisor=False
     )
-    # Try to set password using different possible methods
+    
     try:
-        # Try set_password method
-        system_user.set_password('system_pass_123')
-    except AttributeError:
-        try:
-            # Try hash_password method
-            system_user.hash_password('system_pass_123')
-        except AttributeError:
-            try:
-                # Try setting password_hash directly (Werkzeug)
-                from werkzeug.security import generate_password_hash
-                system_user.password_hash = generate_password_hash('system_pass_123')
-            except AttributeError:
-                try:
-                    # Try just setting password attribute
-                    system_user.password = 'system_pass_123'
-                except AttributeError:
-                    # No password method available, continue without password
-                    pass
+        from werkzeug.security import generate_password_hash
+        system_user.password = generate_password_hash('system_pass_123')
+    except:
+        system_user.password = 'system_pass_123'
 
     db.session.add(system_user)
     db.session.commit()
@@ -99,7 +80,6 @@ def chats():
     """Main chat page - shows all user's project chats"""
     user_projects = []
 
-    # Projects user created
     owned_projects = Project.query.filter_by(student_id=current_user.id).all()
     for p in owned_projects:
         p.unread_count = ChatMessage.query.filter_by(
@@ -108,7 +88,6 @@ def chats():
         ).filter(ChatMessage.sender_id != current_user.id).count()
         user_projects.append(p)
 
-    # Projects user applied to and was approved
     approved_apps = ProjectApplication.query.filter_by(
         applicant_id=current_user.id,
         status='approved'
@@ -121,7 +100,6 @@ def chats():
             ).filter(ChatMessage.sender_id != current_user.id).count()
             user_projects.append(app.project)
 
-    # If supervisor, add supervised projects
     if current_user.is_supervisor:
         supervised = Project.query.filter_by(supervisor_id=current_user.id).all()
         for p in supervised:
@@ -140,7 +118,6 @@ def project_chat(project_id):
     """View chat for a specific project"""
     project = Project.query.get_or_404(project_id)
 
-    # Check if user has access to this chat
     has_access = False
 
     if project.student_id == current_user.id:
@@ -164,10 +141,8 @@ def project_chat(project_id):
         flash('You do not have access to this chat', 'error')
         return redirect(url_for('chat.chats'))
 
-    # Get all messages for this project
     messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
 
-    # Mark messages as read
     unread_messages = ChatMessage.query.filter_by(
         project_id=project_id,
         is_read=False
@@ -177,12 +152,10 @@ def project_chat(project_id):
         msg.is_read = True
     db.session.commit()
 
-    # Get team members
     team_members = get_team_members(project)
     if project.supervisor and project.supervisor not in team_members:
         team_members.append(project.supervisor)
 
-    # Get all user's projects for sidebar
     user_projects = []
     owned = Project.query.filter_by(student_id=current_user.id).all()
     for p in owned:
@@ -222,7 +195,6 @@ def project_chat(project_id):
         current_user=current_user
     )
 
-
 # ==================== GROUP INFO & TEAM MEMBERS PAGES ====================
 
 @chat_bp.route('/group-info/<int:project_id>')
@@ -231,7 +203,6 @@ def group_info(project_id):
     """View group information page"""
     project = Project.query.get_or_404(project_id)
 
-    # Check access
     has_access = (project.student_id == current_user.id or
                   project.supervisor_id == current_user.id or
                   current_user.is_admin)
@@ -254,7 +225,6 @@ def team_members(project_id):
     """View team members management page"""
     project = Project.query.get_or_404(project_id)
 
-    # Check access
     has_access = (project.student_id == current_user.id or
                   project.supervisor_id == current_user.id or
                   current_user.is_admin)
@@ -270,7 +240,6 @@ def team_members(project_id):
             return redirect(url_for('chat.chats'))
 
     return render_template('team_members.html', project_id=project_id, current_user=current_user)
-
 
 # ==================== API ROUTES ====================
 
@@ -288,7 +257,6 @@ def send_message(project_id):
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
 
-        # CHECK IF USER IS MUTED
         group = Group.query.filter_by(project_id=project_id).first()
         if group:
             group_member = GroupMember.query.filter_by(
@@ -311,7 +279,6 @@ def send_message(project_id):
         db.session.add(message)
         db.session.commit()
 
-        # FIXED: Return proper JSON with lowercase booleans
         return jsonify({
             'success': True,
             'message': {
@@ -328,7 +295,10 @@ def send_message(project_id):
         print(f"Error sending message: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': f'Database error: {str(e)}'}), 500
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @chat_bp.route('/api/messages/<int:project_id>')
 @login_required
@@ -387,7 +357,7 @@ def mark_project_read(project_id):
         return jsonify({'success': True})
     except Exception as e:
         print(f"Error marking messages as read: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/download-resource/<int:resource_id>')
 @login_required
@@ -484,7 +454,7 @@ def share_resource(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error sharing resource: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/share-link/<int:project_id>', methods=['POST'])
 @login_required
@@ -525,7 +495,7 @@ def share_link(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error sharing link: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/share-code/<int:project_id>', methods=['POST'])
 @login_required
@@ -564,8 +534,7 @@ def share_code(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error sharing code: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ==================== GROUP MANAGEMENT API ====================
 
@@ -674,7 +643,7 @@ def toggle_mute(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error toggling mute: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/members/<int:project_id>')
 @login_required
@@ -711,7 +680,7 @@ def get_members(project_id):
         
     except Exception as e:
         print(f"Error getting members: {str(e)}")
-        return jsonify([]), 200
+        return jsonify([], 200)
 
 @chat_bp.route('/api/mute-member/<int:project_id>', methods=['POST'])
 @login_required
@@ -751,7 +720,7 @@ def mute_member(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error muting member: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/remove-member/<int:project_id>', methods=['POST'])
 @login_required
@@ -796,7 +765,7 @@ def remove_member(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error removing member: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/add-member/<int:project_id>', methods=['POST'])
 @login_required
@@ -861,7 +830,7 @@ def add_member(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error adding member: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/update-role/<int:project_id>', methods=['POST'])
 @login_required
@@ -897,7 +866,7 @@ def update_member_role(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error updating role: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @chat_bp.route('/api/leave-group/<int:project_id>', methods=['POST'])
 @login_required
@@ -935,4 +904,4 @@ def leave_group(project_id):
     except Exception as e:
         db.session.rollback()
         print(f"Error leaving group: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500

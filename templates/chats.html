@@ -1127,11 +1127,12 @@
     </div>
 
     <script>
-        const currentProjectId = {{ current_project.id if current_project else null }};
+        // FIXED: JavaScript variables now use lowercase true/false and null
+        const currentProjectId = {{ current_project.id if current_project else 'null' }};
         const currentUserId = {{ current_user.id }};
-        const isProjectOwner = {{ (current_user.id == current_project.student_id) if current_project else false }};
+        const isProjectOwner = {{ 'true' if (current_project and current_user.id == current_project.student_id) else 'false' }};
         const projectOwnerId = {{ current_project.student_id if current_project else 0 }};
-        const projectSupervisorId = {{ current_project.supervisor_id if current_project else 0 }};
+        const projectSupervisorId = {{ current_project.supervisor_id if current_project and current_project.supervisor_id else 0 }};
 
         async function downloadResource(resourceId) {
             if (!resourceId) {
@@ -1356,7 +1357,7 @@
                 }
 
                 let actionButtons = '';
-                if (isProjectOwner && member.user_id != currentUserId) {
+                if (isProjectOwner === 'true' && member.user_id != currentUserId) {
                     if (member.is_muted) {
                         actionButtons = `
                             <div class="team-member-actions">

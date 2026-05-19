@@ -310,24 +310,27 @@ def user_detail(user_id):
 @login_required
 @admin_required
 def reset_password(user_id):
+    """Reset user password - accepts form data"""
     user = User.query.get_or_404(user_id)
 
     if user.is_dev:
         flash('Cannot reset password for developer accounts.', 'error')
         return redirect(url_for('admin.users'))
 
-    data = request.get_json()
-    new_password = data.get('password') if data else None
-
-    if new_password:
-        user.password = generate_password_hash(new_password)
-    else:
+    # Get password from form data (not JSON)
+    new_password = request.form.get('password')
+    
+    if not new_password:
         temp_password = secrets.token_urlsafe(8)
+        new_password = temp_password
         user.password = generate_password_hash(temp_password)
+    else:
+        user.password = generate_password_hash(new_password)
 
     db.session.commit()
-
-    return jsonify({'success': True})
+    
+    flash(f'Password reset for {user.email}. New password: {new_password}', 'success')
+    return redirect(url_for('admin.users'))
 
 # ==================== FIXED DELETE USER FUNCTION ====================
 

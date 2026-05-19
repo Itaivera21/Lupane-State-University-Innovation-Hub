@@ -10,6 +10,7 @@ import os
 import sys
 import traceback
 import ssl
+from functools import wraps
 
 # ============ GLOBAL EXCEPTION HANDLER ============
 def global_exception_handler(exctype, value, tb):
@@ -33,18 +34,24 @@ from dev import dev_bp
 from supervisor import supervisor_bp
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'
 
-# ============ TiDB CLOUD DATABASE CONFIGURATION WITH SSL ============
-# Download CA cert from TiDB Cloud and save to 'cacert.pem'
-# For Render, we'll use SSL without cert verification temporarily
+# ============ SECURE CONFIGURATION ============
+# Use environment variable for secret key in production
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
-# Option 1: Use SSL without cert verification (for testing)
+# Session security
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
+
+# ============ TiDB CLOUD DATABASE CONFIGURATION ============
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     'mysql+pymysql://Zs51ycD7dYgEUy3.root:qar204jhgxpJE2sB@'
     'gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/innovation_hub'
     '?charset=utf8mb4'
 )
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # SSL configuration for pymysql
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -57,17 +64,20 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         }
     }
 }
-# ================================================
 
-# Flask-Mail Configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
+# ============ FLASK-MAIL CONFIGURATION ============
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'itaivera21@gmail.com'
-app.config['MAIL_PASSWORD'] = 'your-app-password-here'
-app.config['MAIL_DEFAULT_SENDER'] = 'itaivera21@gmail.com'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@innovationhub.com')
 
-# Initialize extensions
+# ============ FILE UPLOAD CONFIGURATION ============
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+
+# ============ INITIALIZE EXTENSIONS ============
 print("Starting application initialization...")
 
 try:
@@ -101,9 +111,11 @@ print("Initializing login manager...")
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'auth.signin'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'warning'
 print("Login manager initialized")
 
-# Register blueprints
+# ============ REGISTER BLUEPRINTS ============
 print("Registering blueprints...")
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(chat_bp)
@@ -113,11 +125,50 @@ app.register_blueprint(dev_bp)
 app.register_blueprint(supervisor_bp)
 print("Blueprints registered")
 
+# ============ ERROR HANDLERS ============
+
+@app.errorhandler(404)
+def not_found_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Resource not found'}), 404
+    flash('Page not found', 'error')
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Internal server error'}), 500
+    flash('An internal error occurred. Please try again later.', 'error')
+    return render_template('500.html'), 500
+
+@app.errorhandler(413)
+def too_large_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'File too large. Maximum size is 16MB.'}), 413
+    flash('File too large. Maximum size is 16MB.', 'error')
+    return redirect(request.referrer or url_for('index'))
+
+# Custom error handler for API routes that returns JSON
 @app.errorhandler(Exception)
-def handle_error(error):
+def handle_api_error(error):
+    # Log the error
     print(f"Route error: {type(error).__name__}: {error}")
     traceback.print_exc()
-    return f"Error: {error}", 500
+    
+    # Return JSON for API routes, HTML for others
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'success': False,
+            'error': str(error),
+            'type': type(error).__name__
+        }), 500
+    
+    # For non-API routes, show flash message
+    flash(f'An error occurred: {str(error)}', 'error')
+    return redirect(url_for('index'))
+
+# ============ HELPER FUNCTIONS ============
 
 def generate_project_id():
     year = datetime.now().year
@@ -126,9 +177,12 @@ def generate_project_id():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    try:
+        return User.query.get(int(user_id))
+    except:
+        return None
 
-# ==================== PUBLIC ROUTES ====================
+# ============ PUBLIC ROUTES ============
 
 @app.route('/')
 def index():
@@ -175,7 +229,7 @@ def terms():
 def privacy():
     return render_template('privacy.html')
 
-# ==================== PUBLIC ANNOUNCEMENTS API ====================
+# ============ PUBLIC ANNOUNCEMENTS API ============
 
 @app.route('/api/announcements')
 def get_public_announcements():
@@ -199,7 +253,7 @@ def get_public_announcements():
         print(f"Error fetching announcements: {e}")
         return jsonify([])
 
-# ==================== DOWNLOAD ANNOUNCEMENT ATTACHMENT ====================
+# ============ DOWNLOAD ANNOUNCEMENT ATTACHMENT ============
 
 @app.route('/api/download-announcement/<int:announcement_id>')
 def download_announcement(announcement_id):
@@ -218,7 +272,7 @@ def download_announcement(announcement_id):
         flash('Error downloading file', 'error')
         return redirect(url_for('index'))
 
-# ==================== PROJECT ROUTES ====================
+# ============ PROJECT ROUTES ============
 
 @app.route('/create-project', methods=['GET', 'POST'])
 @login_required
@@ -234,9 +288,11 @@ def create_project():
             additional_details = request.form.get('additional_details')
             skills_input = request.form.get('skills', '')
             skills_required = [s.strip() for s in skills_input.split(',') if s.strip()]
+            
             if not title or not description or not team_size:
                 flash('Please fill in all required fields', 'error')
                 return redirect(url_for('create_project'))
+            
             new_project = Project(
                 project_id=generate_project_id(),
                 title=title,
@@ -252,12 +308,14 @@ def create_project():
             new_project.set_skills(skills_required)
             db.session.add(new_project)
             db.session.flush()
+            
             new_group = Group(
                 name=f"{title} Chat Group",
                 project_id=new_project.id
             )
             db.session.add(new_group)
             db.session.flush()
+            
             group_member = GroupMember(
                 group_id=new_group.id,
                 user_id=current_user.id,
@@ -265,6 +323,7 @@ def create_project():
             )
             db.session.add(group_member)
             db.session.commit()
+            
             flash(f'Project created successfully. Project ID: {new_project.project_id}', 'success')
             return redirect(url_for('project_detail', project_id=new_project.id))
         except Exception as e:
@@ -278,6 +337,7 @@ def projects():
     try:
         category = request.args.get('category')
         filter_type = request.args.get('filter', 'all')
+        
         if filter_type == 'recommended' and current_user.is_authenticated:
             user_skills = current_user.get_skills()
             if user_skills:
@@ -342,6 +402,7 @@ def apply_to_project(project_id):
         if existing:
             flash('You have already applied to this project', 'warning')
             return redirect(url_for('project_detail', project_id=project_id))
+        
         message = request.form.get('message', '')
         application = ProjectApplication(
             applicant_id=current_user.id,
@@ -369,6 +430,7 @@ def mark_project_complete(project_id):
         if project.status == 'completed':
             flash('Project is already completed', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
+        
         project.status = 'completed'
         project.completed_at = datetime.utcnow()
         db.session.commit()
@@ -388,6 +450,7 @@ def mark_project_active(project_id):
         if project.status != 'completed':
             flash('Only completed projects can be marked as active', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
+        
         project.status = 'active'
         project.completed_at = None
         db.session.commit()
@@ -403,6 +466,7 @@ def request_supervisor(project_id):
         project = Project.query.get_or_404(project_id)
         supervisor_id = request.form.get('supervisor_id')
         message = request.form.get('message', '')
+        
         if project.student_id != current_user.id:
             flash('You do not have permission to request supervision for this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
@@ -412,10 +476,12 @@ def request_supervisor(project_id):
         if not supervisor_id:
             flash('Please select a supervisor', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
+        
         supervisor = User.query.get(supervisor_id)
         if not supervisor or not supervisor.is_supervisor:
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
+        
         project.supervisor_id = supervisor_id
         project.status = 'pending_supervision'
         project.supervision_requested_at = datetime.utcnow()
@@ -458,11 +524,13 @@ def handle_application(application_id):
         if application.project.student_id != current_user.id:
             flash('You do not have permission to do that', 'error')
             return redirect(url_for('manage_applications'))
+        
         action = request.form.get('action')
         if action == 'approve':
             application.status = 'approved'
             application.approved_at = datetime.utcnow()
             db.session.commit()
+            
             group = Group.query.filter_by(project_id=application.project_id).first()
             if group:
                 existing_member = GroupMember.query.filter_by(
@@ -505,6 +573,7 @@ def cancel_application(application_id):
         if application.status != 'pending':
             flash('Only pending applications can be cancelled', 'error')
             return redirect(url_for('manage_applications'))
+        
         db.session.delete(application)
         db.session.commit()
         flash('Application cancelled successfully', 'success')
@@ -533,6 +602,7 @@ def create_topic():
             if not title or not content:
                 flash('Title and content are required', 'error')
                 return redirect(url_for('create_topic'))
+            
             new_topic = ForumTopic(
                 title=title,
                 content=content,
@@ -546,6 +616,7 @@ def create_topic():
         except Exception as e:
             flash(f'Error creating topic: {str(e)}', 'error')
             return redirect(url_for('create_topic'))
+    
     try:
         projects = Project.query.filter_by(student_id=current_user.id).all()
     except:
@@ -559,6 +630,7 @@ def view_topic(topic_id):
     except:
         flash('Topic not found', 'error')
         return redirect(url_for('forum'))
+    
     if request.method == 'POST' and current_user.is_authenticated:
         try:
             content = request.form.get('content')
@@ -574,6 +646,7 @@ def view_topic(topic_id):
         except Exception as e:
             flash(f'Error posting reply: {str(e)}', 'error')
         return redirect(url_for('view_topic', topic_id=topic_id))
+    
     return render_template('view_topic.html', topic=topic)
 
 # ==================== CONTACT FORM ====================
@@ -587,9 +660,11 @@ def send_contact():
         phone = request.form.get('phone', 'Not provided')
         inquiry_type = request.form.get('inquiry_type')
         message = request.form.get('message')
+        
         if not name or not email or not inquiry_type or not message:
             flash('Please fill in all required fields', 'error')
             return redirect(url_for('contact'))
+        
         flash('Thank you for your inquiry. We will get back to you soon.', 'success')
     except Exception as e:
         flash(f'Error sending message: {str(e)}', 'error')
@@ -601,10 +676,12 @@ def send_contact():
 def match_projects():
     if not current_user.is_authenticated:
         return jsonify({'error': 'Not logged in'}), 401
+    
     try:
         user_skills = set(current_user.get_skills())
         if not user_skills:
             return jsonify([])
+        
         matches = []
         projects = Project.query.filter_by(status='active').all()
         for project in projects:
@@ -633,6 +710,7 @@ def view_supervisor_profile(supervisor_id):
         if not supervisor.is_supervisor:
             flash('User is not a supervisor', 'error')
             return redirect(url_for('index'))
+        
         supervised_projects = Project.query.filter_by(
             supervisor_id=supervisor.id,
             status='active'
@@ -652,4 +730,4 @@ def init_db():
     print("Database initialized")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)  # Set debug=False for production

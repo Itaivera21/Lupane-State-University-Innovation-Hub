@@ -32,21 +32,33 @@ def dashboard():
 
 def render_student_dashboard():
     """Render dashboard for regular students"""
-    # Get user's projects (both active AND completed - FIXED)
-    created_projects = Project.query.filter(
+    # Get user's active projects (status = 'active')
+    active_projects_list = Project.query.filter(
         Project.student_id == current_user.id,
-        Project.status.in_(['active', 'completed'])
+        Project.status == 'active'
     ).all()
     
-    # Get projects they applied to and were approved
+    # Get projects they applied to and were approved (active ones only)
     approved_applications = ProjectApplication.query.filter_by(
         applicant_id=current_user.id,
         status='approved'
     ).all()
-    joined_projects = [app.project for app in approved_applications if app.project]
+    joined_active_projects = [app.project for app in approved_applications if app.project and app.project.status == 'active']
     
-    # Combine both lists (remove duplicates if any)
-    all_user_projects = list(set(created_projects + joined_projects))
+    # Combine active projects (remove duplicates)
+    all_active_projects = list(set(active_projects_list + joined_active_projects))
+    
+    # Get user's completed projects
+    completed_projects_list = Project.query.filter(
+        Project.student_id == current_user.id,
+        Project.status == 'completed'
+    ).all()
+    
+    # Get joined completed projects
+    joined_completed_projects = [app.project for app in approved_applications if app.project and app.project.status == 'completed']
+    
+    # Combine completed projects (remove duplicates)
+    all_completed_projects = list(set(completed_projects_list + joined_completed_projects))
     
     # Get pending applications count
     pending_applications_count = ProjectApplication.query.filter_by(
@@ -65,14 +77,14 @@ def render_student_dashboard():
     recommended_projects = []
     
     if user_skills:
-        all_active_projects = Project.query.filter(
+        all_projects_for_recommendation = Project.query.filter(
             and_(
-                Project.status.in_(['active', 'completed']),
+                Project.status == 'active',
                 Project.student_id != current_user.id
             )
         ).all()
         
-        for project in all_active_projects:
+        for project in all_projects_for_recommendation:
             project_skills = project.get_skills()
             if project_skills:
                 matching_skills = set(user_skills) & set(project_skills)
@@ -95,8 +107,10 @@ def render_student_dashboard():
     
     return render_template('dashboard.html',
         user=current_user,
-        active_projects=all_user_projects[:3],
-        active_projects_count=len(all_user_projects),
+        active_projects=all_active_projects[:3],
+        active_projects_count=len(all_active_projects),
+        completed_projects=all_completed_projects[:3],
+        completed_projects_count=len(all_completed_projects),
         pending_applications_count=pending_applications_count,
         pending_applications=pending_apps,
         recommended_projects=recommended_projects,
@@ -106,22 +120,18 @@ def render_student_dashboard():
 
 def render_supervisor_dashboard():
     """Render dashboard for supervisors"""
-    # Get projects supervised by this supervisor (both active AND completed)
-    supervised_projects = Project.query.filter(
-        Project.supervisor_id == current_user.id,
-        Project.status.in_(['active', 'completed', 'pending_supervision'])
-    ).all()
+    # Get projects supervised by this supervisor - separate by status
+    supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
     
-    # Get pending supervision requests (projects assigned to this supervisor but pending)
-    pending_supervision_requests = Project.query.filter_by(
-        supervisor_id=current_user.id,
-        status='pending_supervision'
-    ).all()
+    # Separate by status
+    active_supervised = [p for p in supervised_projects if p.status == 'active']
+    completed_supervised_list = [p for p in supervised_projects if p.status == 'completed']
+    pending_supervision_requests = [p for p in supervised_projects if p.status == 'pending_supervision']
     
     # Count stats
     supervised_projects_count = len(supervised_projects)
     pending_requests_count = len(pending_supervision_requests)
-    completed_supervised = sum(1 for p in supervised_projects if p.status == 'completed')
+    completed_supervised_count = len(completed_supervised_list)
     
     # Get recent forum activity (same for all users)
     recent_forum_posts = ForumTopic.query.order_by(
@@ -132,7 +142,7 @@ def render_supervisor_dashboard():
     recent_activity = []
     
     # Get recent applications to supervised projects
-    for project in supervised_projects:
+    for project in supervised_projects[:5]:
         recent_apps = ProjectApplication.query.filter_by(
             project_id=project.id,
             status='pending'
@@ -152,11 +162,11 @@ def render_supervisor_dashboard():
     
     return render_template('dashboard.html',
         user=current_user,
-        supervised_projects_list=supervised_projects,
+        supervised_projects_list=active_supervised[:5],
         supervised_projects_count=supervised_projects_count,
         pending_supervision_requests=pending_requests_count,
         pending_supervision_requests_list=pending_supervision_requests,
-        completed_supervised=completed_supervised,
+        completed_supervised=completed_supervised_count,
         forum_posts=recent_forum_posts,
         recent_activity=recent_activity,
         is_supervisor=True
@@ -173,32 +183,34 @@ def get_dashboard_stats():
     """
     try:
         if current_user.is_supervisor:
-            # Supervisor stats (include completed projects - FIXED)
-            supervised_projects = Project.query.filter(
-                Project.supervisor_id == current_user.id,
-                Project.status.in_(['active', 'completed', 'pending_supervision'])
-            ).all()
-            pending_requests = Project.query.filter_by(
-                supervisor_id=current_user.id,
-                status='pending_supervision'
-            ).count()
+            # Supervisor stats
+            supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
+            pending_requests = [p for p in supervised_projects if p.status == 'pending_supervision']
+            completed_projects = [p for p in supervised_projects if p.status == 'completed']
             
             return jsonify({
                 'success': True,
                 'is_supervisor': True,
                 'stats': {
                     'supervised_projects': len(supervised_projects),
-                    'pending_requests': pending_requests,
-                    'completed_projects': sum(1 for p in supervised_projects if p.status == 'completed'),
+                    'pending_requests': len(pending_requests),
+                    'completed_projects': len(completed_projects),
                     'username': current_user.get_full_name() or current_user.username
                 }
             })
         else:
-            # Student stats (include completed projects - FIXED)
+            # Student stats
             active_projects = Project.query.filter(
                 and_(
                     Project.student_id == current_user.id,
-                    Project.status.in_(['active', 'completed'])
+                    Project.status == 'active'
+                )
+            ).count()
+            
+            completed_projects = Project.query.filter(
+                and_(
+                    Project.student_id == current_user.id,
+                    Project.status == 'completed'
                 )
             ).count()
             
@@ -212,6 +224,7 @@ def get_dashboard_stats():
                 'is_supervisor': False,
                 'stats': {
                     'active_projects': active_projects,
+                    'completed_projects': completed_projects,
                     'pending_applications': pending_apps,
                     'username': current_user.get_full_name() or current_user.username
                 }
@@ -254,16 +267,14 @@ def refresh_projects():
     Useful for when user completes a task
     """
     if current_user.is_supervisor:
-        supervised_projects = Project.query.filter(
-            Project.supervisor_id == current_user.id,
-            Project.status.in_(['active', 'completed', 'pending_supervision'])
-        ).all()
+        supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
+        active_supervised = [p for p in supervised_projects if p.status == 'active']
         return render_template('partials/supervisor_projects.html', 
-                             projects=supervised_projects[:3])
+                             projects=active_supervised[:3])
     else:
-        created_projects = Project.query.filter(
+        active_projects_list = Project.query.filter(
             Project.student_id == current_user.id,
-            Project.status.in_(['active', 'completed'])
+            Project.status == 'active'
         ).all()
         
         approved_apps = ProjectApplication.query.filter_by(
@@ -271,10 +282,11 @@ def refresh_projects():
             status='approved'
         ).all()
         
-        all_projects = created_projects + [app.project for app in approved_apps if app.project]
+        joined_active = [app.project for app in approved_apps if app.project and app.project.status == 'active']
+        all_active = list(set(active_projects_list + joined_active))
         
         return render_template('partials/project_cards.html', 
-                             projects=all_projects[:3])
+                             projects=all_active[:3])
 
 # ==================== SUPERVISOR SPECIFIC ROUTES ====================
 
@@ -323,7 +335,7 @@ def reject_supervision_request(project_id):
     
     # Remove supervisor assignment
     project.supervisor_id = None
-    project.status = 'active'  # Revert to active without supervisor
+    project.status = 'active'
     project.supervision_requested_at = None
     db.session.commit()
     

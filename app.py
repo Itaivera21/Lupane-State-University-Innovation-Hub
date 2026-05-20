@@ -109,9 +109,13 @@ except Exception as e:
     print(f"Database initialization error: {type(e).__name__}: {e}")
     traceback.print_exc()
 
-print("Initializing mail...")
-mail = Mail(app)
-print("Mail initialized")
+# Flask-Mail is optional - handle gracefully
+try:
+    mail = Mail(app)
+    print("Mail initialized")
+except Exception as e:
+    print(f"Mail initialization skipped: {e}")
+    mail = None
 
 print("Initializing login manager...")
 login_manager = LoginManager()
@@ -332,13 +336,13 @@ def create_project():
 
 @app.route('/projects')
 def projects():
-    """Show all active projects that are visible to students"""
+    """Show all projects that are visible to students - includes active and pending_supervision"""
     try:
         category = request.args.get('category')
         filter_type = request.args.get('filter', 'all')
         
-        # Base query: only show active projects
-        base_query = Project.query.filter_by(status='active')
+        # FIXED: Base query shows both active AND pending_supervision projects
+        base_query = Project.query.filter(Project.status.in_(['active', 'pending_supervision']))
         
         # For recommended filter (logged in users only)
         if filter_type == 'recommended' and current_user.is_authenticated:
@@ -368,7 +372,7 @@ def projects():
                 status='active'
             ).all()
         
-        # Default: show all active projects (visible to everyone)
+        # Default: show all active and pending_supervision projects (visible to everyone)
         else:
             if category:
                 projects = base_query.filter_by(category=category).order_by(Project.created_at.desc()).all()
@@ -459,13 +463,20 @@ def mark_project_active(project_id):
         if project.student_id != current_user.id:
             flash('You do not have permission to modify this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
-        if project.status != 'completed':
-            flash('Only completed projects can be marked as active', 'warning')
+        
+        # FIXED: Allow reactivating both completed AND pending_supervision projects
+        if project.status not in ['completed', 'pending_supervision']:
+            flash('Only completed or pending supervision projects can be marked as active', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
         
         project.status = 'active'
         project.completed_at = None
+        # Also clear supervisor if it was pending_supervision without approval
+        if project.supervisor_id and project.supervision_approved_at is None:
+            project.supervisor_id = None
+            project.supervision_requested_at = None
         db.session.commit()
+        
         flash('Project marked as active again.', 'success')
     except Exception as e:
         flash(f'Error: {str(e)}', 'error')
@@ -508,6 +519,38 @@ def request_supervisor(project_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Error: {str(e)}', 'error')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+# ==================== CANCEL SUPERVISION REQUEST ====================
+
+@app.route('/project/<int:project_id>/cancel-supervision', methods=['POST'])
+@login_required
+def cancel_supervision(project_id):
+    """Student cancels a pending supervision request"""
+    try:
+        project = Project.query.get_or_404(project_id)
+        
+        # Check if current user is the project owner
+        if project.student_id != current_user.id:
+            flash('You do not have permission to cancel this request', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        # Check if project is in pending_supervision status
+        if project.status != 'pending_supervision':
+            flash('This project does not have a pending supervision request', 'warning')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        # Reset project to active, remove supervisor
+        project.status = 'active'
+        project.supervisor_id = None
+        project.supervision_requested_at = None
+        db.session.commit()
+        
+        flash('Supervision request cancelled successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error cancelling request: {str(e)}', 'error')
+    
     return redirect(url_for('project_detail', project_id=project_id))
 
 # ==================== SUPERVISOR APPROVAL ROUTE ====================

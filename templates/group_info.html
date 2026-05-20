@@ -271,10 +271,6 @@
             gap: 12px;
         }
 
-        .mute-info span:first-child {
-            font-size: 24px;
-        }
-
         .toggle-switch {
             width: 52px;
             height: 32px;
@@ -603,7 +599,7 @@
         <!-- Group Info Card -->
         <div class="card" id="groupInfoCard">
             <div class="group-avatar">
-                <span>🏗️</span>
+                <span>Group</span>
             </div>
             <div class="group-name" id="groupName">Loading...</div>
             <div class="group-description" id="groupDescription"></div>
@@ -622,22 +618,22 @@
         <!-- Settings Card -->
         <div class="card">
             <div class="card-header">
-                <h2>⚙️ Settings</h2>
+                <h2>Settings</h2>
             </div>
             <div class="mute-setting">
                 <div class="mute-info">
-                    <span>🔕</span>
+                    <span>Mute</span>
                     <span>Mute group notifications</span>
                 </div>
                 <div class="toggle-switch" id="muteToggle"></div>
             </div>
-            <div class="mute-status-text" id="muteStatus">🔇 Group is muted - you won't receive notifications</div>
+            <div class="mute-status-text" id="muteStatus">Group is muted - you will not receive notifications</div>
         </div>
 
         <!-- Team Members Card -->
         <div class="card">
             <div class="card-header">
-                <h2>👥 Team Members</h2>
+                <h2>Team Members</h2>
                 <button class="btn-outline" style="padding: 8px 16px; font-size: 13px;" onclick="goToTeamMembers()">Manage →</button>
             </div>
             <div id="membersLoading" class="loading">Loading members...</div>
@@ -647,23 +643,23 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn btn-outline" onclick="shareGroup()">📤 Share Group</button>
-            <button class="btn btn-danger" onclick="leaveGroup()">🚪 Leave Group</button>
+            <button class="btn btn-outline" onclick="shareGroup()">Share Group</button>
+            <button class="btn btn-danger" onclick="leaveGroup()">Leave Group</button>
         </div>
     </div>
 
     <!-- Bottom Navigation (Mobile) -->
     <div class="bottom-nav">
         <button class="nav-item" onclick="goToChat()">
-            <span>💬</span>
+            <span>Chat</span>
             <span>Chat</span>
         </button>
         <button class="nav-item active">
-            <span>ℹ️</span>
+            <span>Info</span>
             <span>Info</span>
         </button>
         <button class="nav-item" onclick="goToTeamMembers()">
-            <span>👥</span>
+            <span>Members</span>
             <span>Members</span>
         </button>
     </div>
@@ -769,11 +765,11 @@
                         if (newMuteState) {
                             this.classList.add('active');
                             document.getElementById('muteStatus').style.display = 'block';
-                            showNotification('Group muted 🔇', 'success');
+                            showNotification('Group muted', 'success');
                         } else {
                             this.classList.remove('active');
                             document.getElementById('muteStatus').style.display = 'none';
-                            showNotification('Group unmuted 🔔', 'success');
+                            showNotification('Group unmuted', 'success');
                         }
                     } else {
                         showNotification('Failed to change mute status', 'error');
@@ -811,10 +807,10 @@
                         let mutedBadge = '';
 
                         if (member.user_id === projectOwnerId) {
-                            roleText = '👑 Project Lead';
+                            roleText = 'Project Lead';
                             roleClass = 'owner';
                         } else if (member.is_supervisor) {
-                            roleText = '📚 Supervisor';
+                            roleText = 'Supervisor';
                             roleClass = '';
                         }
 
@@ -839,13 +835,13 @@
             } catch (error) {
                 loadingEl.style.display = 'none';
                 errorEl.style.display = 'block';
-                errorEl.textContent = '❌ Error loading team members. Please try again.';
+                errorEl.textContent = 'Error loading team members. Please try again.';
                 console.error('Error loading members:', error);
             }
         }
 
         async function leaveGroup() {
-            if (!confirm('⚠️ Are you sure you want to leave this group?\n\nYou will lose access to all project resources and chat history.')) {
+            if (!confirm('Are you sure you want to leave this group?\n\nYou will lose access to all project resources and chat history.')) {
                 return;
             }
 

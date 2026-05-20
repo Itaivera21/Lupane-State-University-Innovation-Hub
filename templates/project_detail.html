@@ -215,6 +215,22 @@
             background: #e67e22;
         }
 
+        .cancel-supervision-btn {
+            background: #e67e22;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s ease;
+        }
+
+        .cancel-supervision-btn:hover {
+            background: #d35400;
+        }
+
         .supervisor-section {
             margin-bottom: 30px;
             padding: 15px;
@@ -655,7 +671,7 @@
             {% endif %}
         {% endwith %}
 
-        <a href="{{ url_for('projects') }}" class="back-link">← Back to Projects</a>
+        <a href="{{ url_for('projects') }}" class="back-link">Back to Projects</a>
 
         <div class="project-detail-card">
             <!-- Status Section with Mark Complete/Active Button -->
@@ -709,6 +725,11 @@
                 {% elif project.status == 'pending_supervision' %}
                 <div class="supervisor-info">
                     <div style="color: #f39c12;">Supervision request pending approval</div>
+                    {% if current_user.is_authenticated and current_user.id == project.student_id %}
+                    <div style="display: flex; gap: 10px;">
+                        <button class="cancel-supervision-btn" onclick="confirmCancelSupervision()">Cancel Request</button>
+                    </div>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="supervisor-info">
@@ -749,13 +770,13 @@
                 <h3 class="team-title">Team Members</h3>
                 <div class="team-members">
                     <div class="team-member">
-                        <span>👤</span>
+                        <span>Lead</span>
                         <span>{% if project.student %}{{ project.student.get_full_name() }}{% else %}Unknown{% endif %} (Project Lead)</span>
                     </div>
                     {% if project.team_members %}
                         {% for member in project.team_members %}
                         <div class="team-member">
-                            <span>👥</span>
+                            <span>Member</span>
                             <span>{{ member.get_full_name() }}</span>
                         </div>
                         {% endfor %}
@@ -775,6 +796,9 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Cancel Supervision Form -->
+    <form id="cancelSupervisionForm" method="POST" action="{{ url_for('cancel_supervision', project_id=project.id) }}" style="display: none;"></form>
 
     <!-- Request Supervisor Modal -->
     <div class="modal" id="supervisorModal">
@@ -850,6 +874,12 @@
 
         function viewSupervisorProfile(supervisorId) {
             window.location.href = "{{ url_for('auth.view_supervisor_profile', supervisor_id=0) }}".replace('0', supervisorId);
+        }
+
+        function confirmCancelSupervision() {
+            if (confirm('Are you sure you want to cancel the supervision request? The project will become active without a supervisor.')) {
+                document.getElementById('cancelSupervisionForm').submit();
+            }
         }
 
         window.onclick = function(event) {

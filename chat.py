@@ -28,6 +28,24 @@ def get_team_members(project):
             members.append(app.applicant)
     return members
 
+def is_approved_member(user_id, project_id):
+    """Check if user is an approved member of the project"""
+    project = Project.query.get(project_id)
+    if project and project.student_id == user_id:
+        return True
+    
+    if project and project.supervisor_id == user_id:
+        return True
+    
+    # Check if user has an approved application
+    approved_app = ProjectApplication.query.filter_by(
+        project_id=project_id,
+        applicant_id=user_id,
+        status='approved'
+    ).first()
+    
+    return approved_app is not None
+
 def get_system_user():
     """Get or create system user for system messages"""
     system_user = User.query.filter_by(username='system').first()
@@ -250,9 +268,11 @@ def send_message(project_id):
     try:
         project = Project.query.get_or_404(project_id)
 
+        # Check access including approved applications
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
-                      current_user.is_admin)
+                      current_user.is_admin or
+                      is_approved_member(current_user.id, project_id))
 
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
@@ -307,9 +327,11 @@ def get_messages(project_id):
     try:
         project = Project.query.get_or_404(project_id)
 
+        # Check access including approved applications
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
-                      current_user.is_admin)
+                      current_user.is_admin or
+                      is_approved_member(current_user.id, project_id))
 
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
@@ -370,7 +392,8 @@ def download_resource(resource_id):
         if project:
             has_access = (project.student_id == current_user.id or
                           project.supervisor_id == current_user.id or
-                          current_user.is_admin)
+                          current_user.is_admin or
+                          is_approved_member(current_user.id, project.id))
 
             if not has_access:
                 return jsonify({'error': 'Access denied'}), 403
@@ -394,7 +417,8 @@ def share_resource(project_id):
 
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
-                      current_user.is_admin)
+                      current_user.is_admin or
+                      is_approved_member(current_user.id, project_id))
 
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
@@ -465,7 +489,8 @@ def share_link(project_id):
 
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
-                      current_user.is_admin)
+                      current_user.is_admin or
+                      is_approved_member(current_user.id, project_id))
 
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
@@ -506,7 +531,8 @@ def share_code(project_id):
 
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
-                      current_user.is_admin)
+                      current_user.is_admin or
+                      is_approved_member(current_user.id, project_id))
 
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
@@ -547,16 +573,11 @@ def get_project_info(project_id):
 
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
-                      current_user.is_admin)
+                      current_user.is_admin or
+                      is_approved_member(current_user.id, project_id))
 
         if not has_access:
-            approved_app = ProjectApplication.query.filter_by(
-                project_id=project_id,
-                applicant_id=current_user.id,
-                status='approved'
-            ).first()
-            if not approved_app:
-                return jsonify({'error': 'Access denied'}), 403
+            return jsonify({'error': 'Access denied'}), 403
 
         member_count = 1
         if project.supervisor:

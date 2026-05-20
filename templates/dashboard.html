@@ -806,7 +806,7 @@
                 <a href="{{ url_for('projects') }}" class="action-btn secondary">Browse Projects</a>
                 <a href="{{ url_for('forum') }}" class="action-btn secondary">Go to Forum</a>
 
-                {% if user and user.projects_created %}
+                {% if user and user.projects_created and user.projects_created|length > 0 %}
                 <a href="{{ url_for('manage_applications') }}" class="manage-apps-btn">Manage Applications</a>
                 {% endif %}
             {% endif %}
@@ -828,10 +828,12 @@
                     <p class="project-description" style="margin-top: 5px;">{{ project.description[:100] }}...</p>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <form action="{{ url_for('supervisor.approve_application', project_id=project.id) }}" method="POST">
+                    <form action="{{ url_for('supervisor.approve_request', request_id=project.id) }}" method="POST">
                         <button type="submit" class="approve-btn">Approve</button>
                     </form>
-                    <button class="reject-btn" onclick="rejectRequest({{ project.id }})">Reject</button>
+                    <form action="{{ url_for('supervisor.reject_request', request_id=project.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="reject-btn">Reject</button>
+                    </form>
                 </div>
             </div>
             {% endfor %}
@@ -1079,23 +1081,6 @@
                 }
             });
         });
-
-        function rejectRequest(projectId) {
-            if (confirm('Are you sure you want to reject this supervision request?')) {
-                fetch(`/supervisor/application/${projectId}/reject`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                }).then(response => {
-                    if (response.ok) {
-                        location.reload();
-                    } else {
-                        alert('Error rejecting request');
-                    }
-                });
-            }
-        }
     </script>
 </body>
 </html>

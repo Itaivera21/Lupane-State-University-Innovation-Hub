@@ -32,13 +32,18 @@ def dashboard():
 
 def render_student_dashboard():
     """Render dashboard for regular students"""
-    # Get user's active projects (status = 'active')
-    active_projects_list = Project.query.filter(
+    # FIXED: Include both 'active' AND 'pending_supervision' projects for student's own projects
+    # This ensures projects don't disappear when supervision is requested
+    user_projects_list = Project.query.filter(
         Project.student_id == current_user.id,
-        Project.status == 'active'
+        Project.status.in_(['active', 'pending_supervision', 'completed'])
     ).all()
     
-    # Get projects they applied to and were approved (active ones only)
+    # Separate into active/pending and completed
+    active_pending_projects = [p for p in user_projects_list if p.status in ['active', 'pending_supervision']]
+    completed_projects_list = [p for p in user_projects_list if p.status == 'completed']
+    
+    # Get projects they applied to and were approved (active ones only - they can't join pending projects)
     approved_applications = ProjectApplication.query.filter_by(
         applicant_id=current_user.id,
         status='approved'
@@ -46,13 +51,7 @@ def render_student_dashboard():
     joined_active_projects = [app.project for app in approved_applications if app.project and app.project.status == 'active']
     
     # Combine active projects (remove duplicates)
-    all_active_projects = list(set(active_projects_list + joined_active_projects))
-    
-    # Get user's completed projects
-    completed_projects_list = Project.query.filter(
-        Project.student_id == current_user.id,
-        Project.status == 'completed'
-    ).all()
+    all_active_projects = list(set(active_pending_projects + joined_active_projects))
     
     # Get joined completed projects
     joined_completed_projects = [app.project for app in approved_applications if app.project and app.project.status == 'completed']
@@ -72,7 +71,7 @@ def render_student_dashboard():
         status='pending'
     ).order_by(desc(ProjectApplication.applied_at)).all()
     
-    # Get project recommendations based on user's skills
+    # Get project recommendations based on user's skills (only active projects)
     user_skills = current_user.get_skills()
     recommended_projects = []
     
@@ -199,11 +198,11 @@ def get_dashboard_stats():
                 }
             })
         else:
-            # Student stats
-            active_projects = Project.query.filter(
+            # Student stats - FIXED: Include pending_supervision for student's own projects
+            student_projects = Project.query.filter(
                 and_(
                     Project.student_id == current_user.id,
-                    Project.status == 'active'
+                    Project.status.in_(['active', 'pending_supervision'])
                 )
             ).count()
             
@@ -223,7 +222,7 @@ def get_dashboard_stats():
                 'success': True,
                 'is_supervisor': False,
                 'stats': {
-                    'active_projects': active_projects,
+                    'active_projects': student_projects,
                     'completed_projects': completed_projects,
                     'pending_applications': pending_apps,
                     'username': current_user.get_full_name() or current_user.username
@@ -272,9 +271,10 @@ def refresh_projects():
         return render_template('partials/supervisor_projects.html', 
                              projects=active_supervised[:3])
     else:
-        active_projects_list = Project.query.filter(
+        # FIXED: Include pending_supervision for student's own projects
+        user_projects = Project.query.filter(
             Project.student_id == current_user.id,
-            Project.status == 'active'
+            Project.status.in_(['active', 'pending_supervision'])
         ).all()
         
         approved_apps = ProjectApplication.query.filter_by(
@@ -283,7 +283,7 @@ def refresh_projects():
         ).all()
         
         joined_active = [app.project for app in approved_apps if app.project and app.project.status == 'active']
-        all_active = list(set(active_projects_list + joined_active))
+        all_active = list(set(user_projects + joined_active))
         
         return render_template('partials/project_cards.html', 
                              projects=all_active[:3])

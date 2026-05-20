@@ -341,7 +341,7 @@ def projects():
         category = request.args.get('category')
         filter_type = request.args.get('filter', 'all')
         
-        # FIXED: Base query shows both active AND pending_supervision projects
+        # Base query shows both active AND pending_supervision projects
         base_query = Project.query.filter(Project.status.in_(['active', 'pending_supervision']))
         
         # For recommended filter (logged in users only)
@@ -464,7 +464,7 @@ def mark_project_active(project_id):
             flash('You do not have permission to modify this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # FIXED: Allow reactivating both completed AND pending_supervision projects
+        # Allow reactivating both completed AND pending_supervision projects
         if project.status not in ['completed', 'pending_supervision']:
             flash('Only completed or pending supervision projects can be marked as active', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
@@ -472,8 +472,9 @@ def mark_project_active(project_id):
         project.status = 'active'
         project.completed_at = None
         # Also clear supervisor if it was pending_supervision without approval
-        if project.supervisor_id and project.supervision_approved_at is None:
+        if project.requested_supervisor_id or (project.supervisor_id and project.supervision_approved_at is None):
             project.supervisor_id = None
+            project.requested_supervisor_id = None
             project.supervision_requested_at = None
         db.session.commit()
         
@@ -482,7 +483,7 @@ def mark_project_active(project_id):
         flash(f'Error: {str(e)}', 'error')
     return redirect(url_for('project_detail', project_id=project_id))
 
-# ==================== SUPERVISION REQUEST ====================
+# ==================== SUPERVISION REQUEST - FIXED (no auto-approval) ====================
 
 @app.route('/project/<int:project_id>/request-supervisor', methods=['POST'])
 @login_required
@@ -509,48 +510,18 @@ def request_supervisor(project_id):
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # Store the requested supervisor and set pending status
-        project.supervisor_id = supervisor_id
+        # FIXED: Use requested_supervisor_id instead of assigning supervisor_id immediately
+        # The supervisor must approve the request first
         project.status = 'pending_supervision'
+        project.requested_supervisor_id = supervisor_id
         project.supervision_requested_at = datetime.utcnow()
+        # Do NOT set supervisor_id yet
         db.session.commit()
         
-        flash(f'Supervision request sent to {supervisor.get_full_name()}. Waiting for approval.', 'success')
+        flash(f'Supervision request sent to {supervisor.get_full_name()}. They will need to approve it.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error: {str(e)}', 'error')
-    return redirect(url_for('project_detail', project_id=project_id))
-
-# ==================== CANCEL SUPERVISION REQUEST ====================
-
-@app.route('/project/<int:project_id>/cancel-supervision', methods=['POST'])
-@login_required
-def cancel_supervision(project_id):
-    """Student cancels a pending supervision request"""
-    try:
-        project = Project.query.get_or_404(project_id)
-        
-        # Check if current user is the project owner
-        if project.student_id != current_user.id:
-            flash('You do not have permission to cancel this request', 'error')
-            return redirect(url_for('project_detail', project_id=project.id))
-        
-        # Check if project is in pending_supervision status
-        if project.status != 'pending_supervision':
-            flash('This project does not have a pending supervision request', 'warning')
-            return redirect(url_for('project_detail', project_id=project.id))
-        
-        # Reset project to active, remove supervisor
-        project.status = 'active'
-        project.supervisor_id = None
-        project.supervision_requested_at = None
-        db.session.commit()
-        
-        flash('Supervision request cancelled successfully', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error cancelling request: {str(e)}', 'error')
-    
     return redirect(url_for('project_detail', project_id=project_id))
 
 # ==================== SUPERVISOR APPROVAL ROUTE ====================
@@ -562,7 +533,8 @@ def approve_supervision(project_id):
     try:
         project = Project.query.get_or_404(project_id)
         
-        if project.supervisor_id != current_user.id:
+        # Check if current user is the requested supervisor for this project
+        if project.requested_supervisor_id != current_user.id:
             flash('You are not authorized to approve this supervision request', 'error')
             return redirect(url_for('dashboard.dashboard'))
         
@@ -570,10 +542,14 @@ def approve_supervision(project_id):
             flash('This project is not pending supervision approval', 'warning')
             return redirect(url_for('dashboard.dashboard'))
         
+        # Approve the supervision - move requested supervisor to actual supervisor
+        project.supervisor_id = project.requested_supervisor_id
+        project.requested_supervisor_id = None
         project.status = 'active'
         project.supervision_approved_at = datetime.utcnow()
         db.session.commit()
         
+        # Add supervisor to the chat group
         group = Group.query.filter_by(project_id=project.id).first()
         if group:
             existing_member = GroupMember.query.filter_by(
@@ -595,6 +571,39 @@ def approve_supervision(project_id):
         flash(f'Error: {str(e)}', 'error')
     
     return redirect(url_for('supervisor.dashboard'))
+
+# ==================== CANCEL SUPERVISION REQUEST ====================
+
+@app.route('/project/<int:project_id>/cancel-supervision', methods=['POST'])
+@login_required
+def cancel_supervision(project_id):
+    """Student cancels a pending supervision request"""
+    try:
+        project = Project.query.get_or_404(project_id)
+        
+        # Check if current user is the project owner
+        if project.student_id != current_user.id:
+            flash('You do not have permission to cancel this request', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        # Check if project is in pending_supervision status
+        if project.status != 'pending_supervision':
+            flash('This project does not have a pending supervision request', 'warning')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        # Reset project to active, remove requested supervisor
+        project.status = 'active'
+        project.requested_supervisor_id = None
+        project.supervisor_id = None
+        project.supervision_requested_at = None
+        db.session.commit()
+        
+        flash('Supervision request cancelled successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error cancelling request: {str(e)}', 'error')
+    
+    return redirect(url_for('project_detail', project_id=project_id))
 
 # ==================== APPLICATION MANAGEMENT ====================
 

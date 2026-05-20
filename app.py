@@ -1,935 +1,795 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file, current_app, session
-from flask_login import login_required, current_user
-from functools import wraps
-from models import db, User, Project, ChatMessage, Group, GroupMember, ChatResource, ProjectApplication
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_mail import Mail, Message
+from models import db, User, Project, ProjectApplication, ForumTopic, ForumPost, ChatMessage, ChatResource, Group, GroupMember, Announcement
 from datetime import datetime
+import json
+import secrets
+import string
 import os
-import uuid
-from werkzeug.utils import secure_filename
+import sys
+import traceback
+import ssl
+from functools import wraps
+from werkzeug.security import generate_password_hash
 
-# ==================== BLUEPRINT DEFINITION ====================
-chat_bp = Blueprint('chat', __name__, url_prefix='/chat')
+# ============ GLOBAL EXCEPTION HANDLER ============
+def global_exception_handler(exctype, value, tb):
+    print("=" * 80)
+    print("UNCAUGHT EXCEPTION DETECTED")
+    print(f"Type: {exctype.__name__}")
+    print(f"Value: {value}")
+    print("\nFull Traceback:")
+    traceback.print_tb(tb)
+    print("=" * 80)
+    sys.__excepthook__(exctype, value, tb)
 
-# Allowed file extensions
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt', 'py', 'js', 'html', 'css', 'zip', 'json'}
+sys.excepthook = global_exception_handler
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# Import your blueprints
+from dashboard import dashboard_bp
+from chat import chat_bp
+from auth import auth_bp
+from admin import admin_bp
+from dev import dev_bp
+from supervisor import supervisor_bp
 
-def get_team_members(project):
-    """Get all team members for a project"""
-    members = [project.student] if project.student else []
-    approved_apps = ProjectApplication.query.filter_by(
-        project_id=project.id,
-        status='approved'
-    ).all()
-    for app in approved_apps:
-        if app.applicant not in members:
-            members.append(app.applicant)
-    return members
+app = Flask(__name__)
+
+# ============ SECURE CONFIGURATION ============
+# Use environment variable for secret key in production
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+
+# Session security
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
+
+# ============ TiDB CLOUD DATABASE CONFIGURATION ============
+# Get database credentials from environment variables (NOT hardcoded)
+DB_USER = os.environ.get('DB_USER', 'Zs51ycD7dYgEUy3.root')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'qar204jhgxpJE2sB')
+DB_HOST = os.environ.get('DB_HOST', 'gateway01.eu-central-1.prod.aws.tidbcloud.com')
+DB_PORT = os.environ.get('DB_PORT', '4000')
+DB_NAME = os.environ.get('DB_NAME', 'innovation_hub')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4'
+)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# SSL configuration for pymysql
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 10,
+    'pool_recycle': 3600,
+    'pool_pre_ping': True,
+    'connect_args': {
+        'ssl': {
+            'ssl': True
+        }
+    }
+}
+
+# ============ FLASK-MAIL CONFIGURATION ============
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@innovationhub.com')
+
+# ============ FILE UPLOAD CONFIGURATION ============
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+
+# ============ INITIALIZE EXTENSIONS ============
+print("Starting application initialization...")
+
+try:
+    print("Initializing database...")
+    db.init_app(app)
+    print("db.init_app() successful")
+
+    with app.app_context():
+        print("Creating database tables...")
+        db.create_all()
+        print("Database tables ready")
+
+        print("Testing database connection...")
+        result = db.session.execute(db.text("SELECT 1")).scalar()
+        print(f"Database connection test successful: {result}")
+
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        print(f"Existing tables: {tables}")
+
+except Exception as e:
+    print(f"Database initialization error: {type(e).__name__}: {e}")
+    traceback.print_exc()
+
+print("Initializing mail...")
+mail = Mail(app)
+print("Mail initialized")
+
+print("Initializing login manager...")
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.signin'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'warning'
+print("Login manager initialized")
+
+# ============ REGISTER BLUEPRINTS ============
+print("Registering blueprints...")
+app.register_blueprint(dashboard_bp)
+app.register_blueprint(chat_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(dev_bp)
+app.register_blueprint(supervisor_bp)
+print("Blueprints registered")
+
+# ============ ERROR HANDLERS ============
+
+@app.errorhandler(404)
+def not_found_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Resource not found'}), 404
+    return "Page not found", 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Internal server error'}), 500
+    return "Server error", 500
+
+@app.errorhandler(Exception)
+def handle_error(error):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': str(error)}), 500
+    return str(error), 500
+
+# ============ HELPER FUNCTIONS ============
+
+def generate_project_id():
+    year = datetime.now().year
+    random_part = ''.join(secrets.choice(string.digits) for _ in range(4))
+    return f"PRJ-{year}-{random_part}"
 
 def is_approved_member(user_id, project_id):
-    """Check if user is an approved member of the project"""
+    """Check if user is already a member of the project"""
     project = Project.query.get(project_id)
     if project and project.student_id == user_id:
         return True
-    
     if project and project.supervisor_id == user_id:
         return True
-    
-    # Check if user has an approved application
     approved_app = ProjectApplication.query.filter_by(
         project_id=project_id,
         applicant_id=user_id,
         status='approved'
     ).first()
-    
     return approved_app is not None
 
-def get_system_user():
-    """Get or create system user for system messages"""
-    system_user = User.query.filter_by(username='system').first()
-    if system_user:
-        return system_user
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        return User.query.get(int(user_id))
+    except:
+        return None
 
-    admin_user = User.query.filter_by(is_admin=True).first()
-    if admin_user:
-        return admin_user
+# ============ PUBLIC ROUTES ============
 
-    first_user = User.query.first()
-    if first_user:
-        return first_user
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    system_user = User(
-        username='system',
-        email='system@innovationhub.com',
-        is_admin=False,
-        is_supervisor=False
-    )
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/services')
+def services():
+    return render_template('services.html')
+
+@app.route('/portfolio')
+def portfolio():
+    try:
+        completed_projects = Project.query.filter_by(status='completed').all()
+    except:
+        completed_projects = []
+    return render_template('portfolio.html', projects=completed_projects)
+
+@app.route('/portfolio/project/<int:project_id>')
+def portfolio_detail(project_id):
+    try:
+        project = Project.query.get_or_404(project_id)
+        if project.status != 'completed':
+            flash('This project is not available for public viewing', 'error')
+            return redirect(url_for('portfolio'))
+        return render_template('portfolio_detail.html', project=project)
+    except Exception as e:
+        print(f"Error in portfolio_detail: {e}")
+        flash('Project not found', 'error')
+        return redirect(url_for('portfolio'))
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+# ============ PUBLIC ANNOUNCEMENTS API ============
+
+@app.route('/api/announcements')
+def get_public_announcements():
+    try:
+        announcements = Announcement.query.order_by(
+            Announcement.is_pinned.desc(),
+            Announcement.created_at.desc()
+        ).limit(5).all()
+        data = []
+        for ann in announcements:
+            data.append({
+                'id': ann.id,
+                'title': ann.title,
+                'content': ann.content,
+                'is_pinned': ann.is_pinned,
+                'attachment_filename': ann.attachment_filename,
+                'created_at': ann.created_at.strftime('%b %d, %Y') if ann.created_at else 'Recently'
+            })
+        return jsonify(data)
+    except Exception as e:
+        print(f"Error fetching announcements: {e}")
+        return jsonify([])
+
+# ============ DOWNLOAD ANNOUNCEMENT ATTACHMENT ============
+
+@app.route('/api/download-announcement/<int:announcement_id>')
+def download_announcement(announcement_id):
+    try:
+        announcement = Announcement.query.get_or_404(announcement_id)
+        if not announcement.attachment_path or not os.path.exists(announcement.attachment_path):
+            flash('File not found', 'error')
+            return redirect(url_for('index'))
+        return send_file(
+            announcement.attachment_path,
+            as_attachment=True,
+            download_name=announcement.attachment_filename
+        )
+    except Exception as e:
+        print(f"Error downloading attachment: {e}")
+        flash('Error downloading file', 'error')
+        return redirect(url_for('index'))
+
+# ============ PROJECT ROUTES ============
+
+@app.route('/create-project', methods=['GET', 'POST'])
+@login_required
+def create_project():
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title')
+            description = request.form.get('description')
+            team_size = request.form.get('team_size')
+            duration = request.form.get('duration')
+            category = request.form.get('category')
+            roles = request.form.get('roles')
+            additional_details = request.form.get('additional_details')
+            skills_input = request.form.get('skills', '')
+            skills_required = [s.strip() for s in skills_input.split(',') if s.strip()]
+            
+            if not title or not description or not team_size:
+                flash('Please fill in all required fields', 'error')
+                return redirect(url_for('create_project'))
+            
+            new_project = Project(
+                project_id=generate_project_id(),
+                title=title,
+                description=description,
+                team_size=int(team_size),
+                duration=duration,
+                category=category,
+                roles=roles,
+                additional_details=additional_details,
+                student_id=current_user.id,
+                status='active'
+            )
+            new_project.set_skills(skills_required)
+            db.session.add(new_project)
+            db.session.flush()
+            
+            new_group = Group(
+                name=f"{title} Chat Group",
+                project_id=new_project.id
+            )
+            db.session.add(new_group)
+            db.session.flush()
+            
+            group_member = GroupMember(
+                group_id=new_group.id,
+                user_id=current_user.id,
+                is_muted=False
+            )
+            db.session.add(group_member)
+            db.session.commit()
+            
+            flash(f'Project created successfully. Project ID: {new_project.project_id}', 'success')
+            return redirect(url_for('project_detail', project_id=new_project.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating project: {str(e)}', 'error')
+            return redirect(url_for('create_project'))
+    return render_template('create_project.html')
+
+@app.route('/projects')
+def projects():
+    """Show all active projects that are visible to students"""
+    try:
+        category = request.args.get('category')
+        filter_type = request.args.get('filter', 'all')
+        
+        # Base query: only show active projects
+        base_query = Project.query.filter_by(status='active')
+        
+        # For recommended filter (logged in users only)
+        if filter_type == 'recommended' and current_user.is_authenticated:
+            user_skills = current_user.get_skills()
+            if user_skills:
+                all_projects = base_query.all()
+                matched_projects = []
+                for project in all_projects:
+                    project_skills = project.get_skills()
+                    if project_skills and set(user_skills) & set(project_skills):
+                        matched_projects.append(project)
+                projects = matched_projects
+            else:
+                projects = base_query.order_by(Project.created_at.desc()).all()
+        
+        # For pending supervision filter (supervisors only)
+        elif filter_type == 'pending_supervision' and current_user.is_authenticated and current_user.is_supervisor:
+            projects = Project.query.filter_by(
+                supervisor_id=current_user.id,
+                status='pending_supervision'
+            ).all()
+        
+        # For my supervised filter (supervisors only)
+        elif filter_type == 'my_supervised' and current_user.is_authenticated and current_user.is_supervisor:
+            projects = Project.query.filter_by(
+                supervisor_id=current_user.id,
+                status='active'
+            ).all()
+        
+        # Default: show all active projects (visible to everyone)
+        else:
+            if category:
+                projects = base_query.filter_by(category=category).order_by(Project.created_at.desc()).all()
+            else:
+                projects = base_query.order_by(Project.created_at.desc()).all()
+        
+    except Exception as e:
+        print(f"Error in projects route: {e}")
+        projects = []
+    
+    return render_template('projects.html', projects=projects)
+
+@app.route('/project/<int:project_id>')
+def project_detail(project_id):
+    try:
+        project = Project.query.get_or_404(project_id)
+        supervisors = User.query.filter_by(is_supervisor=True).all()
+        has_applied = False
+        if current_user.is_authenticated:
+            application = ProjectApplication.query.filter_by(
+                applicant_id=current_user.id,
+                project_id=project_id
+            ).first()
+            has_applied = application is not None
+        return render_template('project_detail.html',
+                             project=project,
+                             supervisors=supervisors,
+                             has_applied=has_applied)
+    except Exception as e:
+        print(f"Error in project_detail: {e}")
+        flash('Project not found', 'error')
+        return redirect(url_for('projects'))
+
+@app.route('/project/<int:project_id>/apply', methods=['POST'])
+@login_required
+def apply_to_project(project_id):
+    try:
+        project = Project.query.get_or_404(project_id)
+        existing = ProjectApplication.query.filter_by(
+            applicant_id=current_user.id,
+            project_id=project_id
+        ).first()
+        if existing:
+            flash('You have already applied to this project', 'warning')
+            return redirect(url_for('project_detail', project_id=project_id))
+        
+        message = request.form.get('message', '')
+        application = ProjectApplication(
+            applicant_id=current_user.id,
+            project_id=project_id,
+            message=message,
+            status='pending'
+        )
+        db.session.add(application)
+        db.session.commit()
+        flash('Application submitted successfully. The project creator will review it.', 'success')
+    except Exception as e:
+        flash(f'Error applying to project: {str(e)}', 'error')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+# ==================== PROJECT STATUS MANAGEMENT ====================
+
+@app.route('/project/<int:project_id>/mark-complete', methods=['POST'])
+@login_required
+def mark_project_complete(project_id):
+    try:
+        project = Project.query.get_or_404(project_id)
+        if project.student_id != current_user.id:
+            flash('You do not have permission to modify this project', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        if project.status == 'completed':
+            flash('Project is already completed', 'warning')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        project.status = 'completed'
+        project.completed_at = datetime.utcnow()
+        db.session.commit()
+        flash('Project marked as completed. It will appear in the portfolio.', 'success')
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+@app.route('/project/<int:project_id>/mark-active', methods=['POST'])
+@login_required
+def mark_project_active(project_id):
+    try:
+        project = Project.query.get_or_404(project_id)
+        if project.student_id != current_user.id:
+            flash('You do not have permission to modify this project', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        if project.status != 'completed':
+            flash('Only completed projects can be marked as active', 'warning')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        project.status = 'active'
+        project.completed_at = None
+        db.session.commit()
+        flash('Project marked as active again.', 'success')
+    except Exception as e:
+        flash(f'Error: {str(e)}', 'error')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+# ==================== SUPERVISION REQUEST ====================
+
+@app.route('/project/<int:project_id>/request-supervisor', methods=['POST'])
+@login_required
+def request_supervisor(project_id):
+    try:
+        project = Project.query.get_or_404(project_id)
+        supervisor_id = request.form.get('supervisor_id')
+        message = request.form.get('message', '')
+        
+        if project.student_id != current_user.id:
+            flash('You do not have permission to request supervision for this project', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        if project.supervisor_id:
+            flash('This project already has a supervisor', 'warning')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        if not supervisor_id:
+            flash('Please select a supervisor', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        supervisor = User.query.get(supervisor_id)
+        if not supervisor or not supervisor.is_supervisor:
+            flash('Invalid supervisor selected', 'error')
+            return redirect(url_for('project_detail', project_id=project.id))
+        
+        # Store the requested supervisor and set pending status
+        project.supervisor_id = supervisor_id
+        project.status = 'pending_supervision'
+        project.supervision_requested_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash(f'Supervision request sent to {supervisor.get_full_name()}. Waiting for approval.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'error')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+# ==================== SUPERVISOR APPROVAL ROUTE ====================
+
+@app.route('/project/<int:project_id>/approve-supervision', methods=['POST'])
+@login_required
+def approve_supervision(project_id):
+    """Supervisor approves a pending supervision request"""
+    try:
+        project = Project.query.get_or_404(project_id)
+        
+        if project.supervisor_id != current_user.id:
+            flash('You are not authorized to approve this supervision request', 'error')
+            return redirect(url_for('dashboard.dashboard'))
+        
+        if project.status != 'pending_supervision':
+            flash('This project is not pending supervision approval', 'warning')
+            return redirect(url_for('dashboard.dashboard'))
+        
+        project.status = 'active'
+        project.supervision_approved_at = datetime.utcnow()
+        db.session.commit()
+        
+        group = Group.query.filter_by(project_id=project.id).first()
+        if group:
+            existing_member = GroupMember.query.filter_by(
+                group_id=group.id,
+                user_id=current_user.id
+            ).first()
+            if not existing_member:
+                group_member = GroupMember(
+                    group_id=group.id,
+                    user_id=current_user.id,
+                    is_muted=False
+                )
+                db.session.add(group_member)
+                db.session.commit()
+        
+        flash(f'Supervision approved for project: {project.title}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'error')
+    
+    return redirect(url_for('supervisor.dashboard'))
+
+# ==================== APPLICATION MANAGEMENT ====================
+
+@app.route('/manage-applications')
+@login_required
+def manage_applications():
+    try:
+        my_projects = Project.query.filter_by(student_id=current_user.id).all()
+        project_ids = [p.id for p in my_projects]
+        pending_applications = ProjectApplication.query.filter(
+            ProjectApplication.project_id.in_(project_ids),
+            ProjectApplication.status == 'pending'
+        ).order_by(ProjectApplication.applied_at.desc()).all()
+        approved_members = ProjectApplication.query.filter(
+            ProjectApplication.project_id.in_(project_ids),
+            ProjectApplication.status == 'approved'
+        ).order_by(ProjectApplication.applied_at.desc()).all()
+        user_projects = Project.query.filter_by(student_id=current_user.id).all()
+        return render_template('manage_applications.html',
+                             pending_applications=pending_applications,
+                             approved_members=approved_members,
+                             user_projects=user_projects)
+    except Exception as e:
+        flash(f'Error loading applications: {str(e)}', 'error')
+        return redirect(url_for('dashboard.dashboard'))
+
+@app.route('/application/<int:application_id>/handle', methods=['POST'])
+@login_required
+def handle_application(application_id):
+    try:
+        application = ProjectApplication.query.get_or_404(application_id)
+        if application.project.student_id != current_user.id:
+            flash('You do not have permission to do that', 'error')
+            return redirect(url_for('manage_applications'))
+        
+        action = request.form.get('action')
+        if action == 'approve':
+            application.status = 'approved'
+            application.approved_at = datetime.utcnow()
+            db.session.commit()
+            
+            group = Group.query.filter_by(project_id=application.project_id).first()
+            if group:
+                existing_member = GroupMember.query.filter_by(
+                    group_id=group.id,
+                    user_id=application.applicant_id
+                ).first()
+                if not existing_member:
+                    group_member = GroupMember(
+                        group_id=group.id,
+                        user_id=application.applicant_id,
+                        is_muted=False
+                    )
+                    db.session.add(group_member)
+                    db.session.commit()
+                    flash(f'Application from {application.applicant.username} approved and added to chat.', 'success')
+                else:
+                    flash(f'Application from {application.applicant.username} approved. User already in chat.', 'success')
+            else:
+                flash(f'Application from {application.applicant.username} approved.', 'success')
+        elif action == 'reject':
+            application.status = 'rejected'
+            db.session.commit()
+            flash(f'Application from {application.applicant.username} rejected.', 'info')
+        else:
+            flash('Invalid action', 'error')
+            return redirect(url_for('manage_applications'))
+    except Exception as e:
+        flash(f'Error handling application: {str(e)}', 'error')
+        db.session.rollback()
+    return redirect(url_for('manage_applications'))
+
+@app.route('/application/<int:application_id>/cancel', methods=['POST'])
+@login_required
+def cancel_application(application_id):
+    try:
+        application = ProjectApplication.query.get_or_404(application_id)
+        if application.applicant_id != current_user.id:
+            flash('You do not have permission to cancel this application', 'error')
+            return redirect(url_for('manage_applications'))
+        if application.status != 'pending':
+            flash('Only pending applications can be cancelled', 'error')
+            return redirect(url_for('manage_applications'))
+        
+        db.session.delete(application)
+        db.session.commit()
+        flash('Application cancelled successfully', 'success')
+    except Exception as e:
+        flash(f'Error cancelling application: {str(e)}', 'error')
+    return redirect(url_for('dashboard.dashboard'))
+
+# ==================== FORUM ROUTES ====================
+
+@app.route('/forum')
+def forum():
+    try:
+        topics = ForumTopic.query.order_by(ForumTopic.created_at.desc()).all()
+    except:
+        topics = []
+    return render_template('forum.html', topics=topics)
+
+@app.route('/forum/create-topic', methods=['GET', 'POST'])
+@login_required
+def create_topic():
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title')
+            content = request.form.get('content')
+            project_id = request.form.get('project_id')
+            if not title or not content:
+                flash('Title and content are required', 'error')
+                return redirect(url_for('create_topic'))
+            
+            new_topic = ForumTopic(
+                title=title,
+                content=content,
+                author_id=current_user.id,
+                project_id=project_id if project_id else None
+            )
+            db.session.add(new_topic)
+            db.session.commit()
+            flash('Topic created successfully', 'success')
+            return redirect(url_for('forum'))
+        except Exception as e:
+            flash(f'Error creating topic: {str(e)}', 'error')
+            return redirect(url_for('create_topic'))
     
     try:
-        from werkzeug.security import generate_password_hash
-        system_user.password = generate_password_hash('system_pass_123')
+        projects = Project.query.filter_by(student_id=current_user.id).all()
     except:
-        system_user.password = 'system_pass_123'
+        projects = []
+    return render_template('create_topic.html', projects=projects)
 
-    db.session.add(system_user)
-    db.session.commit()
-    return system_user
-
-def send_system_message(project_id, content):
-    """Send a system message to the chat"""
-    system_user = get_system_user()
-    system_message = ChatMessage(
-        content=content,
-        sender_id=system_user.id,
-        project_id=project_id,
-        is_read=False,
-        is_system=True
-    )
-    db.session.add(system_message)
-    db.session.commit()
-
-# ==================== PAGE ROUTES ====================
-
-@chat_bp.route('/chats')
-@login_required
-def chats():
-    """Main chat page - shows all user's project chats"""
-    user_projects = []
-
-    owned_projects = Project.query.filter_by(student_id=current_user.id).all()
-    for p in owned_projects:
-        p.unread_count = ChatMessage.query.filter_by(
-            project_id=p.id,
-            is_read=False
-        ).filter(ChatMessage.sender_id != current_user.id).count()
-        user_projects.append(p)
-
-    approved_apps = ProjectApplication.query.filter_by(
-        applicant_id=current_user.id,
-        status='approved'
-    ).all()
-    for app in approved_apps:
-        if app.project not in user_projects:
-            app.project.unread_count = ChatMessage.query.filter_by(
-                project_id=app.project.id,
-                is_read=False
-            ).filter(ChatMessage.sender_id != current_user.id).count()
-            user_projects.append(app.project)
-
-    if current_user.is_supervisor:
-        supervised = Project.query.filter_by(supervisor_id=current_user.id).all()
-        for p in supervised:
-            if p not in user_projects:
-                p.unread_count = ChatMessage.query.filter_by(
-                    project_id=p.id,
-                    is_read=False
-                ).filter(ChatMessage.sender_id != current_user.id).count()
-                user_projects.append(p)
-
-    return render_template('chats.html', user_projects=user_projects, current_project=None)
-
-@chat_bp.route('/project/<int:project_id>')
-@login_required
-def project_chat(project_id):
-    """View chat for a specific project"""
-    project = Project.query.get_or_404(project_id)
-
-    has_access = False
-
-    if project.student_id == current_user.id:
-        has_access = True
-
-    approved_app = ProjectApplication.query.filter_by(
-        project_id=project_id,
-        applicant_id=current_user.id,
-        status='approved'
-    ).first()
-    if approved_app:
-        has_access = True
-
-    if project.supervisor_id == current_user.id:
-        has_access = True
-
-    if current_user.is_admin:
-        has_access = True
-
-    if not has_access:
-        flash('You do not have access to this chat', 'error')
-        return redirect(url_for('chat.chats'))
-
-    messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
-
-    unread_messages = ChatMessage.query.filter_by(
-        project_id=project_id,
-        is_read=False
-    ).filter(ChatMessage.sender_id != current_user.id).all()
-
-    for msg in unread_messages:
-        msg.is_read = True
-    db.session.commit()
-
-    team_members = get_team_members(project)
-    if project.supervisor and project.supervisor not in team_members:
-        team_members.append(project.supervisor)
-
-    user_projects = []
-    owned = Project.query.filter_by(student_id=current_user.id).all()
-    for p in owned:
-        p.unread_count = ChatMessage.query.filter_by(
-            project_id=p.id,
-            is_read=False
-        ).filter(ChatMessage.sender_id != current_user.id).count()
-        user_projects.append(p)
-
-    approved_apps_list = ProjectApplication.query.filter_by(
-        applicant_id=current_user.id,
-        status='approved'
-    ).all()
-    for app in approved_apps_list:
-        if app.project not in user_projects:
-            app.project.unread_count = ChatMessage.query.filter_by(
-                project_id=app.project.id,
-                is_read=False
-            ).filter(ChatMessage.sender_id != current_user.id).count()
-            user_projects.append(app.project)
-
-    if current_user.is_supervisor:
-        supervised = Project.query.filter_by(supervisor_id=current_user.id).all()
-        for p in supervised:
-            if p not in user_projects:
-                p.unread_count = ChatMessage.query.filter_by(
-                    project_id=p.id,
-                    is_read=False
-                ).filter(ChatMessage.sender_id != current_user.id).count()
-                user_projects.append(p)
-
-    return render_template('chats.html',
-        user_projects=user_projects,
-        current_project=project,
-        messages=messages,
-        team_members=team_members,
-        current_user=current_user
-    )
-
-# ==================== GROUP INFO & TEAM MEMBERS PAGES ====================
-
-@chat_bp.route('/group-info/<int:project_id>')
-@login_required
-def group_info(project_id):
-    """View group information page"""
-    project = Project.query.get_or_404(project_id)
-
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
-
-    if not has_access:
-        approved_app = ProjectApplication.query.filter_by(
-            project_id=project_id,
-            applicant_id=current_user.id,
-            status='approved'
-        ).first()
-        if not approved_app:
-            flash('You do not have access to this group', 'error')
-            return redirect(url_for('chat.chats'))
-
-    return render_template('group_info.html', project_id=project_id, current_user=current_user)
-
-@chat_bp.route('/team-members/<int:project_id>')
-@login_required
-def team_members(project_id):
-    """View team members management page"""
-    project = Project.query.get_or_404(project_id)
-
-    has_access = (project.student_id == current_user.id or
-                  project.supervisor_id == current_user.id or
-                  current_user.is_admin)
-
-    if not has_access:
-        approved_app = ProjectApplication.query.filter_by(
-            project_id=project_id,
-            applicant_id=current_user.id,
-            status='approved'
-        ).first()
-        if not approved_app:
-            flash('You do not have access to this group', 'error')
-            return redirect(url_for('chat.chats'))
-
-    return render_template('team_members.html', project_id=project_id, current_user=current_user)
-
-# ==================== API ROUTES ====================
-
-@chat_bp.route('/api/send-message/<int:project_id>', methods=['POST'])
-@login_required
-def send_message(project_id):
-    """Send a message via AJAX"""
+@app.route('/forum/topic/<int:topic_id>', methods=['GET', 'POST'])
+def view_topic(topic_id):
     try:
-        project = Project.query.get_or_404(project_id)
+        topic = ForumTopic.query.get_or_404(topic_id)
+    except:
+        flash('Topic not found', 'error')
+        return redirect(url_for('forum'))
+    
+    if request.method == 'POST' and current_user.is_authenticated:
+        try:
+            content = request.form.get('content')
+            if content:
+                new_post = ForumPost(
+                    content=content,
+                    author_id=current_user.id,
+                    topic_id=topic_id
+                )
+                db.session.add(new_post)
+                db.session.commit()
+                flash('Reply posted successfully', 'success')
+        except Exception as e:
+            flash(f'Error posting reply: {str(e)}', 'error')
+        return redirect(url_for('view_topic', topic_id=topic_id))
+    
+    return render_template('view_topic.html', topic=topic)
 
-        # Check access including approved applications
-        has_access = (project.student_id == current_user.id or
-                      project.supervisor_id == current_user.id or
-                      current_user.is_admin or
-                      is_approved_member(current_user.id, project_id))
+# ==================== CONTACT FORM ====================
 
-        if not has_access:
-            return jsonify({'error': 'Access denied'}), 403
-
-        group = Group.query.filter_by(project_id=project_id).first()
-        if group:
-            group_member = GroupMember.query.filter_by(
-                group_id=group.id,
-                user_id=current_user.id
-            ).first()
-            if group_member and group_member.is_muted:
-                return jsonify({'error': 'You are muted in this chat. You cannot send messages.'}), 403
-
-        content = request.form.get('message', '').strip()
-        if not content:
-            return jsonify({'error': 'Message cannot be empty'}), 400
-
-        message = ChatMessage(
-            content=content,
-            sender_id=current_user.id,
-            project_id=project_id,
-            is_read=False
-        )
-        db.session.add(message)
-        db.session.commit()
-
-        return jsonify({
-            'success': True,
-            'message': {
-                'id': message.id,
-                'content': message.content,
-                'sender_name': current_user.get_full_name() or current_user.username,
-                'time': message.created_at.strftime('%I:%M %p'),
-                'is_own': True
-            }
-        })
+@app.route('/send-contact', methods=['POST'])
+def send_contact():
+    try:
+        name = request.form.get('name')
+        organization = request.form.get('organization', 'Not provided')
+        email = request.form.get('email')
+        phone = request.form.get('phone', 'Not provided')
+        inquiry_type = request.form.get('inquiry_type')
+        message = request.form.get('message')
         
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error sending message: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@chat_bp.route('/api/messages/<int:project_id>')
-@login_required
-def get_messages(project_id):
-    """Get messages for a project via AJAX"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        # Check access including approved applications
-        has_access = (project.student_id == current_user.id or
-                      project.supervisor_id == current_user.id or
-                      current_user.is_admin or
-                      is_approved_member(current_user.id, project_id))
-
-        if not has_access:
-            return jsonify({'error': 'Access denied'}), 403
-
-        messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
-
-        messages_data = []
-        for m in messages:
-            message_data = {
-                'id': m.id,
-                'content': m.content,
-                'sender_name': m.sender.get_full_name() or m.sender.username if m.sender else 'System',
-                'time': m.created_at.strftime('%I:%M %p, %d %b'),
-                'is_own': m.sender_id == current_user.id if m.sender_id else False
-            }
-
-            if m.resource_id:
-                resource = ChatResource.query.get(m.resource_id)
-                if resource:
-                    message_data['resource'] = {
-                        'id': resource.id,
-                        'name': resource.original_filename,
-                        'size': resource.file_size,
-                        'type': resource.file_type
-                    }
-
-            messages_data.append(message_data)
-
-        return jsonify({'messages': messages_data})
+        if not name or not email or not inquiry_type or not message:
+            flash('Please fill in all required fields', 'error')
+            return redirect(url_for('contact'))
         
+        flash('Thank you for your inquiry. We will get back to you soon.', 'success')
     except Exception as e:
-        print(f"Error getting messages: {str(e)}")
-        return jsonify({'messages': [], 'error': str(e)}), 500
+        flash(f'Error sending message: {str(e)}', 'error')
+    return redirect(url_for('contact'))
 
-@chat_bp.route('/api/mark-project-read/<int:project_id>', methods=['POST'])
-@login_required
-def mark_project_read(project_id):
-    """Mark all messages in a project as read"""
+# ==================== API ENDPOINTS ====================
+
+@app.route('/api/match-projects')
+def match_projects():
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Not logged in'}), 401
+    
     try:
-        ChatMessage.query.filter_by(
-            project_id=project_id,
-            is_read=False
-        ).filter(ChatMessage.sender_id != current_user.id).update({'is_read': True})
-        db.session.commit()
-        return jsonify({'success': True})
-    except Exception as e:
-        print(f"Error marking messages as read: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/download-resource/<int:resource_id>')
-@login_required
-def download_resource(resource_id):
-    """Download a shared resource"""
-    try:
-        resource = ChatResource.query.get_or_404(resource_id)
-
-        project = Project.query.get(resource.project_id)
-        if project:
-            has_access = (project.student_id == current_user.id or
-                          project.supervisor_id == current_user.id or
-                          current_user.is_admin or
-                          is_approved_member(current_user.id, project.id))
-
-            if not has_access:
-                return jsonify({'error': 'Access denied'}), 403
-
-        file_path = resource.file_path
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'File not found'}), 404
-
-        return send_file(file_path, as_attachment=True, download_name=resource.original_filename)
+        user_skills = set(current_user.get_skills())
+        if not user_skills:
+            return jsonify([])
         
+        matches = []
+        projects = Project.query.filter_by(status='active').all()
+        for project in projects:
+            project_skills = set(project.get_skills())
+            common_skills = user_skills.intersection(project_skills)
+            match_score = len(common_skills) / len(project_skills) if project_skills else 0
+            if match_score > 0:
+                matches.append({
+                    'id': project.id,
+                    'title': project.title,
+                    'match_score': round(match_score * 100),
+                    'common_skills': list(common_skills),
+                    'project_id': project.project_id
+                })
+        matches.sort(key=lambda x: x['match_score'], reverse=True)
+        return jsonify(matches[:10])
     except Exception as e:
-        print(f"Error downloading resource: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@chat_bp.route('/api/share-resource/<int:project_id>', methods=['POST'])
-@login_required
-def share_resource(project_id):
-    """Share a file resource in chat"""
+# ==================== SUPERVISOR PROFILE VIEW (PUBLIC) ====================
+
+@app.route('/supervisor/profile/<int:supervisor_id>')
+def view_supervisor_profile(supervisor_id):
     try:
-        project = Project.query.get_or_404(project_id)
-
-        has_access = (project.student_id == current_user.id or
-                      project.supervisor_id == current_user.id or
-                      current_user.is_admin or
-                      is_approved_member(current_user.id, project_id))
-
-        if not has_access:
-            return jsonify({'error': 'Access denied'}), 403
-
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file provided'}), 400
-
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
-
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'File type not allowed'}), 400
-
-        filename = secure_filename(file.filename)
-        unique_filename = f"{uuid.uuid4().hex}_{filename}"
-
-        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'chat')
-        os.makedirs(upload_dir, exist_ok=True)
-
-        file_path = os.path.join(upload_dir, unique_filename)
-        file.save(file_path)
-
-        file_size = os.path.getsize(file_path)
-        size_kb = round(file_size / 1024, 1)
-        size_str = f"{size_kb} KB" if size_kb < 1024 else f"{round(size_kb / 1024, 1)} MB"
-
-        resource = ChatResource(
-            name=request.form.get('resource_name', filename),
-            original_filename=filename,
-            file_path=file_path,
-            file_size=size_str,
-            file_type=filename.rsplit('.', 1)[1].lower(),
-            project_id=project_id,
-            uploaded_by=current_user.id
-        )
-        db.session.add(resource)
-        db.session.flush()
-
-        description = request.form.get('description', '')
-        content = f"Shared file: {filename}"
-        if description:
-            content += f"\n\n{description}"
-
-        message = ChatMessage(
-            content=content,
-            sender_id=current_user.id,
-            project_id=project_id,
-            resource_id=resource.id,
-            is_read=False
-        )
-        db.session.add(message)
-        db.session.commit()
-
-        return jsonify({'success': True})
+        supervisor = User.query.get_or_404(supervisor_id)
+        if not supervisor.is_supervisor:
+            flash('User is not a supervisor', 'error')
+            return redirect(url_for('index'))
         
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error sharing resource: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/share-link/<int:project_id>', methods=['POST'])
-@login_required
-def share_link(project_id):
-    """Share a link in chat"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        has_access = (project.student_id == current_user.id or
-                      project.supervisor_id == current_user.id or
-                      current_user.is_admin or
-                      is_approved_member(current_user.id, project_id))
-
-        if not has_access:
-            return jsonify({'error': 'Access denied'}), 403
-
-        data = request.get_json()
-        link = data.get('link', '').strip()
-        description = data.get('description', '').strip()
-
-        if not link:
-            return jsonify({'error': 'Link is required'}), 400
-
-        content = f"Shared link: {link}"
-        if description:
-            content += f"\n\n{description}"
-
-        message = ChatMessage(
-            content=content,
-            sender_id=current_user.id,
-            project_id=project_id,
-            is_read=False
-        )
-        db.session.add(message)
-        db.session.commit()
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error sharing link: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/share-code/<int:project_id>', methods=['POST'])
-@login_required
-def share_code(project_id):
-    """Share a code snippet in chat"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        has_access = (project.student_id == current_user.id or
-                      project.supervisor_id == current_user.id or
-                      current_user.is_admin or
-                      is_approved_member(current_user.id, project_id))
-
-        if not has_access:
-            return jsonify({'error': 'Access denied'}), 403
-
-        data = request.get_json()
-        language = data.get('language', 'text')
-        code = data.get('code', '').strip()
-
-        if not code:
-            return jsonify({'error': 'Code is required'}), 400
-
-        content = f"Shared {language} code:\n```{language}\n{code}\n```"
-
-        message = ChatMessage(
-            content=content,
-            sender_id=current_user.id,
-            project_id=project_id,
-            is_read=False
-        )
-        db.session.add(message)
-        db.session.commit()
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error sharing code: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# ==================== GROUP MANAGEMENT API ====================
-
-@chat_bp.route('/api/project-info/<int:project_id>')
-@login_required
-def get_project_info(project_id):
-    """Get project information for group info page"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        has_access = (project.student_id == current_user.id or
-                      project.supervisor_id == current_user.id or
-                      current_user.is_admin or
-                      is_approved_member(current_user.id, project_id))
-
-        if not has_access:
-            return jsonify({'error': 'Access denied'}), 403
-
-        member_count = 1
-        if project.supervisor:
-            member_count += 1
-
-        approved_apps = ProjectApplication.query.filter_by(
-            project_id=project_id,
-            status='approved'
+        supervised_projects = Project.query.filter_by(
+            supervisor_id=supervisor.id,
+            status='active'
         ).all()
-        member_count += len(approved_apps)
-
-        return jsonify({
-            'id': project.id,
-            'title': project.title,
-            'description': project.description or 'No description provided',
-            'owner_id': project.student_id,
-            'supervisor_id': project.supervisor_id,
-            'member_count': member_count,
-            'created_date': project.created_at.strftime('%b %Y') if project.created_at else 'Unknown'
-        })
-        
+        return render_template('supervisor/public_profile.html',
+                             supervisor=supervisor,
+                             supervised_projects=supervised_projects)
     except Exception as e:
-        print(f"Error getting project info: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        flash('Supervisor not found', 'error')
+        return redirect(url_for('index'))
 
-@chat_bp.route('/api/mute-status/<int:project_id>')
-@login_required
-def get_mute_status(project_id):
-    """Get current user's mute status for a project"""
-    try:
-        project = Project.query.get_or_404(project_id)
+# ==================== CLI COMMANDS ====================
 
-        group = Group.query.filter_by(project_id=project_id).first()
-        is_muted = False
+@app.cli.command("init-db")
+def init_db():
+    db.create_all()
+    print("Database initialized")
 
-        if group:
-            group_member = GroupMember.query.filter_by(
-                group_id=group.id,
-                user_id=current_user.id
-            ).first()
-            if group_member and group_member.is_muted:
-                is_muted = True
-
-        return jsonify({'is_muted': is_muted})
-        
-    except Exception as e:
-        print(f"Error getting mute status: {str(e)}")
-        return jsonify({'is_muted': False}), 200
-
-@chat_bp.route('/api/toggle-mute/<int:project_id>', methods=['POST'])
-@login_required
-def toggle_mute(project_id):
-    """Toggle mute status for current user on a project"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        data = request.get_json()
-        muted = data.get('muted', False)
-
-        group = Group.query.filter_by(project_id=project_id).first()
-        if not group:
-            group = Group(
-                name=f"{project.title} Chat",
-                project_id=project_id
-            )
-            db.session.add(group)
-            db.session.flush()
-
-        group_member = GroupMember.query.filter_by(
-            group_id=group.id,
-            user_id=current_user.id
-        ).first()
-
-        if group_member:
-            group_member.is_muted = muted
-        else:
-            group_member = GroupMember(group_id=group.id, user_id=current_user.id, is_muted=muted)
-            db.session.add(group_member)
-
-        db.session.commit()
-
-        return jsonify({'success': True, 'is_muted': muted})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error toggling mute: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/members/<int:project_id>')
-@login_required
-def get_members(project_id):
-    """Get all members of a project chat group"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        members = get_team_members(project)
-        if project.supervisor and project.supervisor not in members:
-            members.append(project.supervisor)
-
-        members_data = []
-        for member in members:
-            group = Group.query.filter_by(project_id=project_id).first()
-            group_member = None
-            if group:
-                group_member = GroupMember.query.filter_by(
-                    group_id=group.id,
-                    user_id=member.id
-                ).first()
-
-            members_data.append({
-                'user_id': member.id,
-                'username': member.username,
-                'name': member.get_full_name() if hasattr(member, 'get_full_name') else member.username,
-                'email': member.email,
-                'is_muted': group_member.is_muted if group_member else False,
-                'is_supervisor': member.id == project.supervisor_id,
-                'can_remove': member.id != project.student_id
-            })
-
-        return jsonify(members_data)
-        
-    except Exception as e:
-        print(f"Error getting members: {str(e)}")
-        return jsonify([], 200)
-
-@chat_bp.route('/api/mute-member/<int:project_id>', methods=['POST'])
-@login_required
-def mute_member(project_id):
-    """Mute or unmute a member in chat"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        if project.student_id != current_user.id and not current_user.is_admin:
-            return jsonify({'error': 'Access denied'}), 403
-
-        data = request.get_json()
-        user_id = data.get('user_id')
-        mute = data.get('mute', True)
-
-        group = Group.query.filter_by(project_id=project_id).first()
-        if not group:
-            group = Group(name=f"{project.title} Chat", project_id=project_id)
-            db.session.add(group)
-            db.session.flush()
-
-        group_member = GroupMember.query.filter_by(group_id=group.id, user_id=user_id).first()
-        if group_member:
-            group_member.is_muted = mute
-        else:
-            group_member = GroupMember(group_id=group.id, user_id=user_id, is_muted=mute)
-            db.session.add(group_member)
-
-        db.session.commit()
-
-        if mute:
-            user = User.query.get(user_id)
-            send_system_message(project_id, f"{user.get_full_name() or user.username} has been muted by the project owner.")
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error muting member: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-# ==================== REMOVE MEMBER - FIXED ====================
-@chat_bp.route('/api/remove-member/<int:project_id>', methods=['POST'])
-@login_required
-def remove_member(project_id):
-    """Remove a member from chat group and project"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        if project.student_id != current_user.id and not current_user.is_admin:
-            return jsonify({'error': 'Access denied'}), 403
-
-        data = request.get_json()
-        user_id = data.get('user_id')
-
-        if user_id == project.student_id:
-            return jsonify({'error': 'Cannot remove project owner'}), 400
-
-        user = User.query.get(user_id)
-
-        # Remove from group members
-        group = Group.query.filter_by(project_id=project_id).first()
-        if group:
-            GroupMember.query.filter_by(group_id=group.id, user_id=user_id).delete()
-
-        # Remove approved application
-        app = ProjectApplication.query.filter_by(
-            project_id=project_id,
-            applicant_id=user_id,
-            status='approved'
-        ).first()
-        if app:
-            db.session.delete(app)
-
-        # If removing a supervisor, only remove supervisor role
-        # Do NOT delete or modify the project's student association
-        if user and user.is_supervisor and project.supervisor_id == user_id:
-            project.supervisor_id = None
-            # CRITICAL: Do not change project.status or student_id
-            # The project remains active, student retains ownership
-
-        db.session.commit()
-
-        if user:
-            send_system_message(project_id, f"{user.get_full_name() or user.username} has been removed from the project by the project owner.")
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error removing member: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/add-member/<int:project_id>', methods=['POST'])
-@login_required
-def add_member(project_id):
-    """Add a new member to the project chat group"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        if project.student_id != current_user.id and not current_user.is_admin:
-            return jsonify({'error': 'Only project owner can add members'}), 403
-
-        data = request.get_json()
-        email = data.get('email', '').strip()
-
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
-
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({'error': f'No user found with email: {email}'}), 404
-
-        if user.id == project.student_id:
-            return jsonify({'error': 'This is the project owner'}), 400
-
-        existing_app = ProjectApplication.query.filter_by(
-            project_id=project_id,
-            applicant_id=user.id,
-            status='approved'
-        ).first()
-        if existing_app:
-            return jsonify({'error': 'User is already a team member'}), 400
-
-        if project.supervisor_id == user.id:
-            return jsonify({'error': 'User is already the supervisor'}), 400
-
-        new_app = ProjectApplication(
-            project_id=project_id,
-            applicant_id=user.id,
-            message=f"Added by project owner {current_user.get_full_name() or current_user.username}",
-            status='approved',
-            reviewed_by=current_user.id,
-            reviewed_at=datetime.utcnow()
-        )
-        db.session.add(new_app)
-
-        group = Group.query.filter_by(project_id=project_id).first()
-        if group:
-            group_member = GroupMember.query.filter_by(
-                group_id=group.id,
-                user_id=user.id
-            ).first()
-            if not group_member:
-                new_member = GroupMember(group_id=group.id, user_id=user.id, is_muted=False)
-                db.session.add(new_member)
-
-        db.session.commit()
-
-        send_system_message(project_id, f"{user.get_full_name() or user.username} has been added to the project by {current_user.get_full_name() or current_user.username}.")
-
-        return jsonify({'success': True, 'message': f'{user.get_full_name() or user.username} added to project'})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error adding member: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/update-role/<int:project_id>', methods=['POST'])
-@login_required
-def update_member_role(project_id):
-    """Update a member's role (promote to supervisor or demote to member)"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        if project.student_id != current_user.id and not current_user.is_admin:
-            return jsonify({'error': 'Only project owner can update roles'}), 403
-
-        data = request.get_json()
-        user_id = data.get('user_id')
-        is_supervisor = data.get('is_supervisor', False)
-
-        user = User.query.get_or_404(user_id)
-
-        if user_id == project.student_id:
-            return jsonify({'error': 'Cannot change project owner\'s role'}), 400
-
-        if is_supervisor:
-            project.supervisor_id = user_id
-            send_system_message(project_id, f"{user.get_full_name() or user.username} has been promoted to Supervisor.")
-        else:
-            if project.supervisor_id == user_id:
-                project.supervisor_id = None
-                send_system_message(project_id, f"{user.get_full_name() or user.username} is no longer a Supervisor.")
-
-        db.session.commit()
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error updating role: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@chat_bp.route('/api/leave-group/<int:project_id>', methods=['POST'])
-@login_required
-def leave_group(project_id):
-    """Allow a user to leave a project group"""
-    try:
-        project = Project.query.get_or_404(project_id)
-
-        if project.student_id == current_user.id:
-            return jsonify({'error': 'Project owner cannot leave the project. You must delete the project or transfer ownership.'}), 403
-
-        user = current_user
-
-        group = Group.query.filter_by(project_id=project_id).first()
-        if group:
-            GroupMember.query.filter_by(group_id=group.id, user_id=user.id).delete()
-
-        app = ProjectApplication.query.filter_by(
-            project_id=project_id,
-            applicant_id=user.id,
-            status='approved'
-        ).first()
-        if app:
-            db.session.delete(app)
-
-        if user.is_supervisor and project.supervisor_id == user.id:
-            project.supervisor_id = None
-
-        db.session.commit()
-
-        send_system_message(project_id, f"{user.get_full_name() or user.username} has left the group.")
-
-        return jsonify({'success': True})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error leaving group: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+if __name__ == '__main__':
+    app.run(debug=False)

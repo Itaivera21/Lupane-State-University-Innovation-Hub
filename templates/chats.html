@@ -995,7 +995,7 @@
                     {% endfor %}
                 {% else %}
                 <div class="empty-state">
-                    <div class="empty-state-icon">💬</div>
+                    <div class="empty-state-icon"></div>
                     <h3>No messages yet</h3>
                     <p>Start the conversation with your team!</p>
                 </div>
@@ -1118,7 +1118,7 @@
         {% else %}
         <div class="chat-area">
             <div class="empty-state">
-                <div class="empty-state-icon">💬</div>
+                <div class="empty-state-icon"></div>
                 <h3>Select a project chat</h3>
                 <p>Choose a project from the sidebar to start messaging</p>
             </div>
@@ -1207,7 +1207,7 @@
             if (!messages || messages.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">💬</div>
+                        <div class="empty-state-icon"></div>
                         <h3>No messages yet</h3>
                         <p>Start the conversation with your team!</p>
                     </div>

@@ -11,7 +11,8 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    # FIXED: Changed from String(200) to String(512) to prevent hash truncation
+    password = db.Column(db.String(512), nullable=False)
     faculty = db.Column(db.String(100), nullable=True)
     student_id = db.Column(db.String(50), unique=True, nullable=True)
     skills = db.Column(db.Text, default='')

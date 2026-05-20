@@ -318,14 +318,19 @@ def create_project():
 
 @app.route('/projects')
 def projects():
+    """Show all active projects that are visible to students"""
     try:
         category = request.args.get('category')
         filter_type = request.args.get('filter', 'all')
         
+        # Base query: only show active projects
+        base_query = Project.query.filter_by(status='active')
+        
+        # For recommended filter (logged in users only)
         if filter_type == 'recommended' and current_user.is_authenticated:
             user_skills = current_user.get_skills()
             if user_skills:
-                all_projects = Project.query.filter_by(status='active').all()
+                all_projects = base_query.all()
                 matched_projects = []
                 for project in all_projects:
                     project_skills = project.get_skills()
@@ -333,25 +338,53 @@ def projects():
                         matched_projects.append(project)
                 projects = matched_projects
             else:
-                projects = Project.query.filter_by(status='active').order_by(Project.created_at.desc()).all()
-        elif filter_type == 'pending_supervision' and current_user.is_supervisor:
+                projects = base_query.order_by(Project.created_at.desc()).all()
+        
+        # For pending supervision filter (supervisors only)
+        elif filter_type == 'pending_supervision' and current_user.is_authenticated and current_user.is_supervisor:
             projects = Project.query.filter_by(
                 supervisor_id=current_user.id,
                 status='pending_supervision'
             ).all()
-        elif filter_type == 'my_supervised' and current_user.is_supervisor:
+        
+        # For my supervised filter (supervisors only)
+        elif filter_type == 'my_supervised' and current_user.is_authenticated and current_user.is_supervisor:
             projects = Project.query.filter_by(
                 supervisor_id=current_user.id,
                 status='active'
             ).all()
+        
+        # Default: show all active projects (visible to everyone)
         else:
-            query = Project.query.filter_by(status='active')
             if category:
-                query = query.filter_by(category=category)
-            projects = query.order_by(Project.created_at.desc()).all()
-    except:
+                projects = base_query.filter_by(category=category).order_by(Project.created_at.desc()).all()
+            else:
+                projects = base_query.order_by(Project.created_at.desc()).all()
+        
+        # Filter out projects where current user is already a member (optional - depends on requirements)
+        # Commented out to allow students to see all projects they can apply to
+        # if current_user.is_authenticated and not current_user.is_supervisor:
+        #     projects = [p for p in projects if p.student_id != current_user.id and not is_approved_member(current_user.id, p.id)]
+        
+    except Exception as e:
+        print(f"Error in projects route: {e}")
         projects = []
+    
     return render_template('projects.html', projects=projects)
+
+def is_approved_member(user_id, project_id):
+    """Check if user is already a member of the project"""
+    project = Project.query.get(project_id)
+    if project and project.student_id == user_id:
+        return True
+    if project and project.supervisor_id == user_id:
+        return True
+    approved_app = ProjectApplication.query.filter_by(
+        project_id=project_id,
+        applicant_id=user_id,
+        status='approved'
+    ).first()
+    return approved_app is not None
 
 @app.route('/project/<int:project_id>')
 def project_detail(project_id):
@@ -470,14 +503,7 @@ def request_supervisor(project_id):
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # Store the requested supervisor ID in a temp field or just set status
-        # We'll store the requested supervisor in the supervision_requested_at field for now
-        # The supervisor will need to approve via their dashboard
-        project.supervisor_id = supervisor_id  # This assigns them immediately, but they still need to approve
-        # Actually, let's NOT assign supervisor_id until approved
-        # We need to store the requested supervisor elsewhere
-        # For now, we'll set the supervisor_id but mark status as pending_supervision
-        # The supervisor can approve or reject via their dashboard
+        # Store the requested supervisor and set pending status
         project.supervisor_id = supervisor_id
         project.status = 'pending_supervision'
         project.supervision_requested_at = datetime.utcnow()

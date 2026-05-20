@@ -685,8 +685,8 @@
             </div>
             {% endif %}
             
-            <!-- Manage Applications Button (only for project creators) -->
-            {% if current_user.is_authenticated and current_user.projects_created %}
+            <!-- Manage Applications Button (only for project creators) - FIXED -->
+            {% if current_user.is_authenticated and current_user.projects_created and current_user.projects_created|length > 0 %}
             <div class="box">
                 <a href="{{ url_for('manage_applications') }}">
                     <button class="manage-apps-btn">Manage Applications</button>
@@ -742,10 +742,10 @@
                     </div>
                     <div class="project-description">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</div>
                     <div class="project-meta">
-                        <span>📅 {{ project.duration or 'Not specified' }}</span>
-                        <span>📂 {{ project.category or 'General' }}</span>
+                        <span>Duration: {{ project.duration or 'Not specified' }}</span>
+                        <span>Category: {{ project.category or 'General' }}</span>
                         {% if project.student %}
-                        <span>👨‍🎓 Student: {{ project.student.get_full_name() }}</span>
+                        <span>Student: {{ project.student.get_full_name() }}</span>
                         {% endif %}
                     </div>
                     <div class="project-skills">
@@ -765,7 +765,7 @@
                     {% endif %}
                     
                     <div class="project-footer">
-                        <span class="team-size">👥 {{ project.team_size }} members</span>
+                        <span class="team-size">Team: {{ project.team_size }} members</span>
                         <a href="{{ url_for('project_detail', project_id=project.id) }}" class="view-btn">View Details →</a>
                     </div>
                 </div>

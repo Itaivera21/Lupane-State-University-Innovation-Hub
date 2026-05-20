@@ -128,7 +128,7 @@ def get_all_tables():
     result = db.session.execute(db.text("SHOW TABLES"))
     return [row[0] for row in result.fetchall()]
 
-# Helper function to generate SQL dump
+# Helper function to generate SQL dump - FIXED for TiDB
 def generate_sql_dump():
     """Generate SQL dump of entire database"""
     dump_lines = []
@@ -143,24 +143,28 @@ def generate_sql_dump():
     tables = get_all_tables()
     
     for table in tables:
-        # Get CREATE TABLE statement - FIXED: Added db.text() wrapper
+        # Get CREATE TABLE statement
         result = db.session.execute(db.text(f"SHOW CREATE TABLE `{table}`"))
         row = result.fetchone()
         if row:
+            # Using index instead of column name for tuple access
             create_stmt = row[1]
             dump_lines.append(f"-- Table structure for `{table}`")
             dump_lines.append(create_stmt + ";")
             dump_lines.append("")
             
-            # Get table data - FIXED: Added db.text() wrapper
-            result = db.session.execute(db.text(f"SELECT * FROM `{table}`"))
-            columns = result.keys()
+            # Get column names first (using LIMIT 0 to get structure only)
+            col_result = db.session.execute(db.text(f"SELECT * FROM `{table}` LIMIT 0"))
+            columns = list(col_result.keys())
+            
+            # Get table data
+            data_result = db.session.execute(db.text(f"SELECT * FROM `{table}`"))
             
             # Generate INSERT statements
-            for row_data in result.fetchall():
+            for row_data in data_result.fetchall():
                 values = []
-                for col in columns:
-                    val = row_data[col]
+                for i, col in enumerate(columns):
+                    val = row_data[i]  # Use index instead of column name
                     if val is None:
                         values.append("NULL")
                     elif isinstance(val, (int, float)):

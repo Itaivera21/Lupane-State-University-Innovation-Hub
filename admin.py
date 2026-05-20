@@ -352,6 +352,22 @@ def delete_user(user_id):
         flash('Cannot delete other admin accounts. Use the Delete Admin button instead.', 'error')
         return redirect(url_for('admin.users'))
 
+    # FIX #5: If deleting a supervisor, first clean up their supervised projects
+    if user.is_supervisor:
+        # Get all projects where this user is the supervisor
+        supervised_projects = Project.query.filter_by(supervisor_id=user.id).all()
+        for project in supervised_projects:
+            if project.status == 'pending_supervision':
+                # Reset pending supervision projects to active without supervisor
+                project.status = 'active'
+                project.supervisor_id = None
+                project.supervision_requested_at = None
+            else:
+                # For active projects, just remove the supervisor
+                project.supervisor_id = None
+        db.session.commit()
+        flash(f'Cleaned up {len(supervised_projects)} supervised projects before deleting supervisor.', 'info')
+
     try:
         # 1. Delete group memberships (critical - prevents foreign key errors)
         GroupMember.query.filter_by(user_id=user.id).delete()
@@ -532,6 +548,38 @@ def delete_project(project_id):
         flash(f'Error deleting project: {str(e)}', 'error')
 
     return redirect(url_for('admin.projects'))
+
+# ==================== ADMIN FORCE-RESET PROJECT STATUS ====================
+# FIX #6: Admin can force-reset any project's status
+
+@admin_bp.route('/project/<int:project_id>/force-reset', methods=['POST'])
+@login_required
+@admin_required
+def force_reset_project(project_id):
+    """Admin force-reset a project to active status"""
+    try:
+        project = Project.query.get_or_404(project_id)
+        
+        # Store old status for flash message
+        old_status = project.status
+        
+        # Reset project to active
+        project.status = 'active'
+        project.completed_at = None
+        
+        # Clear any pending supervision requests
+        if project.supervisor_id and project.supervision_approved_at is None:
+            project.supervisor_id = None
+            project.supervision_requested_at = None
+        
+        db.session.commit()
+        
+        flash(f'Project "{project.title}" force-reset from {old_status} to active.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error resetting project: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.project_detail', project_id=project_id))
 
 # ==================== APPLICATION MANAGEMENT ====================
 

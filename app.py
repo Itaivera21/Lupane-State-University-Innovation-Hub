@@ -11,6 +11,7 @@ import sys
 import traceback
 import ssl
 from functools import wraps
+from werkzeug.security import generate_password_hash
 
 # ============ GLOBAL EXCEPTION HANDLER ============
 def global_exception_handler(exctype, value, tb):
@@ -150,6 +151,37 @@ def handle_error(error):
     if request.path.startswith('/api/'):
         return jsonify({'error': str(error)}), 500
     return str(error), 500
+
+# ============ SETUP ROUTE (TEMPORARY - REMOVE AFTER USE) ============
+
+@app.route('/setup-init-9x7k2')
+def setup_accounts():
+    """Temporary setup route to create initial accounts. REMOVE THIS AFTER USE."""
+    try:
+        accounts = [
+            {'username': 'Admin', 'email': 'admin@innovationhub.lsu', 'password': 'Admin@2026', 'is_admin': True, 'is_dev': False},
+            {'username': 'Itai', 'email': 'itai@innovationhub.lsu', 'password': 'Dev@2026', 'is_admin': False, 'is_dev': True},
+            {'username': 'Mqhele', 'email': 'mqhele@innovationhub.lsu', 'password': 'Dev@2026', 'is_admin': False, 'is_dev': True},
+            {'username': 'Petros', 'email': 'petros@innovationhub.lsu', 'password': 'Dev@2026', 'is_admin': False, 'is_dev': True},
+        ]
+        created = []
+        for acc in accounts:
+            if not User.query.filter_by(email=acc['email']).first():
+                user = User(
+                    username=acc['username'],
+                    email=acc['email'],
+                    password=generate_password_hash(acc['password']),
+                    is_admin=acc['is_admin'],
+                    is_dev=acc['is_dev'],
+                    is_supervisor=False
+                )
+                db.session.add(user)
+                created.append(acc['email'])
+        db.session.commit()
+        return jsonify({'created': created, 'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 # ============ HELPER FUNCTIONS ============
 

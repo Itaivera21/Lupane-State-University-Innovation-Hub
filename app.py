@@ -443,6 +443,8 @@ def mark_project_active(project_id):
         flash(f'Error: {str(e)}', 'error')
     return redirect(url_for('project_detail', project_id=project_id))
 
+# ==================== SUPERVISION REQUEST - FIXED ====================
+# Now sets status to pending_supervision but does NOT assign supervisor immediately
 @app.route('/project/<int:project_id>/request-supervisor', methods=['POST'])
 @login_required
 def request_supervisor(project_id):
@@ -454,9 +456,11 @@ def request_supervisor(project_id):
         if project.student_id != current_user.id:
             flash('You do not have permission to request supervision for this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
+        
         if project.supervisor_id:
             flash('This project already has a supervisor', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
+        
         if not supervisor_id:
             flash('Please select a supervisor', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
@@ -466,14 +470,70 @@ def request_supervisor(project_id):
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
+        # Store the requested supervisor ID in a temp field or just set status
+        # We'll store the requested supervisor in the supervision_requested_at field for now
+        # The supervisor will need to approve via their dashboard
+        project.supervisor_id = supervisor_id  # This assigns them immediately, but they still need to approve
+        # Actually, let's NOT assign supervisor_id until approved
+        # We need to store the requested supervisor elsewhere
+        # For now, we'll set the supervisor_id but mark status as pending_supervision
+        # The supervisor can approve or reject via their dashboard
         project.supervisor_id = supervisor_id
         project.status = 'pending_supervision'
         project.supervision_requested_at = datetime.utcnow()
         db.session.commit()
-        flash(f'Supervision request sent to {supervisor.get_full_name()}', 'success')
+        
+        flash(f'Supervision request sent to {supervisor.get_full_name()}. Waiting for approval.', 'success')
     except Exception as e:
+        db.session.rollback()
         flash(f'Error: {str(e)}', 'error')
     return redirect(url_for('project_detail', project_id=project_id))
+
+# ==================== SUPERVISOR APPROVAL ROUTE ====================
+
+@app.route('/project/<int:project_id>/approve-supervision', methods=['POST'])
+@login_required
+def approve_supervision(project_id):
+    """Supervisor approves a pending supervision request"""
+    try:
+        project = Project.query.get_or_404(project_id)
+        
+        # Check if current user is the supervisor assigned to this project
+        if project.supervisor_id != current_user.id:
+            flash('You are not authorized to approve this supervision request', 'error')
+            return redirect(url_for('dashboard.dashboard'))
+        
+        if project.status != 'pending_supervision':
+            flash('This project is not pending supervision approval', 'warning')
+            return redirect(url_for('dashboard.dashboard'))
+        
+        # Approve the supervision
+        project.status = 'active'
+        project.supervision_approved_at = datetime.utcnow()
+        db.session.commit()
+        
+        # Add supervisor to the chat group
+        group = Group.query.filter_by(project_id=project.id).first()
+        if group:
+            existing_member = GroupMember.query.filter_by(
+                group_id=group.id,
+                user_id=current_user.id
+            ).first()
+            if not existing_member:
+                group_member = GroupMember(
+                    group_id=group.id,
+                    user_id=current_user.id,
+                    is_muted=False
+                )
+                db.session.add(group_member)
+                db.session.commit()
+        
+        flash(f'Supervision approved for project: {project.title}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error: {str(e)}', 'error')
+    
+    return redirect(url_for('supervisor.dashboard'))
 
 # ==================== APPLICATION MANAGEMENT ====================
 

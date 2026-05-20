@@ -515,7 +515,7 @@
         <!-- Add Member Card (Only visible to project owner) -->
         <div class="card" id="addMemberCard" style="display: none;">
             <div class="card-header">
-                <h2>➕ Add Team Member</h2>
+                <h2>Add Team Member</h2>
             </div>
             <div class="add-member-form">
                 <input type="email" id="memberEmail" placeholder="Enter email address" autocomplete="off">
@@ -527,7 +527,7 @@
         <!-- Members List Card -->
         <div class="card">
             <div class="card-header">
-                <h2>👥 All Members</h2>
+                <h2>All Members</h2>
                 <span style="font-size: 14px; color: #888;" id="totalMembers">(0)</span>
             </div>
             <div id="membersLoading" class="loading">Loading members...</div>
@@ -538,15 +538,15 @@
 
     <div class="bottom-nav">
         <button class="nav-item" onclick="goToChats()">
-            <span>💬</span>
+            <span>Chat</span>
             <span>Chat</span>
         </button>
         <button class="nav-item" onclick="goToGroupInfo()">
-            <span>ℹ️</span>
+            <span>Info</span>
             <span>Info</span>
         </button>
         <button class="nav-item active">
-            <span>👥</span>
+            <span>Members</span>
             <span>Members</span>
         </button>
     </div>
@@ -633,7 +633,7 @@
             } catch (error) {
                 loadingEl.style.display = 'none';
                 errorEl.style.display = 'block';
-                errorEl.textContent = '❌ Error loading team members. Please refresh the page.';
+                errorEl.textContent = 'Error loading team members. Please refresh the page.';
                 console.error('Error:', error);
             }
         }
@@ -648,16 +648,16 @@
                 let isSupervisor = member.is_supervisor || false;
 
                 if (isOwner) {
-                    roleText = '👑 Project Lead (Owner)';
+                    roleText = 'Project Lead (Owner)';
                     roleClass = 'owner';
                 } else if (isSupervisor) {
-                    roleText = '📚 Faculty Supervisor';
+                    roleText = 'Faculty Supervisor';
                     roleClass = '';
                 }
 
                 let mutedBadge = '';
                 if (member.is_muted) {
-                    mutedBadge = '<span class="member-role muted">🔇 Muted</span>';
+                    mutedBadge = '<span class="member-role muted">Muted</span>';
                 }
 
                 // Action buttons only for project owner
@@ -670,7 +670,7 @@
                                 <option value="supervisor" ${isSupervisor ? 'selected' : ''}>Supervisor</option>
                             </select>
                             <button class="btn btn-outline btn-sm" onclick="toggleMemberMute(${member.user_id}, ${!member.is_muted})">
-                                ${member.is_muted ? '🔊 Unmute' : '🔇 Mute'}
+                                ${member.is_muted ? 'Unmute' : 'Mute'}
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="removeMember(${member.user_id})">
                                 Remove

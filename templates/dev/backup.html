@@ -582,7 +582,7 @@
         <div class="header">
             <div>
                 <h1>Database Backup</h1>
-                <p>Create and manage SQL database backups (compatible with SQLite, MySQL, TiDB)</p>
+                <p>Create and manage SQL database backups compatible with TiDB Cloud</p>
             </div>
             <div class="user-info">
                 <span class="welcome-text">Welcome, <strong>{{ current_user.username }}</strong></span>
@@ -604,7 +604,7 @@
 
         <!-- Info Note -->
         <div class="info-badge">
-            💡 SQL backups are portable. They work on SQLite (current), MySQL, and TiDB (future deployment).
+            SQL backups are portable and compatible with TiDB Cloud.
         </div>
 
         <!-- Backup Options -->
@@ -613,7 +613,7 @@
 
             <div class="backup-card">
                 <h3>Full Database SQL Dump</h3>
-                <p>Create a complete SQL backup of all tables including users, projects, messages, forum data, and announcements. Compatible with SQLite, MySQL, and TiDB.</p>
+                <p>Create a complete SQL backup of all tables including users, projects, messages, forum data, and announcements. Compatible with TiDB Cloud.</p>
                 <form method="POST" action="{{ url_for('dev.create_backup') }}">
                     <button type="submit" class="btn btn-primary">Create SQL Backup</button>
                 </form>
@@ -631,7 +631,7 @@
                         <div class="backup-info">
                             <div class="backup-name">{{ backup.name }}</div>
                             <div class="backup-meta">Size: {{ backup.size }} • Created: {{ backup.created }}</div>
-                            <div class="backup-meta" style="color: #ff6b6b;">SQL dump • Portable</div>
+                            <div class="backup-meta" style="color: #ff6b6b;">SQL dump • TiDB Compatible</div>
                         </div>
                         <div class="backup-actions">
                             <a href="{{ url_for('dev.download_backup', filename=backup.name) }}">

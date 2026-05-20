@@ -47,19 +47,19 @@ def get_database_size():
         if match:
             db_name = match.group(1)
             
-            # Get table count
-            result = db.session.execute(f"""
+            # Get table count - FIXED: Added db.text() wrapper
+            result = db.session.execute(db.text(f"""
                 SELECT COUNT(*) FROM information_schema.tables 
                 WHERE table_schema = '{db_name}'
-            """)
+            """))
             table_count = result.scalar()
             
-            # Get database size
-            result = db.session.execute(f"""
+            # Get database size - FIXED: Added db.text() wrapper
+            result = db.session.execute(db.text(f"""
                 SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as size_mb
                 FROM information_schema.tables 
                 WHERE table_schema = '{db_name}'
-            """)
+            """))
             size_mb = result.scalar()
             
             if size_mb:
@@ -125,7 +125,7 @@ def setup_logging():
 # Helper function to get database tables for SQL dump
 def get_all_tables():
     """Get all table names from the database"""
-    result = db.session.execute("SHOW TABLES")
+    result = db.session.execute(db.text("SHOW TABLES"))
     return [row[0] for row in result.fetchall()]
 
 # Helper function to generate SQL dump
@@ -143,8 +143,8 @@ def generate_sql_dump():
     tables = get_all_tables()
     
     for table in tables:
-        # Get CREATE TABLE statement
-        result = db.session.execute(f"SHOW CREATE TABLE `{table}`")
+        # Get CREATE TABLE statement - FIXED: Added db.text() wrapper
+        result = db.session.execute(db.text(f"SHOW CREATE TABLE `{table}`"))
         row = result.fetchone()
         if row:
             create_stmt = row[1]
@@ -152,8 +152,8 @@ def generate_sql_dump():
             dump_lines.append(create_stmt + ";")
             dump_lines.append("")
             
-            # Get table data
-            result = db.session.execute(f"SELECT * FROM `{table}`")
+            # Get table data - FIXED: Added db.text() wrapper
+            result = db.session.execute(db.text(f"SELECT * FROM `{table}`"))
             columns = result.keys()
             
             # Generate INSERT statements
@@ -248,7 +248,7 @@ def dashboard():
 
     # System status
     try:
-        db.session.execute('SELECT 1').scalar()
+        db.session.execute(db.text('SELECT 1')).scalar()
         system_status = "Online"
     except:
         system_status = "Issues Detected"
@@ -714,7 +714,7 @@ def clear_sessions():
 def check_database():
     try:
         # Check database connectivity
-        result = db.session.execute('SELECT 1').scalar()
+        result = db.session.execute(db.text('SELECT 1')).scalar()
         
         if result == 1:
             flash('Database connection test passed. Database is accessible.', 'success')
@@ -741,7 +741,7 @@ def health_check():
 
         # Check database
         try:
-            db.session.execute('SELECT 1').scalar()
+            db.session.execute(db.text('SELECT 1')).scalar()
             health_results.append("Database connection: OK")
         except Exception as e:
             health_results.append(f"Database connection: FAILED - {str(e)}")
@@ -790,7 +790,7 @@ def optimize_database():
         # For MySQL/TiDB, analyze tables
         tables = get_all_tables()
         for table in tables:
-            db.session.execute(f"ANALYZE TABLE `{table}`")
+            db.session.execute(db.text(f"ANALYZE TABLE `{table}`"))
         
         db.session.commit()
         

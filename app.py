@@ -46,10 +46,15 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
 
 # ============ TiDB CLOUD DATABASE CONFIGURATION ============
+# Get database credentials from environment variables (NOT hardcoded)
+DB_USER = os.environ.get('DB_USER', 'Zs51ycD7dYgEUy3.root')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'qar204jhgxpJE2sB')
+DB_HOST = os.environ.get('DB_HOST', 'gateway01.eu-central-1.prod.aws.tidbcloud.com')
+DB_PORT = os.environ.get('DB_PORT', '4000')
+DB_NAME = os.environ.get('DB_NAME', 'innovation_hub')
+
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    'mysql+pymysql://Zs51ycD7dYgEUy3.root:qar204jhgxpJE2sB@'
-    'gateway01.eu-central-1.prod.aws.tidbcloud.com:4000/innovation_hub'
-    '?charset=utf8mb4'
+    f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -131,42 +136,20 @@ print("Blueprints registered")
 def not_found_error(error):
     if request.path.startswith('/api/'):
         return jsonify({'error': 'Resource not found'}), 404
-    flash('Page not found', 'error')
-    return render_template('404.html'), 404
+    return "Page not found", 404
 
 @app.errorhandler(500)
 def internal_error(error):
     db.session.rollback()
     if request.path.startswith('/api/'):
         return jsonify({'error': 'Internal server error'}), 500
-    flash('An internal error occurred. Please try again later.', 'error')
-    return render_template('500.html'), 500
+    return "Server error", 500
 
-@app.errorhandler(413)
-def too_large_error(error):
-    if request.path.startswith('/api/'):
-        return jsonify({'error': 'File too large. Maximum size is 16MB.'}), 413
-    flash('File too large. Maximum size is 16MB.', 'error')
-    return redirect(request.referrer or url_for('index'))
-
-# Custom error handler for API routes that returns JSON
 @app.errorhandler(Exception)
-def handle_api_error(error):
-    # Log the error
-    print(f"Route error: {type(error).__name__}: {error}")
-    traceback.print_exc()
-    
-    # Return JSON for API routes, HTML for others
+def handle_error(error):
     if request.path.startswith('/api/'):
-        return jsonify({
-            'success': False,
-            'error': str(error),
-            'type': type(error).__name__
-        }), 500
-    
-    # For non-API routes, show flash message
-    flash(f'An error occurred: {str(error)}', 'error')
-    return redirect(url_for('index'))
+        return jsonify({'error': str(error)}), 500
+    return str(error), 500
 
 # ============ HELPER FUNCTIONS ============
 
@@ -730,4 +713,4 @@ def init_db():
     print("Database initialized")
 
 if __name__ == '__main__':
-    app.run(debug=False)  # Set debug=False for production
+    app.run(debug=False)

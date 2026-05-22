@@ -104,6 +104,7 @@ class Project(db.Model):
     # Supervision fields
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     supervisor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    requested_supervisor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # NEW: stores pending request
     supervision_requested_at = db.Column(db.DateTime, nullable=True)
     supervision_approved_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
@@ -114,6 +115,7 @@ class Project(db.Model):
     # Relationships
     student = db.relationship('User', foreign_keys=[student_id], back_populates='projects_created')
     supervisor = db.relationship('User', foreign_keys=[supervisor_id], back_populates='supervised_projects')
+    requested_supervisor = db.relationship('User', foreign_keys=[requested_supervisor_id])  # NEW
     applications = db.relationship('ProjectApplication', back_populates='project', cascade='all, delete-orphan', lazy=True)
     forum_topics = db.relationship('ForumTopic', back_populates='project', lazy=True)
     chat_messages = db.relationship('ChatMessage', back_populates='project', lazy=True)

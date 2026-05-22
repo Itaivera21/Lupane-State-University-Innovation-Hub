@@ -490,7 +490,8 @@ def mark_project_active(project_id):
 def request_supervisor(project_id):
     try:
         project = Project.query.get_or_404(project_id)
-        supervisor_id = request.form.get('supervisor_id')
+        # FIXED: Renamed local variable to avoid collision with model attribute
+        selected_supervisor_id = request.form.get('supervisor_id')
         message = request.form.get('message', '')
         
         if project.student_id != current_user.id:
@@ -501,19 +502,19 @@ def request_supervisor(project_id):
             flash('This project already has a supervisor', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        if not supervisor_id:
+        if not selected_supervisor_id:
             flash('Please select a supervisor', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        supervisor = User.query.get(supervisor_id)
+        # FIXED: Cast to int explicitly
+        supervisor = User.query.get(int(selected_supervisor_id))
         if not supervisor or not supervisor.is_supervisor:
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # FIXED: Use requested_supervisor_id instead of assigning supervisor_id immediately
-        # The supervisor must approve the request first
+        # Use requested_supervisor_id instead of assigning supervisor_id immediately
         project.status = 'pending_supervision'
-        project.requested_supervisor_id = supervisor_id
+        project.requested_supervisor_id = int(selected_supervisor_id)
         project.supervision_requested_at = datetime.utcnow()
         # Do NOT set supervisor_id yet
         db.session.commit()

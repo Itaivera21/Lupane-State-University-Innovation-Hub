@@ -147,7 +147,7 @@ def dashboard():
     """Supervisor dashboard"""
     supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
     pending_requests = Project.query.filter_by(
-        supervisor_id=current_user.id,
+        requested_supervisor_id=current_user.id,
         status='pending_supervision'
     ).all()
 
@@ -223,16 +223,16 @@ def project_detail(project_id):
         applications=applications
     )
 
-# ==================== SUPERVISION REQUESTS ====================
+# ==================== SUPERVISION REQUESTS - FIXED ====================
 
 @supervisor_bp.route('/applications')
 @login_required
 @supervisor_required
 def applications():
     """View all supervision requests for this supervisor"""
-    # Get pending supervision requests
+    # FIXED: Use requested_supervisor_id instead of supervisor_id for pending requests
     pending_projects = Project.query.filter_by(
-        supervisor_id=current_user.id,
+        requested_supervisor_id=current_user.id,
         status='pending_supervision'
     ).all()
 
@@ -306,7 +306,8 @@ def approve_request(request_id):
     """Approve a supervision request"""
     project = Project.query.get_or_404(request_id)
 
-    if project.supervisor_id != current_user.id:
+    # FIXED: Check requested_supervisor_id instead of supervisor_id
+    if project.requested_supervisor_id != current_user.id:
         flash('You are not authorized to approve this request', 'error')
         return redirect(url_for('supervisor.applications'))
 
@@ -314,6 +315,9 @@ def approve_request(request_id):
         flash('This project is not pending supervision', 'error')
         return redirect(url_for('supervisor.applications'))
 
+    # FIXED: Move requested_supervisor_id to supervisor_id
+    project.supervisor_id = project.requested_supervisor_id
+    project.requested_supervisor_id = None
     project.status = 'active'
     project.supervision_approved_at = datetime.utcnow()
     db.session.commit()
@@ -349,7 +353,8 @@ def reject_request(request_id):
     """Reject a supervision request"""
     project = Project.query.get_or_404(request_id)
 
-    if project.supervisor_id != current_user.id:
+    # FIXED: Check requested_supervisor_id instead of supervisor_id
+    if project.requested_supervisor_id != current_user.id:
         flash('You are not authorized to reject this request', 'error')
         return redirect(url_for('supervisor.applications'))
 
@@ -357,8 +362,8 @@ def reject_request(request_id):
         flash('This project is not pending supervision', 'error')
         return redirect(url_for('supervisor.applications'))
 
-    # Remove supervisor assignment
-    project.supervisor_id = None
+    # FIXED: Clear requested_supervisor_id, not supervisor_id
+    project.requested_supervisor_id = None
     project.status = 'active'
     project.supervision_requested_at = None
     db.session.commit()

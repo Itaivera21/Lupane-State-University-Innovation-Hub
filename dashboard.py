@@ -4,7 +4,7 @@
 
 from flask import Blueprint, render_template, jsonify, session, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from models import db, User, Project, ProjectApplication, ForumTopic, ForumPost
+from models import db, User, Project, ProjectApplication, ForumTopic, ForumPost, Group, GroupMember
 from datetime import datetime, timedelta
 from sqlalchemy import desc, and_
 
@@ -19,7 +19,6 @@ def dashboard():
     Supports both students and supervisors with different views
     """
     try:
-        # Check if user is supervisor
         if current_user.is_supervisor:
             return render_supervisor_dashboard()
         else:
@@ -32,46 +31,36 @@ def dashboard():
 
 def render_student_dashboard():
     """Render dashboard for regular students"""
-    # FIXED: Include both 'active' AND 'pending_supervision' projects for student's own projects
-    # This ensures projects don't disappear when supervision is requested
     user_projects_list = Project.query.filter(
         Project.student_id == current_user.id,
         Project.status.in_(['active', 'pending_supervision', 'completed'])
     ).all()
     
-    # Separate into active/pending and completed
     active_pending_projects = [p for p in user_projects_list if p.status in ['active', 'pending_supervision']]
     completed_projects_list = [p for p in user_projects_list if p.status == 'completed']
     
-    # Get projects they applied to and were approved (active ones only - they can't join pending projects)
     approved_applications = ProjectApplication.query.filter_by(
         applicant_id=current_user.id,
         status='approved'
     ).all()
     joined_active_projects = [app.project for app in approved_applications if app.project and app.project.status == 'active']
     
-    # Combine active projects (remove duplicates)
     all_active_projects = list(set(active_pending_projects + joined_active_projects))
     
-    # Get joined completed projects
     joined_completed_projects = [app.project for app in approved_applications if app.project and app.project.status == 'completed']
     
-    # Combine completed projects (remove duplicates)
     all_completed_projects = list(set(completed_projects_list + joined_completed_projects))
     
-    # Get pending applications count
     pending_applications_count = ProjectApplication.query.filter_by(
         applicant_id=current_user.id,
         status='pending'
     ).count()
     
-    # Get actual pending applications with project details
     pending_apps = ProjectApplication.query.filter_by(
         applicant_id=current_user.id,
         status='pending'
     ).order_by(desc(ProjectApplication.applied_at)).all()
     
-    # Get project recommendations based on user's skills (only active projects)
     user_skills = current_user.get_skills()
     recommended_projects = []
     
@@ -99,7 +88,6 @@ def render_student_dashboard():
         recommended_projects.sort(key=lambda x: x['match'], reverse=True)
         recommended_projects = recommended_projects[:3]
     
-    # Get recent forum activity
     recent_forum_posts = ForumTopic.query.order_by(
         desc(ForumTopic.created_at)
     ).limit(5).all()
@@ -119,28 +107,28 @@ def render_student_dashboard():
 
 def render_supervisor_dashboard():
     """Render dashboard for supervisors"""
-    # Get projects supervised by this supervisor - separate by status
+    # Approved/active supervised projects use supervisor_id
     supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
     
-    # Separate by status
+    # FIXED: Pending requests use requested_supervisor_id
+    pending_supervision_requests = Project.query.filter_by(
+        requested_supervisor_id=current_user.id,
+        status='pending_supervision'
+    ).all()
+    
     active_supervised = [p for p in supervised_projects if p.status == 'active']
     completed_supervised_list = [p for p in supervised_projects if p.status == 'completed']
-    pending_supervision_requests = [p for p in supervised_projects if p.status == 'pending_supervision']
     
-    # Count stats
     supervised_projects_count = len(supervised_projects)
     pending_requests_count = len(pending_supervision_requests)
     completed_supervised_count = len(completed_supervised_list)
     
-    # Get recent forum activity (same for all users)
     recent_forum_posts = ForumTopic.query.order_by(
         desc(ForumTopic.created_at)
     ).limit(5).all()
     
-    # Get recent activity on supervised projects (new applications, messages)
     recent_activity = []
     
-    # Get recent applications to supervised projects
     for project in supervised_projects[:5]:
         recent_apps = ProjectApplication.query.filter_by(
             project_id=project.id,
@@ -155,7 +143,6 @@ def render_supervisor_dashboard():
                 'project_id': project.id
             })
     
-    # Sort recent activity by time (newest first)
     recent_activity.sort(key=lambda x: x['time'], reverse=True)
     recent_activity = recent_activity[:10]
     
@@ -176,15 +163,15 @@ def render_supervisor_dashboard():
 @dashboard_bp.route('/api/dashboard/stats')
 @login_required
 def get_dashboard_stats():
-    """
-    API endpoint to get dashboard statistics as JSON
-    Useful for updating dashboard without page refresh
-    """
+    """API endpoint to get dashboard statistics as JSON"""
     try:
         if current_user.is_supervisor:
-            # Supervisor stats
             supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
-            pending_requests = [p for p in supervised_projects if p.status == 'pending_supervision']
+            # FIXED: pending requests use requested_supervisor_id
+            pending_requests = Project.query.filter_by(
+                requested_supervisor_id=current_user.id,
+                status='pending_supervision'
+            ).all()
             completed_projects = [p for p in supervised_projects if p.status == 'completed']
             
             return jsonify({
@@ -198,7 +185,6 @@ def get_dashboard_stats():
                 }
             })
         else:
-            # Student stats - FIXED: Include pending_supervision for student's own projects
             student_projects = Project.query.filter(
                 and_(
                     Project.student_id == current_user.id,
@@ -242,8 +228,9 @@ def get_pending_supervision_requests():
     if not current_user.is_supervisor:
         return jsonify({'error': 'Access denied'}), 403
     
+    # FIXED: Use requested_supervisor_id
     pending = Project.query.filter_by(
-        supervisor_id=current_user.id,
+        requested_supervisor_id=current_user.id,
         status='pending_supervision'
     ).all()
     
@@ -261,17 +248,13 @@ def get_pending_supervision_requests():
 @dashboard_bp.route('/dashboard/refresh-projects')
 @login_required
 def refresh_projects():
-    """
-    API endpoint to refresh just the projects section
-    Useful for when user completes a task
-    """
+    """API endpoint to refresh just the projects section"""
     if current_user.is_supervisor:
         supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
         active_supervised = [p for p in supervised_projects if p.status == 'active']
         return render_template('partials/supervisor_projects.html', 
                              projects=active_supervised[:3])
     else:
-        # FIXED: Include pending_supervision for student's own projects
         user_projects = Project.query.filter(
             Project.student_id == current_user.id,
             Project.status.in_(['active', 'pending_supervision'])
@@ -300,7 +283,8 @@ def approve_supervision_request(project_id):
     
     project = Project.query.get_or_404(project_id)
     
-    if project.supervisor_id != current_user.id:
+    # FIXED: Check requested_supervisor_id not supervisor_id
+    if project.requested_supervisor_id != current_user.id:
         flash('You are not authorized to approve this request', 'error')
         return redirect(url_for('dashboard.dashboard'))
     
@@ -308,9 +292,28 @@ def approve_supervision_request(project_id):
         flash('This request is no longer pending', 'error')
         return redirect(url_for('dashboard.dashboard'))
     
+    # FIXED: Move requested_supervisor_id into supervisor_id on approval
+    project.supervisor_id = project.requested_supervisor_id
+    project.requested_supervisor_id = None
     project.status = 'active'
     project.supervision_approved_at = datetime.utcnow()
     db.session.commit()
+
+    # Add supervisor to the project chat group
+    group = Group.query.filter_by(project_id=project.id).first()
+    if group:
+        existing_member = GroupMember.query.filter_by(
+            group_id=group.id,
+            user_id=current_user.id
+        ).first()
+        if not existing_member:
+            group_member = GroupMember(
+                group_id=group.id,
+                user_id=current_user.id,
+                is_muted=False
+            )
+            db.session.add(group_member)
+            db.session.commit()
     
     flash(f'Supervision approved for project: {project.title}', 'success')
     return redirect(url_for('dashboard.dashboard'))
@@ -325,7 +328,8 @@ def reject_supervision_request(project_id):
     
     project = Project.query.get_or_404(project_id)
     
-    if project.supervisor_id != current_user.id:
+    # FIXED: Check requested_supervisor_id not supervisor_id
+    if project.requested_supervisor_id != current_user.id:
         flash('You are not authorized to reject this request', 'error')
         return redirect(url_for('dashboard.dashboard'))
     
@@ -333,8 +337,8 @@ def reject_supervision_request(project_id):
         flash('This request is no longer pending', 'error')
         return redirect(url_for('dashboard.dashboard'))
     
-    # Remove supervisor assignment
-    project.supervisor_id = None
+    # FIXED: Clear requested_supervisor_id and reset status, leave supervisor_id untouched
+    project.requested_supervisor_id = None
     project.status = 'active'
     project.supervision_requested_at = None
     db.session.commit()

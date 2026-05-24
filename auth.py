@@ -112,19 +112,14 @@ def signin():
                 flash('Invalid email or password', 'error')
                 return redirect(url_for('auth.signin'))
             
-            # Check if user is trying to sign in to wrong portal
-            # Redirect to appropriate portal without flash message (clean redirect)
+            # Redirect supervisors/admins/devs to their own portals
             if user.is_supervisor:
-                # Clear any existing flash messages before redirect
-                session.pop('_flashes', None)
                 return redirect(url_for('supervisor.signin'))
             
             if user.is_admin:
-                session.pop('_flashes', None)
                 return redirect(url_for('admin.signin'))
             
             if user.is_dev:
-                session.pop('_flashes', None)
                 return redirect(url_for('dev.signin'))
             
             login_user(user, remember=remember)
@@ -138,8 +133,7 @@ def signin():
             flash(f'Error signing in: {str(e)}', 'error')
             return redirect(url_for('auth.signin'))
     
-    # Clear any stale flash messages when loading the signin page
-    session.pop('_flashes', None)
+    # GET request - just render the page, no flash clearing
     return render_template('signin.html')
 
 @auth_bp.route('/logout')
@@ -147,7 +141,6 @@ def signin():
 def logout():
     """Log out current user"""
     logout_user()
-    session.pop('_flashes', None)
     flash('You have been logged out successfully', 'success')
     return redirect(url_for('index'))
 
@@ -337,86 +330,6 @@ def view_supervisor_profile(supervisor_id):
         completed_projects=completed_projects
     )
 
-# ==================== REQUEST SUPERVISION ====================
-
-@auth_bp.route('/project/<int:project_id>/request-supervisor', methods=['POST'])
-@login_required
-def request_supervisor(project_id):
-    """Request a supervisor for a project"""
-    project = Project.query.get_or_404(project_id)
-    
-    if project.student_id != current_user.id:
-        flash('You do not have permission to request supervision for this project', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    if project.supervisor_id:
-        flash('This project already has a supervisor', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    supervisor_id = request.form.get('supervisor_id')
-    message = request.form.get('message', '')
-    
-    if not supervisor_id:
-        flash('Please select a supervisor', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    supervisor = User.query.get(supervisor_id)
-    if not supervisor or not supervisor.is_supervisor:
-        flash('Invalid supervisor selected', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    project.supervisor_id = supervisor.id
-    project.status = 'pending_supervision'
-    project.supervision_requested_at = datetime.utcnow()
-    db.session.commit()
-    
-    flash(f'Supervision request sent to {supervisor.get_full_name()}', 'success')
-    return redirect(url_for('project_detail', project_id=project.id))
-
-# ==================== MARK PROJECT COMPLETE/ACTIVE ====================
-
-@auth_bp.route('/project/<int:project_id>/mark-complete', methods=['POST'])
-@login_required
-def mark_project_complete(project_id):
-    """Mark a project as completed (for project owner)"""
-    project = Project.query.get_or_404(project_id)
-    
-    if project.student_id != current_user.id:
-        flash('You do not have permission to modify this project', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    if project.status == 'completed':
-        flash('Project is already marked as completed', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    project.status = 'completed'
-    project.completed_at = datetime.utcnow()
-    db.session.commit()
-    
-    flash('Project marked as completed! It will appear in the portfolio.', 'success')
-    return redirect(url_for('project_detail', project_id=project.id))
-
-@auth_bp.route('/project/<int:project_id>/mark-active', methods=['POST'])
-@login_required
-def mark_project_active(project_id):
-    """Mark a completed project as active again"""
-    project = Project.query.get_or_404(project_id)
-    
-    if project.student_id != current_user.id:
-        flash('You do not have permission to modify this project', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    if project.status != 'completed':
-        flash('Only completed projects can be marked as active', 'error')
-        return redirect(url_for('project_detail', project_id=project.id))
-    
-    project.status = 'active'
-    project.completed_at = None
-    db.session.commit()
-    
-    flash('Project marked as active again.', 'success')
-    return redirect(url_for('project_detail', project_id=project.id))
-
 # ==================== FORGOT PASSWORD ====================
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
@@ -432,14 +345,9 @@ def forgot_password():
         user = User.query.filter_by(email=email).first()
         
         if user:
-            # Log the request (for admin to see)
             print(f"[PASSWORD RESET REQUEST] User: {user.username} ({user.email}) at {datetime.now()}")
-            
-            # Store request in database or file for admin review
-            # For now, flash message to user
             flash('Your password reset request has been sent to the administrator. You will be contacted shortly.', 'success')
         else:
-            # Don't reveal if email exists or not for security
             flash('If an account exists with that email, a reset request has been sent.', 'success')
         
         return redirect(url_for('auth.signin'))
@@ -452,7 +360,6 @@ def forgot_password():
 @login_required
 def reset_password(user_id):
     """Admin-only password reset page"""
-    # Check if current user is admin or developer
     if not current_user.is_admin and not current_user.is_dev:
         flash('Access denied. Only administrators can reset passwords.', 'error')
         return redirect(url_for('dashboard.dashboard'))

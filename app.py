@@ -37,7 +37,6 @@ from supervisor import supervisor_bp
 app = Flask(__name__)
 
 # ============ SECURE CONFIGURATION ============
-# Use environment variable for secret key in production
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
 # Session security
@@ -47,7 +46,6 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
 
 # ============ TiDB CLOUD DATABASE CONFIGURATION ============
-# Get database credentials from environment variables (NOT hardcoded)
 DB_USER = os.environ.get('DB_USER', 'Zs51ycD7dYgEUy3.root')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', 'qar204jhgxpJE2sB')
 DB_HOST = os.environ.get('DB_HOST', 'gateway01.eu-central-1.prod.aws.tidbcloud.com')
@@ -358,14 +356,14 @@ def projects():
             else:
                 projects = base_query.order_by(Project.created_at.desc()).all()
         
-        # For pending supervision filter (supervisors only)
+        # FIXED: For pending supervision filter, use requested_supervisor_id
         elif filter_type == 'pending_supervision' and current_user.is_authenticated and current_user.is_supervisor:
             projects = Project.query.filter_by(
-                supervisor_id=current_user.id,
+                requested_supervisor_id=current_user.id,
                 status='pending_supervision'
             ).all()
         
-        # For my supervised filter (supervisors only)
+        # For my supervised filter (supervisors only) - supervisor_id is correct here (approved)
         elif filter_type == 'my_supervised' and current_user.is_authenticated and current_user.is_supervisor:
             projects = Project.query.filter_by(
                 supervisor_id=current_user.id,
@@ -464,14 +462,13 @@ def mark_project_active(project_id):
             flash('You do not have permission to modify this project', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # Allow reactivating both completed AND pending_supervision projects
         if project.status not in ['completed', 'pending_supervision']:
             flash('Only completed or pending supervision projects can be marked as active', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
         
         project.status = 'active'
         project.completed_at = None
-        # Also clear supervisor if it was pending_supervision without approval
+        # Clear supervision fields if reverting from pending_supervision
         if project.requested_supervisor_id or (project.supervisor_id and project.supervision_approved_at is None):
             project.supervisor_id = None
             project.requested_supervisor_id = None
@@ -483,14 +480,14 @@ def mark_project_active(project_id):
         flash(f'Error: {str(e)}', 'error')
     return redirect(url_for('project_detail', project_id=project_id))
 
-# ==================== SUPERVISION REQUEST - FIXED (no auto-approval) ====================
+# ==================== SUPERVISION REQUEST ====================
 
 @app.route('/project/<int:project_id>/request-supervisor', methods=['POST'])
 @login_required
 def request_supervisor(project_id):
     try:
         project = Project.query.get_or_404(project_id)
-        # FIXED: Renamed local variable to avoid collision with model attribute
+        # Renamed to avoid collision with model attribute
         selected_supervisor_id = request.form.get('supervisor_id')
         message = request.form.get('message', '')
         
@@ -506,17 +503,16 @@ def request_supervisor(project_id):
             flash('Please select a supervisor', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # FIXED: Cast to int explicitly
+        # Cast to int explicitly to ensure correct type written to DB
         supervisor = User.query.get(int(selected_supervisor_id))
         if not supervisor or not supervisor.is_supervisor:
             flash('Invalid supervisor selected', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # Use requested_supervisor_id instead of assigning supervisor_id immediately
+        # Store in requested_supervisor_id only — supervisor_id stays NULL until approved
         project.status = 'pending_supervision'
         project.requested_supervisor_id = int(selected_supervisor_id)
         project.supervision_requested_at = datetime.utcnow()
-        # Do NOT set supervisor_id yet
         db.session.commit()
         
         flash(f'Supervision request sent to {supervisor.get_full_name()}. They will need to approve it.', 'success')
@@ -534,7 +530,6 @@ def approve_supervision(project_id):
     try:
         project = Project.query.get_or_404(project_id)
         
-        # Check if current user is the requested supervisor for this project
         if project.requested_supervisor_id != current_user.id:
             flash('You are not authorized to approve this supervision request', 'error')
             return redirect(url_for('dashboard.dashboard'))
@@ -543,7 +538,7 @@ def approve_supervision(project_id):
             flash('This project is not pending supervision approval', 'warning')
             return redirect(url_for('dashboard.dashboard'))
         
-        # Approve the supervision - move requested supervisor to actual supervisor
+        # Move requested_supervisor_id into supervisor_id now that it is approved
         project.supervisor_id = project.requested_supervisor_id
         project.requested_supervisor_id = None
         project.status = 'active'
@@ -582,17 +577,14 @@ def cancel_supervision(project_id):
     try:
         project = Project.query.get_or_404(project_id)
         
-        # Check if current user is the project owner
         if project.student_id != current_user.id:
             flash('You do not have permission to cancel this request', 'error')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # Check if project is in pending_supervision status
         if project.status != 'pending_supervision':
             flash('This project does not have a pending supervision request', 'warning')
             return redirect(url_for('project_detail', project_id=project.id))
         
-        # Reset project to active, remove requested supervisor
         project.status = 'active'
         project.requested_supervisor_id = None
         project.supervisor_id = None

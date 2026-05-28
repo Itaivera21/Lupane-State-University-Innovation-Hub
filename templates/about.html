@@ -20,26 +20,7 @@
             min-height: 100vh;
         }
 
-        /* Mobile Menu Button */
-        .mobile-menu-btn {
-            display: none;
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1001;
-            background: #0066cc;
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        /* Header/Navigation */
+        /* ── Header ── */
         header {
             background: white;
             padding: 15px 30px;
@@ -47,14 +28,11 @@
             top: 0;
             width: 100%;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 75px;
         }
 
         .logo-container {
@@ -76,11 +54,9 @@
             color: #333;
         }
 
-        .logo-text:hover {
-            color: #0066cc;
-        }
+        .logo-text:hover { color: #0066cc; }
 
-        /* Auth Buttons - Desktop */
+        /* ── Desktop Auth Buttons ── */
         .auth-buttons {
             display: flex;
             gap: 15px;
@@ -117,7 +93,7 @@
             box-shadow: 0 4px 8px rgba(0,102,204,0.3);
         }
 
-        /* User Info - Show when logged in */
+        /* ── User Info (logged in) ── */
         .user-info {
             display: flex;
             align-items: center;
@@ -129,9 +105,7 @@
             font-size: 14px;
         }
 
-        .welcome-text strong {
-            color: #0066cc;
-        }
+        .welcome-text strong { color: #0066cc; }
 
         .btn-dashboard {
             background: #28a745;
@@ -149,13 +123,11 @@
             box-shadow: 0 4px 8px rgba(40,167,69,0.3);
         }
 
-        /* Desktop Secondary Nav */
+        /* ── Desktop Secondary Nav ── */
         .main-nav {
             background: white;
-            padding-top: 75px;
-            padding-bottom: 0;
             position: sticky;
-            top: 0;
+            top: 75px;
             z-index: 900;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
@@ -180,16 +152,33 @@
             transition: all 0.3s ease;
         }
 
-        .nav-links a:hover {
-            color: #0066cc;
-        }
+        .nav-links a:hover { color: #0066cc; }
 
         .nav-links a.active {
             color: #0066cc;
             border-bottom: 2px solid #0066cc;
         }
 
-        /* Mobile Slide-in Menu */
+        /* ── Mobile Menu Button ── */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #0066cc;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* ── Mobile Slide-in Menu ── */
         .mobile-nav-overlay {
             display: none;
             position: fixed;
@@ -214,9 +203,7 @@
             overflow-y: auto;
         }
 
-        .mobile-nav-menu.active {
-            right: 0;
-        }
+        .mobile-nav-menu.active { right: 0; }
 
         .mobile-nav-header {
             display: flex;
@@ -227,29 +214,13 @@
             margin-bottom: 20px;
         }
 
-        .mobile-nav-header h3 {
-            color: #333;
-            font-size: 18px;
-        }
+        .mobile-nav-header h3 { color: #333; font-size: 18px; }
 
-        .close-menu {
-            font-size: 28px;
-            cursor: pointer;
-            color: #888;
-        }
+        .close-menu { font-size: 28px; cursor: pointer; color: #888; }
+        .close-menu:hover { color: #ff4444; }
 
-        .close-menu:hover {
-            color: #ff4444;
-        }
-
-        .mobile-nav-links {
-            list-style: none;
-            flex: 1;
-        }
-
-        .mobile-nav-links li {
-            margin: 15px 0;
-        }
+        .mobile-nav-links { list-style: none; flex: 1; }
+        .mobile-nav-links li { margin: 15px 0; }
 
         .mobile-nav-links a {
             display: block;
@@ -258,15 +229,9 @@
             font-size: 16px;
             transition: all 0.3s ease;
             border-radius: 8px;
-            text-decoration: none;
         }
 
         .mobile-nav-links a:hover,
-        .mobile-nav-links a.active {
-            background: #e6f2ff;
-            color: #0066cc;
-        }
-
         .mobile-nav-links a.active {
             background: #e6f2ff;
             color: #0066cc;
@@ -287,16 +252,15 @@
             display: block;
         }
 
-        /* Page Body */
+        /* ── Page Body ── */
         .page-body {
-            padding-top: 120px;
+            padding-top: 75px;
         }
 
-        /* Main Content */
+        /* ── Main Content ── */
         .main-content {
-            flex: 1;
             max-width: 800px;
-            margin: 0 auto 40px auto;
+            margin: 40px auto;
             padding: 0 30px;
         }
 
@@ -305,12 +269,6 @@
             border-radius: 15px;
             padding: 40px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        @media (max-width: 480px) {
-            .about-box {
-                padding: 25px;
-            }
         }
 
         .about-box h1 {
@@ -381,13 +339,6 @@
             margin: 20px 0;
         }
 
-        @media (max-width: 768px) {
-            .team-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-        }
-
         .team-member {
             text-align: center;
             padding: 20px;
@@ -401,10 +352,7 @@
             box-shadow: 0 5px 15px rgba(0,102,204,0.1);
         }
 
-        .team-member h4 {
-            color: #333;
-            margin-bottom: 5px;
-        }
+        .team-member h4 { color: #333; margin-bottom: 5px; }
 
         .team-member p {
             color: #888;
@@ -425,18 +373,17 @@
             font-size: 18px;
         }
 
+        /* ── Footer ── */
         footer {
             background: white;
             padding: 30px;
-            margin-top: 60px;
+            margin-top: 40px;
             text-align: center;
             color: #666;
             border-top: 1px solid #e0e0e0;
         }
 
-        .copyright {
-            font-size: 14px;
-        }
+        .copyright { font-size: 14px; }
 
         .footer-links {
             margin-top: 15px;
@@ -452,11 +399,9 @@
             transition: color 0.3s ease;
         }
 
-        .footer-links a:hover {
-            color: #0066cc;
-        }
+        .footer-links a:hover { color: #0066cc; }
 
-        /* Flash Messages */
+        /* ── Flash Messages ── */
         .flash-message {
             padding: 15px;
             border-radius: 8px;
@@ -477,58 +422,40 @@
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(-20px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
         }
 
-        /* Responsive */
+        /* ── Responsive ── */
         @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: flex;
-            }
+            .mobile-menu-btn { display: flex; }
+            .auth-buttons    { display: none; }
+            .main-nav        { display: none; }
 
-            .auth-buttons {
-                display: none;
-            }
-
-            .main-nav {
-                display: none;
-            }
-
-            .page-body {
-                padding-top: 75px;
-            }
+            .page-body { padding-top: 75px; }
 
             header {
                 padding: 12px 20px;
                 height: 70px;
             }
 
-            .logo-text {
-                font-size: 16px;
-            }
+            .logo-text { font-size: 16px; }
 
             .logo-container img {
                 width: 36px;
                 height: 36px;
             }
 
-            .main-content {
-                padding: 0 15px;
-            }
+            .main-content { padding: 0 15px; }
 
-            .about-box h1 {
-                font-size: 26px;
-            }
+            .about-box { padding: 25px; }
 
-            .about-box h2 {
-                font-size: 20px;
+            .about-box h1 { font-size: 26px; }
+            .about-box h2 { font-size: 20px; }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
             }
         }
     </style>
@@ -536,7 +463,7 @@
 <body>
 
     <!-- Mobile Menu Button -->
-    <div class="mobile-menu-btn" onclick="openMobileMenu()">☰</div>
+    <div class="mobile-menu-btn" onclick="openMobileMenu()">&#9776;</div>
 
     <!-- Mobile Overlay + Slide-in Menu -->
     <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
@@ -544,45 +471,47 @@
     <div class="mobile-nav-menu" id="mobileNavMenu">
         <div class="mobile-nav-header">
             <h3>Innovation Hub</h3>
-            <span class="close-menu" onclick="closeMobileMenu()">×</span>
+            <span class="close-menu" onclick="closeMobileMenu()">&times;</span>
         </div>
         <ul class="mobile-nav-links">
             <li><a href="{{ url_for('index') }}">Home</a></li>
             <li><a href="{{ url_for('about') }}" class="active">About</a></li>
             <li><a href="{{ url_for('services') }}">Services</a></li>
             <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
-            <li><a href="{{ url_for('terms') }}">Terms & Privacy</a></li>
+            <li><a href="{{ url_for('terms') }}">Terms &amp; Privacy</a></li>
             <li><a href="{{ url_for('contact') }}">Contact</a></li>
         </ul>
         <div class="mobile-auth">
-            <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
-            <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn-signup">Go to Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
+                <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+            {% endif %}
         </div>
     </div>
 
     <!-- Fixed Header -->
     <header>
-        <div class="header-top">
-            <div class="logo-container">
-                <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
-                <a href="{{ url_for('index') }}" class="logo-text">Innovation Hub</a>
-            </div>
-
-            {% if current_user.is_authenticated %}
-            <div class="user-info">
-                <span class="welcome-text">Welcome, <strong>{{ current_user.username }}</strong></span>
-                <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">Dashboard</a>
-            </div>
-            {% else %}
-            <div class="auth-buttons">
-                <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
-                <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
-            </div>
-            {% endif %}
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='Images/LSU LOGO.png') }}" alt="LSU Logo">
+            <a href="{{ url_for('index') }}" class="logo-text">Innovation Hub</a>
         </div>
+
+        {% if current_user.is_authenticated %}
+        <div class="user-info">
+            <span class="welcome-text">Welcome, <strong>{{ current_user.username }}</strong></span>
+            <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">Dashboard</a>
+        </div>
+        {% else %}
+        <div class="auth-buttons">
+            <a href="{{ url_for('auth.signin') }}" class="btn-login">Sign In</a>
+            <a href="{{ url_for('auth.signup') }}" class="btn-signup">Sign Up</a>
+        </div>
+        {% endif %}
     </header>
 
-    <!-- Desktop Secondary Nav (hidden on mobile) -->
+    <!-- Desktop Secondary Nav -->
     <div class="main-nav">
         <div class="nav-inner">
             <ul class="nav-links">
@@ -590,7 +519,7 @@
                 <li><a href="{{ url_for('about') }}" class="active">About</a></li>
                 <li><a href="{{ url_for('services') }}">Services</a></li>
                 <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
-                <li><a href="{{ url_for('terms') }}">Terms & Privacy</a></li>
+                <li><a href="{{ url_for('terms') }}">Terms &amp; Privacy</a></li>
                 <li><a href="{{ url_for('contact') }}">Contact</a></li>
             </ul>
         </div>
@@ -598,15 +527,13 @@
 
     <!-- Page Body -->
     <div class="page-body">
-
         <div class="main-content">
+
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">
-                            {{ message }}
-                        </div>
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
@@ -635,7 +562,7 @@
 
                 <h2>Faculties Involved</h2>
                 <ul>
-                    <li>Engineering & Technology</li>
+                    <li>Engineering &amp; Technology</li>
                     <li>Agriculture</li>
                     <li>Commerce</li>
                     <li>Humanities</li>
@@ -664,16 +591,13 @@
         </div>
 
         <footer>
-            <div class="copyright">
-                © 2026 LSU Innovation Hub. All rights reserved.
-            </div>
+            <div class="copyright">&copy; 2026 LSU Innovation Hub. All rights reserved.</div>
             <div class="footer-links">
                 <a href="{{ url_for('terms') }}">Terms of Use</a>
                 <a href="{{ url_for('privacy') }}">Privacy Policy</a>
                 <a href="{{ url_for('contact') }}">Contact Us</a>
             </div>
         </footer>
-
     </div>
 
     <script>
@@ -689,15 +613,11 @@
             document.body.style.overflow = '';
         }
 
-        // Auto-hide flash messages
         setTimeout(function() {
-            var flashes = document.querySelectorAll('.flash-message');
-            flashes.forEach(function(flash) {
+            document.querySelectorAll('.flash-message').forEach(function(flash) {
                 flash.style.transition = 'opacity 0.3s ease';
                 flash.style.opacity = '0';
-                setTimeout(function() {
-                    flash.style.display = 'none';
-                }, 300);
+                setTimeout(function() { flash.style.display = 'none'; }, 300);
             });
         }, 3000);
     </script>

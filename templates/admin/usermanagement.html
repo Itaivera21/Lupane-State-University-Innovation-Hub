@@ -97,9 +97,7 @@
             gap: 12px;
         }
 
-        .nav-item:hover {
-            background: #34495e;
-        }
+        .nav-item:hover { background: #34495e; }
 
         .nav-item.active {
             background: #3498db;
@@ -119,13 +117,8 @@
             opacity: 0.8;
         }
 
-        .nav-item:hover img {
-            opacity: 1;
-        }
-
-        .nav-item.active img {
-            opacity: 1;
-        }
+        .nav-item:hover img,
+        .nav-item.active img { opacity: 1; }
 
         /* Main Content */
         .main-content {
@@ -160,24 +153,11 @@
                 align-items: flex-start;
                 gap: 10px;
             }
-
-            .admin-badge {
-                width: 100%;
-                text-align: center;
-            }
+            .admin-badge { width: 100%; text-align: center; }
         }
 
-        .header h1 {
-            font-size: 22px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .header p {
-            font-size: 13px;
-            color: #666;
-            margin-top: 4px;
-        }
+        .header h1 { font-size: 22px; font-weight: 500; color: #333; }
+        .header p  { font-size: 13px; color: #666; margin-top: 4px; }
 
         .admin-badge {
             background: #f8f9fa;
@@ -201,13 +181,8 @@
         }
 
         @media (max-width: 480px) {
-            .search-section {
-                flex-direction: column;
-            }
-
-            .search-input, .search-btn, .clear-btn {
-                width: 100%;
-            }
+            .search-section { flex-direction: column; }
+            .search-input, .search-btn, .clear-btn { width: 100%; }
         }
 
         .search-input {
@@ -219,10 +194,7 @@
             min-width: 250px;
         }
 
-        .search-input:focus {
-            outline: none;
-            border-color: #3498db;
-        }
+        .search-input:focus { outline: none; border-color: #3498db; }
 
         .search-btn {
             padding: 10px 25px;
@@ -234,9 +206,7 @@
             font-size: 14px;
         }
 
-        .search-btn:hover {
-            background: #2980b9;
-        }
+        .search-btn:hover { background: #2980b9; }
 
         .clear-btn {
             padding: 10px 25px;
@@ -251,9 +221,7 @@
             text-align: center;
         }
 
-        .clear-btn:hover {
-            background: #5a6268;
-        }
+        .clear-btn:hover { background: #5a6268; }
 
         /* Filters */
         .filters {
@@ -264,10 +232,7 @@
         }
 
         @media (max-width: 480px) {
-            .filters {
-                gap: 8px;
-            }
-
+            .filters { gap: 8px; }
             .filter-btn {
                 flex: 1 1 calc(50% - 5px);
                 text-align: center;
@@ -288,9 +253,7 @@
             transition: all 0.2s;
         }
 
-        .filter-btn:hover {
-            background: #f0f0f0;
-        }
+        .filter-btn:hover { background: #f0f0f0; }
 
         .filter-btn.active {
             background: #3498db;
@@ -311,36 +274,19 @@
         }
 
         @media (max-width: 480px) {
-            .stats-bar {
-                flex-direction: column;
-                gap: 8px;
-            }
-
+            .stats-bar { flex-direction: column; gap: 8px; }
             .stat-item {
                 display: flex;
                 justify-content: space-between;
                 border-bottom: 1px dashed #eee;
                 padding-bottom: 5px;
             }
-
-            .stat-item:last-child {
-                border-bottom: none;
-            }
+            .stat-item:last-child { border-bottom: none; }
         }
 
-        .stat-item {
-            font-size: 14px;
-        }
-
-        .stat-label {
-            color: #666;
-            margin-right: 5px;
-        }
-
-        .stat-value {
-            font-weight: 600;
-            color: #2c3e50;
-        }
+        .stat-item  { font-size: 14px; }
+        .stat-label { color: #666; margin-right: 5px; }
+        .stat-value { font-weight: 600; color: #2c3e50; }
 
         /* Table Container */
         .table-container {
@@ -351,14 +297,10 @@
         }
 
         /* Card View for Mobile */
-        .mobile-cards {
-            display: none;
-        }
+        .mobile-cards { display: none; }
 
         @media (max-width: 768px) {
-            table {
-                display: none;
-            }
+            table { display: none; }
 
             .mobile-cards {
                 display: block;
@@ -380,17 +322,8 @@
                 margin-bottom: 10px;
             }
 
-            .user-card-name {
-                font-weight: 600;
-                color: #333;
-                font-size: 16px;
-            }
-
-            .user-card-email {
-                color: #3498db;
-                font-size: 13px;
-                margin-bottom: 5px;
-            }
+            .user-card-name  { font-weight: 600; color: #333; font-size: 16px; }
+            .user-card-email { color: #3498db; font-size: 13px; margin-bottom: 5px; }
 
             .user-card-detail {
                 display: flex;
@@ -399,14 +332,8 @@
                 font-size: 13px;
             }
 
-            .user-card-label {
-                color: #666;
-            }
-
-            .user-card-value {
-                color: #333;
-                font-weight: 500;
-            }
+            .user-card-label { color: #666; }
+            .user-card-value { color: #333; font-weight: 500; }
 
             .user-card-actions {
                 display: flex;
@@ -416,10 +343,7 @@
                 padding-top: 15px;
             }
 
-            .user-card-actions .action-btn {
-                flex: 1;
-                text-align: center;
-            }
+            .user-card-actions .action-btn { flex: 1; text-align: center; }
         }
 
         table {
@@ -446,13 +370,9 @@
             vertical-align: middle;
         }
 
-        tr:hover {
-            background: #f8f9fa;
-        }
+        tr:hover { background: #f8f9fa; }
 
-        .user-email {
-            color: #3498db;
-        }
+        .user-email { color: #3498db; }
 
         /* Role Badges */
         .role-badge {
@@ -463,30 +383,12 @@
             display: inline-block;
         }
 
-        .role-student {
-            background: #e8f5e9;
-            color: #27ae60;
-        }
+        .role-student    { background: #e8f5e9; color: #27ae60; }
+        .role-supervisor { background: #e3f2fd; color: #3498db; }
+        .role-admin      { background: #2c3e50; color: white; }
+        .role-dev        { background: #9b59b6; color: white; }
 
-        .role-supervisor {
-            background: #e3f2fd;
-            color: #3498db;
-        }
-
-        .role-admin {
-            background: #2c3e50;
-            color: white;
-        }
-
-        .role-dev {
-            background: #9b59b6;
-            color: white;
-        }
-
-        .status-active {
-            color: #27ae60;
-            font-weight: 500;
-        }
+        .status-active { color: #27ae60; font-weight: 500; }
 
         /* Action Buttons */
         .action-buttons {
@@ -497,9 +399,7 @@
         }
 
         @media (max-width: 480px) {
-            .action-buttons {
-                flex-wrap: wrap;
-            }
+            .action-buttons { flex-wrap: wrap; }
         }
 
         .action-btn {
@@ -515,33 +415,17 @@
             line-height: 1.4;
         }
 
-        .action-btn.view {
-            background: #3498db;
-            color: white;
-        }
+        .action-btn.view   { background: #3498db; color: white; }
+        .action-btn.reset  { background: #f39c12; color: white; }
+        .action-btn.delete { background: #e74c3c; color: white; }
+        .action-btn:hover  { opacity: 0.8; }
 
-        .action-btn.reset {
-            background: #f39c12;
-            color: white;
-        }
-
-        .action-btn.delete {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .action-btn:hover {
-            opacity: 0.8;
-        }
-
-        /* Modal Styles */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             z-index: 2000;
             justify-content: center;
@@ -549,9 +433,7 @@
             padding: 15px;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
 
         .modal-content {
             background: white;
@@ -569,20 +451,10 @@
             margin-bottom: 20px;
         }
 
-        .modal-header h3 {
-            color: #333;
-            font-size: 18px;
-        }
+        .modal-header h3 { color: #333; font-size: 18px; }
 
-        .close-modal {
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-        }
-
-        .close-modal:hover {
-            color: #333;
-        }
+        .close-modal { font-size: 24px; cursor: pointer; color: #888; }
+        .close-modal:hover { color: #333; }
 
         .password-display {
             background: #f8f9fa;
@@ -618,22 +490,10 @@
             font-weight: 500;
         }
 
-        .modal-btn-primary {
-            background: #3498db;
-            color: white;
-        }
+        .modal-btn-primary   { background: #3498db; color: white; }
+        .modal-btn-secondary { background: #f8f9fa; border: 1px solid #ddd; color: #555; }
 
-        .modal-btn-secondary {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            color: #555;
-        }
-
-        .results-count {
-            margin-bottom: 10px;
-            color: #666;
-            font-size: 13px;
-        }
+        .results-count { margin-bottom: 10px; color: #666; font-size: 13px; }
 
         /* Flash Messages */
         .flash-message {
@@ -653,27 +513,12 @@
             }
         }
 
-        .flash-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .flash-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+        .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
         @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(-20px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
         }
     </style>
 </head>
@@ -687,7 +532,6 @@
             <h2>Innovation Hub</h2>
             <p>Admin Panel</p>
         </div>
-
         <div class="nav-menu">
             <a href="{{ url_for('admin.dashboard') }}" class="nav-item">
                 <img src="{{ url_for('static', filename='Icons/dashboard.png') }}" alt="Dashboard">
@@ -728,25 +572,23 @@
                 <h1>User Management</h1>
                 <p>View and manage all Innovation Hub users</p>
             </div>
-            <div class="admin-badge">
-                {{ current_user.email }}
-            </div>
+            <div class="admin-badge">{{ current_user.email }}</div>
         </div>
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">
-                        {{ message }}
-                    </div>
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
         <!-- Search -->
         <form method="GET" action="{{ url_for('admin.users') }}" class="search-section">
-            <input type="text" name="search" class="search-input" placeholder="Search by name, email, or student ID..." value="{{ search_query or '' }}">
+            <input type="text" name="search" class="search-input"
+                   placeholder="Search by name, email, or student ID..."
+                   value="{{ search_query or '' }}">
             <button type="submit" class="search-btn">Search</button>
             {% if search_query %}
                 <a href="{{ url_for('admin.users', filter=current_filter) }}" class="clear-btn">Clear</a>
@@ -755,21 +597,27 @@
 
         <!-- Filters -->
         <div class="filters">
-            <a href="{{ url_for('admin.users', filter='all', search=search_query) }}" class="filter-btn {% if current_filter == 'all' or not current_filter %}active{% endif %}">All Users</a>
-            <a href="{{ url_for('admin.users', filter='students', search=search_query) }}" class="filter-btn {% if current_filter == 'students' %}active{% endif %}">Students</a>
-            <a href="{{ url_for('admin.users', filter='supervisors', search=search_query) }}" class="filter-btn {% if current_filter == 'supervisors' %}active{% endif %}">Supervisors</a>
-            <a href="{{ url_for('admin.users', filter='admins', search=search_query) }}" class="filter-btn {% if current_filter == 'admins' %}active{% endif %}">Admins</a>
-            <a href="{{ url_for('admin.users', filter='active', search=search_query) }}" class="filter-btn {% if current_filter == 'active' %}active{% endif %}">Active (30d)</a>
-            <a href="{{ url_for('admin.users', filter='new', search=search_query) }}" class="filter-btn {% if current_filter == 'new' %}active{% endif %}">New (30d)</a>
+            <a href="{{ url_for('admin.users', filter='all', search=search_query) }}"
+               class="filter-btn {% if current_filter == 'all' or not current_filter %}active{% endif %}">All Users</a>
+            <a href="{{ url_for('admin.users', filter='students', search=search_query) }}"
+               class="filter-btn {% if current_filter == 'students' %}active{% endif %}">Students</a>
+            <a href="{{ url_for('admin.users', filter='supervisors', search=search_query) }}"
+               class="filter-btn {% if current_filter == 'supervisors' %}active{% endif %}">Supervisors</a>
+            <a href="{{ url_for('admin.users', filter='admins', search=search_query) }}"
+               class="filter-btn {% if current_filter == 'admins' %}active{% endif %}">Admins</a>
+            <a href="{{ url_for('admin.users', filter='active', search=search_query) }}"
+               class="filter-btn {% if current_filter == 'active' %}active{% endif %}">Active (30d)</a>
+            <a href="{{ url_for('admin.users', filter='new', search=search_query) }}"
+               class="filter-btn {% if current_filter == 'new' %}active{% endif %}">New (30d)</a>
         </div>
 
         <!-- Stats -->
         <div class="stats-bar">
-            <div class="stat-item"><span class="stat-label">Total:</span> <span class="stat-value">{{ total_users }}</span></div>
-            <div class="stat-item"><span class="stat-label">Students:</span> <span class="stat-value">{{ total_students }}</span></div>
-            <div class="stat-item"><span class="stat-label">Supervisors:</span> <span class="stat-value">{{ total_supervisors|default(0) }}</span></div>
-            <div class="stat-item"><span class="stat-label">Admins:</span> <span class="stat-value">{{ total_admins }}</span></div>
-            <div class="stat-item"><span class="stat-label">New this month:</span> <span class="stat-value">{{ new_this_month }}</span></div>
+            <div class="stat-item"><span class="stat-label">Total:</span>           <span class="stat-value">{{ total_users }}</span></div>
+            <div class="stat-item"><span class="stat-label">Students:</span>         <span class="stat-value">{{ total_students }}</span></div>
+            <div class="stat-item"><span class="stat-label">Supervisors:</span>      <span class="stat-value">{{ total_supervisors|default(0) }}</span></div>
+            <div class="stat-item"><span class="stat-label">Admins:</span>           <span class="stat-value">{{ total_admins }}</span></div>
+            <div class="stat-item"><span class="stat-label">New this month:</span>   <span class="stat-value">{{ new_this_month }}</span></div>
         </div>
 
         <!-- Results Count -->
@@ -816,13 +664,17 @@
                         <td>
                             <div class="action-buttons">
                                 <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="action-btn view">View</a>
-                                <button class="action-btn reset" onclick="openResetModal('{{ user.id }}', '{{ user.username }}')">Reset</button>
+                                <button class="action-btn reset"
+                                        onclick="openResetModal('{{ user.id }}', '{{ user.username }}')">Reset</button>
                                 {% if user.id != current_user.id %}
                                     {% if user.is_admin %}
-                                        <button class="action-btn delete" onclick="confirmDeleteAdmin('{{ user.id }}', '{{ user.username }}')">Delete</button>
+                                        <button class="action-btn delete"
+                                                onclick="confirmDeleteAdmin('{{ user.id }}', '{{ user.username }}')">Delete</button>
                                     {% elif not user.is_dev %}
-                                        <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" style="display: inline;">
-                                            <button type="submit" class="action-btn delete" onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')">Delete</button>
+                                        <form action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                              method="POST" style="display:inline;">
+                                            <button type="submit" class="action-btn delete"
+                                                    onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')">Delete</button>
                                         </form>
                                     {% endif %}
                                 {% endif %}
@@ -831,7 +683,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                        <td colspan="8" style="text-align:center; padding:40px; color:#999;">
                             No users found
                         </td>
                     </tr>
@@ -876,22 +728,24 @@
                     </div>
                     <div class="user-card-actions">
                         <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="action-btn view">View</a>
-                        <button class="action-btn reset" onclick="openResetModal('{{ user.id }}', '{{ user.username }}')">Reset</button>
+                        <button class="action-btn reset"
+                                onclick="openResetModal('{{ user.id }}', '{{ user.username }}')">Reset</button>
                         {% if user.id != current_user.id %}
                             {% if user.is_admin %}
-                                <button class="action-btn delete" onclick="confirmDeleteAdmin('{{ user.id }}', '{{ user.username }}')">Delete</button>
+                                <button class="action-btn delete"
+                                        onclick="confirmDeleteAdmin('{{ user.id }}', '{{ user.username }}')">Delete</button>
                             {% elif not user.is_dev %}
-                                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" style="display: inline;">
-                                    <button type="submit" class="action-btn delete" onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')">Delete</button>
+                                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                      method="POST" style="display:inline;">
+                                    <button type="submit" class="action-btn delete"
+                                            onclick="return confirm('Delete user {{ user.username }}? This cannot be undone.')">Delete</button>
                                 </form>
                             {% endif %}
                         {% endif %}
                     </div>
                 </div>
                 {% else %}
-                <div style="text-align: center; padding: 40px; color: #999;">
-                    No users found
-                </div>
+                <div style="text-align:center; padding:40px; color:#999;">No users found</div>
                 {% endfor %}
             </div>
         </div>
@@ -905,13 +759,19 @@
                 <span class="close-modal" onclick="closeResetModal()">&times;</span>
             </div>
             <form id="resetForm" method="POST" action="">
+                <!-- FIXED: name="password" added so Flask's request.form.get('password')
+                     receives the generated value instead of falling back to a different
+                     random password that the admin never sees. -->
+                <input type="hidden" id="hiddenPasswordInput" name="password" value="">
+
                 <p>Reset password for <strong id="resetUsername"></strong></p>
                 <div class="password-display">
-                    <div style="font-size: 12px; color: #666; margin-bottom: 8px;">New Password:</div>
+                    <div style="font-size:12px; color:#666; margin-bottom:8px;">New Password:</div>
                     <div class="password-value" id="newPasswordDisplay">········</div>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="modal-btn modal-btn-secondary" onclick="copyPassword()">Copy Password</button>
+                    <button type="button" class="modal-btn modal-btn-secondary"
+                            onclick="copyPassword()">Copy Password</button>
                     <button type="submit" class="modal-btn modal-btn-primary">Confirm Reset</button>
                 </div>
             </form>
@@ -924,13 +784,10 @@
 
         // Auto-hide flash messages
         setTimeout(function() {
-            var flashes = document.querySelectorAll('.flash-message');
-            flashes.forEach(function(flash) {
+            document.querySelectorAll('.flash-message').forEach(function(flash) {
                 flash.style.transition = 'opacity 0.3s ease';
                 flash.style.opacity = '0';
-                setTimeout(function() {
-                    flash.style.display = 'none';
-                }, 300);
+                setTimeout(function() { flash.style.display = 'none'; }, 300);
             });
         }, 3000);
 
@@ -943,15 +800,16 @@
         document.addEventListener('click', function(event) {
             var sidebar = document.getElementById('sidebar');
             var menuBtn = document.querySelector('.mobile-menu-btn');
-
             if (window.innerWidth <= 768) {
-                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(event.target) &&
+                    !menuBtn.contains(event.target) &&
+                    sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
                 }
             }
         });
 
-        // Close sidebar when a link is clicked (mobile)
+        // Close sidebar when a nav link is clicked (mobile)
         document.querySelectorAll('#sidebar a').forEach(function(link) {
             link.addEventListener('click', function() {
                 if (window.innerWidth <= 768) {
@@ -960,41 +818,37 @@
             });
         });
 
-        // Reset Password Modal
-        async function openResetModal(userId, username) {
+        // ── Reset Password Modal ──────────────────────────────────────
+        function openResetModal(userId, username) {
             currentResetUserId = userId;
-            document.getElementById('resetUsername').textContent = username;
-            document.getElementById('resetModal').classList.add('active');
 
-            // Generate a random password
+            // Generate password and display it
             currentGeneratedPassword = generateRandomPassword();
             document.getElementById('newPasswordDisplay').textContent = currentGeneratedPassword;
+            document.getElementById('resetUsername').textContent = username;
 
-            // Set form action
+            // FIXED: write the password into the already-present hidden input
+            // (the input is declared in HTML with name="password", so Flask
+            //  will always receive it - no more silent fallback to a different value)
+            document.getElementById('hiddenPasswordInput').value = currentGeneratedPassword;
+
+            // Point form at the correct user
             document.getElementById('resetForm').action = `/admin/user/${userId}/reset-password`;
 
-            // Add hidden input for password
-            let passwordInput = document.getElementById('hiddenPasswordInput');
-            if (!passwordInput) {
-                passwordInput = document.createElement('input');
-                passwordInput.type = 'hidden';
-                passwordInput.id = 'hiddenPasswordInput';
-                document.getElementById('resetForm').appendChild(passwordInput);
-            }
-            passwordInput.value = currentGeneratedPassword;
+            document.getElementById('resetModal').classList.add('active');
         }
 
         function closeResetModal() {
             document.getElementById('resetModal').classList.remove('active');
+            document.getElementById('hiddenPasswordInput').value = '';
             currentResetUserId = null;
             currentGeneratedPassword = null;
         }
 
         function generateRandomPassword() {
-            const length = 10;
-            const charset = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-            let password = "";
-            for (let i = 0; i < length; i++) {
+            const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+            let password = '';
+            for (let i = 0; i < 10; i++) {
                 password += charset.charAt(Math.floor(Math.random() * charset.length));
             }
             return password;
@@ -1002,11 +856,9 @@
 
         function copyPassword() {
             if (currentGeneratedPassword) {
-                navigator.clipboard.writeText(currentGeneratedPassword).then(function() {
-                    showFlashMessage('Password copied to clipboard!', 'success');
-                }).catch(function() {
-                    showFlashMessage('Could not copy password', 'error');
-                });
+                navigator.clipboard.writeText(currentGeneratedPassword)
+                    .then(function()  { showFlashMessage('Password copied to clipboard!', 'success'); })
+                    .catch(function() { showFlashMessage('Could not copy password', 'error'); });
             }
         }
 
@@ -1014,11 +866,9 @@
             const flashDiv = document.createElement('div');
             flashDiv.className = `flash-message flash-${type}`;
             flashDiv.textContent = message;
-
             const mainContent = document.querySelector('.main-content');
             const header = document.querySelector('.header');
             mainContent.insertBefore(flashDiv, header.nextSibling);
-
             setTimeout(() => {
                 flashDiv.style.opacity = '0';
                 setTimeout(() => flashDiv.remove(), 300);
@@ -1035,13 +885,11 @@
             }
         }
 
-        // Close modal when clicking outside
+        // Close modal when clicking the backdrop
         window.onclick = function(event) {
             const modal = document.getElementById('resetModal');
-            if (event.target === modal) {
-                closeResetModal();
-            }
-        }
+            if (event.target === modal) { closeResetModal(); }
+        };
     </script>
 </body>
 </html>

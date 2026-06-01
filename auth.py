@@ -26,37 +26,37 @@ def signup():
             skills = request.form.get('skills', '').strip()
             password = request.form.get('password', '')
             confirm_password = request.form.get('confirm_password', '')
-            
+
             # Validation
             if not all([first_name, last_name, email, student_id, faculty, password]):
                 flash('All required fields must be filled', 'error')
                 return redirect(url_for('auth.signup'))
-            
+
             if password != confirm_password:
                 flash('Passwords do not match', 'error')
                 return redirect(url_for('auth.signup'))
-            
+
             if len(password) < 6:
                 flash('Password must be at least 6 characters', 'error')
                 return redirect(url_for('auth.signup'))
-            
+
             # Validate LSU email for students
             if not email.endswith('@lsu.ac.zw'):
                 flash('Must use a valid @lsu.ac.zw email address', 'error')
                 return redirect(url_for('auth.signup'))
-            
+
             # Check if user already exists
             existing_user = User.query.filter(
                 (User.email == email) | (User.student_id == student_id)
             ).first()
-            
+
             if existing_user:
                 flash('Email or Student ID already registered', 'error')
                 return redirect(url_for('auth.signup'))
-            
+
             # Create username from first and last name
             username = f"{first_name} {last_name}"
-            
+
             # Create new student user
             new_user = User(
                 username=username,
@@ -70,71 +70,78 @@ def signup():
                 is_admin=False,
                 is_dev=False
             )
-            
+
             # Set skills if any
             if skills:
                 skills_list = [s.strip() for s in skills.split(',') if s.strip()]
                 new_user.set_skills(skills_list)
-            
+
             # Save to database
             db.session.add(new_user)
             db.session.commit()
-            
+
             # Log the user in
             login_user(new_user)
-            
+
             flash('Account created successfully! Welcome to Innovation Hub.', 'success')
             return redirect(url_for('dashboard.dashboard'))
-            
+
         except Exception as e:
             db.session.rollback()
             flash(f'Error creating account: {str(e)}', 'error')
             return redirect(url_for('auth.signup'))
-    
+
     return render_template('signup.html')
+
 
 @auth_bp.route('/signin', methods=['GET', 'POST'])
 def signin():
-    """Student user login page"""
+    """User login page - handles students, supervisors, and admins"""
     if request.method == 'POST':
         try:
             email = request.form.get('email', '').strip()
             password = request.form.get('password', '')
             remember = True if request.form.get('remember') else False
-            
+
             if not email or not password:
                 flash('Email and password are required', 'error')
                 return redirect(url_for('auth.signin'))
-            
+
             user = User.query.filter_by(email=email).first()
-            
+
+            # FIXED: Verify password first before doing anything else
             if not user or not check_password_hash(user.password, password):
                 flash('Invalid email or password', 'error')
                 return redirect(url_for('auth.signin'))
-            
-            # Redirect supervisors/admins/devs to their own portals
-            if user.is_supervisor:
-                return redirect(url_for('supervisor.signin'))
-            
-            if user.is_admin:
-                return redirect(url_for('admin.signin'))
-            
-            if user.is_dev:
-                return redirect(url_for('dev.signin'))
-            
+
+            # FIXED: Always call login_user before routing to any portal.
+            # Previously admins/supervisors were redirected WITHOUT being
+            # logged in, so after a password change they could never
+            # authenticate because login_user was never called.
             login_user(user, remember=remember)
             user.last_login = datetime.utcnow()
             db.session.commit()
-            
+
+            # Now route each role to their correct dashboard
+            if user.is_admin:
+                return redirect(url_for('admin.dashboard'))
+
+            if user.is_supervisor:
+                return redirect(url_for('supervisor.dashboard'))
+
+            if user.is_dev:
+                return redirect(url_for('dev.dashboard'))
+
+            # Plain student
             flash(f'Welcome back, {user.get_full_name() or user.username}!', 'success')
             return redirect(url_for('dashboard.dashboard'))
-            
+
         except Exception as e:
             flash(f'Error signing in: {str(e)}', 'error')
             return redirect(url_for('auth.signin'))
-    
-    # GET request - just render the page, no flash clearing
+
     return render_template('signin.html')
+
 
 @auth_bp.route('/logout')
 @login_required
@@ -144,6 +151,7 @@ def logout():
     flash('You have been logged out successfully', 'success')
     return redirect(url_for('index'))
 
+
 @auth_bp.route('/profile')
 @login_required
 def profile():
@@ -151,32 +159,32 @@ def profile():
     created_projects = []
     joined_projects = []
     applications = []
-    
+
     if not current_user.is_supervisor:
         # Student view
         created_projects = Project.query.filter_by(student_id=current_user.id).all()
-        
+
         # Get user's applications
         applications = ProjectApplication.query.filter_by(applicant_id=current_user.id).all()
-        
+
         # Get joined projects (approved applications)
         approved_apps = ProjectApplication.query.filter_by(
             applicant_id=current_user.id,
             status='approved'
         ).all()
         joined_projects = [app.project for app in approved_apps if app.project]
-    
+
     # For supervisors, show projects they supervise
     supervised_projects = []
     if current_user.is_supervisor:
         supervised_projects = Project.query.filter_by(supervisor_id=current_user.id).all()
-    
+
     # Calculate stats
     all_projects = created_projects + joined_projects
     active_count = sum(1 for p in all_projects if p and p.status == 'active')
     completed_count = sum(1 for p in all_projects if p and p.status == 'completed')
     pending_count = sum(1 for a in applications if a and a.status == 'pending')
-    
+
     return render_template(
         'profile.html',
         user=current_user,
@@ -188,6 +196,7 @@ def profile():
         completed_count=completed_count,
         pending_count=pending_count
     )
+
 
 @auth_bp.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
@@ -205,7 +214,7 @@ def edit_profile():
             location = request.form.get('location', '').strip()
             bio = request.form.get('bio', '').strip()
             skills = request.form.get('skills', '').strip()
-            
+
             # Update basic user info
             if first_name:
                 current_user.first_name = first_name
@@ -213,7 +222,7 @@ def edit_profile():
                 current_user.last_name = last_name
             if first_name and last_name:
                 current_user.username = f"{first_name} {last_name}"
-            
+
             # Update faculty/department
             if faculty:
                 current_user.faculty = faculty
@@ -227,7 +236,7 @@ def edit_profile():
                 current_user.phone = phone
             if location:
                 current_user.location = location
-            
+
             # Update skills
             if skills is not None:
                 if skills.strip():
@@ -235,43 +244,49 @@ def edit_profile():
                     current_user.set_skills(skills_list)
                 else:
                     current_user.set_skills([])
-            
+
             # Password change handling
             current_password = request.form.get('current_password', '')
             new_password = request.form.get('new_password', '')
             confirm_password = request.form.get('confirm_password', '')
-            
+
             if current_password or new_password or confirm_password:
                 if not check_password_hash(current_user.password, current_password):
                     flash('Current password is incorrect', 'error')
                     return redirect(url_for('auth.edit_profile'))
-                
+
                 if not new_password:
                     flash('New password is required', 'error')
                     return redirect(url_for('auth.edit_profile'))
-                
+
                 if len(new_password) < 6:
                     flash('New password must be at least 6 characters', 'error')
                     return redirect(url_for('auth.edit_profile'))
-                
+
                 if new_password != confirm_password:
                     flash('New passwords do not match', 'error')
                     return redirect(url_for('auth.edit_profile'))
-                
+
                 current_user.password = generate_password_hash(new_password)
+
+                # FIXED: Commit password change first, then re-authenticate
+                # the session so Flask-Login holds the updated user object.
+                db.session.commit()
+                login_user(current_user)
                 flash('Password changed successfully!', 'success')
-            
+                return redirect(url_for('auth.profile'))
+
             db.session.commit()
-            
             flash('Profile updated successfully!', 'success')
             return redirect(url_for('auth.profile'))
-            
+
         except Exception as e:
             db.session.rollback()
             flash(f'Error updating profile: {str(e)}', 'error')
             return redirect(url_for('auth.edit_profile'))
-    
+
     return render_template('edit_profile.html', user=current_user)
+
 
 @auth_bp.route('/profile/update-skills', methods=['POST'])
 @login_required
@@ -280,27 +295,28 @@ def update_skills():
     try:
         if not request.is_json:
             return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
-            
+
         data = request.get_json()
         if data is None:
             return jsonify({'success': False, 'error': 'Invalid JSON data'}), 400
-            
+
         skills = data.get('skills', [])
-        
+
         if not isinstance(skills, list):
             return jsonify({'success': False, 'error': 'Skills must be a list'}), 400
-        
+
         current_user.set_skills(skills)
         db.session.commit()
-        
+
         return jsonify({
-            'success': True, 
+            'success': True,
             'skills': current_user.get_skills()
         })
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 400
+
 
 # ==================== VIEW SUPERVISOR PROFILE ====================
 
@@ -309,26 +325,27 @@ def update_skills():
 def view_supervisor_profile(supervisor_id):
     """Public view of a supervisor's profile for students"""
     supervisor = User.query.get_or_404(supervisor_id)
-    
+
     if not supervisor.is_supervisor:
         flash('User is not a supervisor', 'error')
         return redirect(url_for('projects'))
-    
+
     supervised_projects = Project.query.filter_by(
         supervisor_id=supervisor.id,
         status='active'
     ).all()
-    
+
     completed_projects = Project.query.filter_by(
         supervisor_id=supervisor.id,
         status='completed'
     ).all()
-    
+
     return render_template('view_supervisor_profile.html',
         supervisor=supervisor,
         supervised_projects=supervised_projects,
         completed_projects=completed_projects
     )
+
 
 # ==================== FORGOT PASSWORD ====================
 
@@ -337,22 +354,23 @@ def forgot_password():
     """Request password reset - sends email to admin"""
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
-        
+
         if not email:
             flash('Please enter your email address', 'error')
             return redirect(url_for('auth.forgot_password'))
-        
+
         user = User.query.filter_by(email=email).first()
-        
+
         if user:
             print(f"[PASSWORD RESET REQUEST] User: {user.username} ({user.email}) at {datetime.now()}")
             flash('Your password reset request has been sent to the administrator. You will be contacted shortly.', 'success')
         else:
             flash('If an account exists with that email, a reset request has been sent.', 'success')
-        
+
         return redirect(url_for('auth.signin'))
-    
+
     return render_template('forgot_password.html')
+
 
 # ==================== PASSWORD RESET (Admin only) ====================
 
@@ -363,33 +381,33 @@ def reset_password(user_id):
     if not current_user.is_admin and not current_user.is_dev:
         flash('Access denied. Only administrators can reset passwords.', 'error')
         return redirect(url_for('dashboard.dashboard'))
-    
+
     user = User.query.get_or_404(user_id)
-    
+
     if request.method == 'POST':
         new_password = request.form.get('new_password', '')
         confirm_password = request.form.get('confirm_password', '')
-        
+
         if not new_password:
             flash('New password is required', 'error')
             return redirect(url_for('auth.reset_password', user_id=user_id))
-        
+
         if len(new_password) < 6:
             flash('Password must be at least 6 characters', 'error')
             return redirect(url_for('auth.reset_password', user_id=user_id))
-        
+
         if new_password != confirm_password:
             flash('Passwords do not match', 'error')
             return redirect(url_for('auth.reset_password', user_id=user_id))
-        
+
         user.password = generate_password_hash(new_password)
         db.session.commit()
-        
+
         flash(f'Password reset for {user.email}. New password: {new_password}', 'success')
-        
+
         if current_user.is_admin:
             return redirect(url_for('admin.users'))
         else:
             return redirect(url_for('dev.dashboard'))
-    
+
     return render_template('reset_password.html', user=user)

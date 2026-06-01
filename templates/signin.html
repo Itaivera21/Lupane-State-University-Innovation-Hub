@@ -272,7 +272,7 @@
             <!-- Password -->
             <div class="form-group">
                 <label>Password <span class="required">*</span></label>
-                <input type="password" name="password" placeholder="••••••••" required>
+                <input type="password" name="password" placeholder="Enter your password" required>
             </div>
 
             <!-- Remember Me & Forgot Password -->
@@ -281,7 +281,7 @@
                     <input type="checkbox" id="remember" name="remember">
                     <label for="remember">Remember me</label>
                 </div>
-                <a href="#" class="forgot-link">Forgot Password?</a>
+                <a href="{{ url_for('auth.forgot_password') }}" class="forgot-link">Forgot Password?</a>
             </div>
 
             <!-- Sign In Button -->

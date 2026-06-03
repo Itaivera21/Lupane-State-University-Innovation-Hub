@@ -16,13 +16,30 @@
         }
 
         body {
-            background: #dfe9f5;
             min-height: 100vh;
+            background-image: url("{{ url_for('static', filename='Images/img-618aa639ca3ff.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        /* Dark overlay for better text readability */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
         }
 
         /* ── Header ── */
         header {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 15px 30px;
             position: fixed;
             top: 0;
@@ -116,7 +133,8 @@
 
         /* ── Desktop Secondary Nav ── */
         .main-nav {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             position: sticky;
             top: 75px;
             z-index: 900;
@@ -252,10 +270,11 @@
         }
 
         .contact-box {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 40px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         /* ── Flash Messages ── */
@@ -396,7 +415,8 @@
 
         /* ── Footer ── */
         footer {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 30px;
             margin-top: 20px;
             text-align: center;
@@ -570,7 +590,6 @@
                     <h3>Send us an inquiry</h3>
                     <form action="https://formspree.io/f/mreaopol" method="POST">
 
-                        <!-- Formspree subject line -->
                         <input type="hidden" name="_subject" value="Innovation Hub Inquiry">
 
                         <div class="form-group">

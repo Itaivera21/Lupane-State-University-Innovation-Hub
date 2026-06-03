@@ -16,9 +16,26 @@
         }
 
         body {
-            background: #dfe9f5;
+            min-height: 100vh;
+            background-image: url("{{ url_for('static', filename='Images/lupane-state-university.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
             display: flex;
             min-height: 100vh;
+        }
+
+        /* Dark overlay for better text readability */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
         }
 
         /* Mobile Menu Button */
@@ -144,7 +161,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 15px 25px;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -201,7 +219,8 @@
         }
 
         .stat-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -236,7 +255,8 @@
         }
 
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             padding: 20px;
@@ -386,7 +406,8 @@
 
         /* Welcome Section */
         .welcome-section {
-            background: linear-gradient(135deg, #e6f2ff 0%, #ffffff 100%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 30px;

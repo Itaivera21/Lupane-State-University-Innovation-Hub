@@ -2,13 +2,22 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from functools import wraps
 from models import db, User, Project, ChatMessage, Group, GroupMember, ChatResource, ProjectApplication
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import uuid
 from werkzeug.utils import secure_filename
 
 # ==================== BLUEPRINT DEFINITION ====================
 chat_bp = Blueprint('chat', __name__, url_prefix='/chat')
+
+# Zimbabwe is CAT = UTC+2
+CAT_OFFSET = timedelta(hours=2)
+
+def to_cat(utc_dt):
+    """Convert a UTC datetime to CAT (UTC+2) for display"""
+    if utc_dt is None:
+        return None
+    return utc_dt + CAT_OFFSET
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt', 'py', 'js', 'html', 'css', 'zip', 'json'}
@@ -33,17 +42,16 @@ def is_approved_member(user_id, project_id):
     project = Project.query.get(project_id)
     if project and project.student_id == user_id:
         return True
-    
+
     if project and project.supervisor_id == user_id:
         return True
-    
-    # Check if user has an approved application
+
     approved_app = ProjectApplication.query.filter_by(
         project_id=project_id,
         applicant_id=user_id,
         status='approved'
     ).first()
-    
+
     return approved_app is not None
 
 def get_system_user():
@@ -66,7 +74,7 @@ def get_system_user():
         is_admin=False,
         is_supervisor=False
     )
-    
+
     try:
         from werkzeug.security import generate_password_hash
         system_user.password = generate_password_hash('system_pass_123')
@@ -130,6 +138,7 @@ def chats():
 
     return render_template('chats.html', user_projects=user_projects, current_project=None)
 
+
 @chat_bp.route('/project/<int:project_id>')
 @login_required
 def project_chat(project_id):
@@ -159,7 +168,9 @@ def project_chat(project_id):
         flash('You do not have access to this chat', 'error')
         return redirect(url_for('chat.chats'))
 
-    messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
+    messages = ChatMessage.query.filter_by(
+        project_id=project_id
+    ).order_by(ChatMessage.created_at).all()
 
     unread_messages = ChatMessage.query.filter_by(
         project_id=project_id,
@@ -237,6 +248,7 @@ def group_info(project_id):
 
     return render_template('group_info.html', project_id=project_id, current_user=current_user)
 
+
 @chat_bp.route('/team-members/<int:project_id>')
 @login_required
 def team_members(project_id):
@@ -268,7 +280,6 @@ def send_message(project_id):
     try:
         project = Project.query.get_or_404(project_id)
 
-        # Check access including approved applications
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
                       current_user.is_admin or
@@ -299,17 +310,20 @@ def send_message(project_id):
         db.session.add(message)
         db.session.commit()
 
+        # FIXED: Convert UTC to CAT (UTC+2) before formatting the time
+        cat_time = to_cat(message.created_at)
+
         return jsonify({
             'success': True,
             'message': {
                 'id': message.id,
                 'content': message.content,
                 'sender_name': current_user.get_full_name() or current_user.username,
-                'time': message.created_at.strftime('%I:%M %p'),
+                'time': cat_time.strftime('%I:%M %p') if cat_time else '',
                 'is_own': True
             }
         })
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error sending message: {str(e)}")
@@ -320,6 +334,7 @@ def send_message(project_id):
             'error': str(e)
         }), 500
 
+
 @chat_bp.route('/api/messages/<int:project_id>')
 @login_required
 def get_messages(project_id):
@@ -327,7 +342,6 @@ def get_messages(project_id):
     try:
         project = Project.query.get_or_404(project_id)
 
-        # Check access including approved applications
         has_access = (project.student_id == current_user.id or
                       project.supervisor_id == current_user.id or
                       current_user.is_admin or
@@ -336,15 +350,20 @@ def get_messages(project_id):
         if not has_access:
             return jsonify({'error': 'Access denied'}), 403
 
-        messages = ChatMessage.query.filter_by(project_id=project_id).order_by(ChatMessage.created_at).all()
+        messages = ChatMessage.query.filter_by(
+            project_id=project_id
+        ).order_by(ChatMessage.created_at).all()
 
         messages_data = []
         for m in messages:
+            # FIXED: Convert UTC to CAT (UTC+2) before formatting the time
+            cat_time = to_cat(m.created_at)
+
             message_data = {
                 'id': m.id,
                 'content': m.content,
                 'sender_name': m.sender.get_full_name() or m.sender.username if m.sender else 'System',
-                'time': m.created_at.strftime('%I:%M %p, %d %b'),
+                'time': cat_time.strftime('%I:%M %p, %d %b') if cat_time else '',
                 'is_own': m.sender_id == current_user.id if m.sender_id else False
             }
 
@@ -361,10 +380,11 @@ def get_messages(project_id):
             messages_data.append(message_data)
 
         return jsonify({'messages': messages_data})
-        
+
     except Exception as e:
         print(f"Error getting messages: {str(e)}")
         return jsonify({'messages': [], 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/mark-project-read/<int:project_id>', methods=['POST'])
 @login_required
@@ -380,6 +400,7 @@ def mark_project_read(project_id):
     except Exception as e:
         print(f"Error marking messages as read: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/download-resource/<int:resource_id>')
 @login_required
@@ -403,10 +424,11 @@ def download_resource(resource_id):
             return jsonify({'error': 'File not found'}), 404
 
         return send_file(file_path, as_attachment=True, download_name=resource.original_filename)
-        
+
     except Exception as e:
         print(f"Error downloading resource: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 
 @chat_bp.route('/api/share-resource/<int:project_id>', methods=['POST'])
 @login_required
@@ -474,11 +496,12 @@ def share_resource(project_id):
         db.session.commit()
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error sharing resource: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/share-link/<int:project_id>', methods=['POST'])
 @login_required
@@ -516,11 +539,12 @@ def share_link(project_id):
         db.session.commit()
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error sharing link: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/share-code/<int:project_id>', methods=['POST'])
 @login_required
@@ -556,7 +580,7 @@ def share_code(project_id):
         db.session.commit()
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error sharing code: {str(e)}")
@@ -598,10 +622,11 @@ def get_project_info(project_id):
             'member_count': member_count,
             'created_date': project.created_at.strftime('%b %Y') if project.created_at else 'Unknown'
         })
-        
+
     except Exception as e:
         print(f"Error getting project info: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 
 @chat_bp.route('/api/mute-status/<int:project_id>')
 @login_required
@@ -622,10 +647,11 @@ def get_mute_status(project_id):
                 is_muted = True
 
         return jsonify({'is_muted': is_muted})
-        
+
     except Exception as e:
         print(f"Error getting mute status: {str(e)}")
         return jsonify({'is_muted': False}), 200
+
 
 @chat_bp.route('/api/toggle-mute/<int:project_id>', methods=['POST'])
 @login_required
@@ -660,11 +686,12 @@ def toggle_mute(project_id):
         db.session.commit()
 
         return jsonify({'success': True, 'is_muted': muted})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error toggling mute: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/members/<int:project_id>')
 @login_required
@@ -698,10 +725,11 @@ def get_members(project_id):
             })
 
         return jsonify(members_data)
-        
+
     except Exception as e:
         print(f"Error getting members: {str(e)}")
-        return jsonify([], 200)
+        return jsonify([]), 200
+
 
 @chat_bp.route('/api/mute-member/<int:project_id>', methods=['POST'])
 @login_required
@@ -737,11 +765,12 @@ def mute_member(project_id):
             send_system_message(project_id, f"{user.get_full_name() or user.username} has been muted by the project owner.")
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error muting member: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/remove-member/<int:project_id>', methods=['POST'])
 @login_required
@@ -782,11 +811,12 @@ def remove_member(project_id):
             send_system_message(project_id, f"{user.get_full_name() or user.username} has been removed from the project by the project owner.")
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error removing member: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/add-member/<int:project_id>', methods=['POST'])
 @login_required
@@ -847,11 +877,12 @@ def add_member(project_id):
         send_system_message(project_id, f"{user.get_full_name() or user.username} has been added to the project by {current_user.get_full_name() or current_user.username}.")
 
         return jsonify({'success': True, 'message': f'{user.get_full_name() or user.username} added to project'})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error adding member: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/update-role/<int:project_id>', methods=['POST'])
 @login_required
@@ -870,7 +901,7 @@ def update_member_role(project_id):
         user = User.query.get_or_404(user_id)
 
         if user_id == project.student_id:
-            return jsonify({'error': 'Cannot change project owner\'s role'}), 400
+            return jsonify({'error': "Cannot change project owner's role"}), 400
 
         if is_supervisor:
             project.supervisor_id = user_id
@@ -883,11 +914,12 @@ def update_member_role(project_id):
         db.session.commit()
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error updating role: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @chat_bp.route('/api/leave-group/<int:project_id>', methods=['POST'])
 @login_required
@@ -921,7 +953,7 @@ def leave_group(project_id):
         send_system_message(project_id, f"{user.get_full_name() or user.username} has left the group.")
 
         return jsonify({'success': True})
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error leaving group: {str(e)}")

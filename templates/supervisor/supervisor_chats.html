@@ -21,6 +21,7 @@
             min-height: 100vh;
         }
 
+        /* ── Mobile Menu Button (right side, matches dashboard) ── */
         .mobile-menu-btn {
             display: none;
             position: fixed;
@@ -39,6 +40,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
+        /* ── Sidebar ── */
         .sidebar {
             width: 260px;
             background: #2c3e50;
@@ -99,9 +101,7 @@
             gap: 12px;
         }
 
-        .nav-item:hover {
-            background: #34495e;
-        }
+        .nav-item:hover { background: #34495e; }
 
         .nav-item.active {
             background: #3498db;
@@ -121,6 +121,7 @@
             opacity: 0.8;
         }
 
+        /* ── Main Content ── */
         .main-content {
             flex: 1;
             margin-left: 260px;
@@ -140,6 +141,7 @@
             }
         }
 
+        /* ── Projects Sidebar ── */
         .projects-sidebar {
             width: 300px;
             background: white;
@@ -150,9 +152,7 @@
         }
 
         @media (max-width: 768px) {
-            .projects-sidebar {
-                width: 100%;
-            }
+            .projects-sidebar { width: 100%; }
         }
 
         .sidebar-header-chat {
@@ -162,10 +162,7 @@
             margin-bottom: 20px;
         }
 
-        .sidebar-header-chat h3 {
-            color: #333;
-            font-size: 16px;
-        }
+        .sidebar-header-chat h3 { color: #333; font-size: 16px; }
 
         .project-count {
             background: #e6f2ff;
@@ -176,9 +173,7 @@
             font-weight: 600;
         }
 
-        .project-list {
-            list-style: none;
-        }
+        .project-list { list-style: none; }
 
         .project-item {
             padding: 12px;
@@ -189,10 +184,7 @@
             cursor: pointer;
         }
 
-        .project-item a {
-            display: block;
-            color: inherit;
-        }
+        .project-item a { display: block; color: inherit; }
 
         .project-item:hover {
             background: #f8f9fa;
@@ -204,12 +196,7 @@
             border-color: #0066cc;
         }
 
-        .project-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
+        .project-name { font-weight: 600; color: #333; margin-bottom: 5px; font-size: 14px; }
 
         .project-meta {
             display: flex;
@@ -228,6 +215,7 @@
             font-weight: 600;
         }
 
+        /* ── Chat Area ── */
         .chat-area {
             flex: 1;
             background: white;
@@ -239,9 +227,7 @@
         }
 
         @media (max-width: 768px) {
-            .chat-area {
-                height: calc(100vh - 160px);
-            }
+            .chat-area { height: calc(100vh - 160px); }
         }
 
         .chat-header {
@@ -256,15 +242,8 @@
             border-radius: 8px 8px 0 0;
         }
 
-        .chat-header h2 {
-            color: #333;
-            font-size: 18px;
-        }
-
-        .chat-header p {
-            font-size: 12px;
-            color: #666;
-        }
+        .chat-header h2 { color: #333; font-size: 18px; }
+        .chat-header p  { font-size: 12px; color: #666; }
 
         .team-members {
             display: flex;
@@ -272,26 +251,6 @@
             gap: 10px;
             color: #888;
             font-size: 13px;
-        }
-
-        .member-avatars {
-            display: flex;
-            align-items: center;
-        }
-
-        .member-avatar {
-            width: 28px;
-            height: 28px;
-            background: #0066cc;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 11px;
-            margin-right: -5px;
-            border: 2px solid white;
         }
 
         .chat-messages {
@@ -316,9 +275,7 @@
         }
 
         @media (max-width: 768px) {
-            .message {
-                max-width: 90%;
-            }
+            .message { max-width: 90%; }
         }
 
         .message-avatar {
@@ -358,29 +315,13 @@
             font-size: 12px;
         }
 
-        .message-author {
-            font-weight: 600;
-            color: #333;
-        }
+        .message-author       { font-weight: 600; color: #333; }
+        .own-message .message-author { color: white; }
 
-        .own-message .message-author {
-            color: white;
-        }
+        .message-time              { color: #999; font-size: 10px; }
+        .own-message .message-time { color: rgba(255,255,255,0.7); }
 
-        .message-time {
-            color: #999;
-            font-size: 10px;
-        }
-
-        .own-message .message-time {
-            color: rgba(255,255,255,0.7);
-        }
-
-        .message-text {
-            font-size: 13px;
-            line-height: 1.5;
-            word-break: break-word;
-        }
+        .message-text { font-size: 13px; line-height: 1.5; word-break: break-word; }
 
         .resource-share {
             background: #f8f9fa;
@@ -392,9 +333,7 @@
             gap: 10px;
         }
 
-        .own-message .resource-share {
-            background: rgba(255,255,255,0.1);
-        }
+        .own-message .resource-share { background: rgba(255,255,255,0.1); }
 
         .resource-icon {
             width: 30px;
@@ -407,19 +346,9 @@
             font-size: 16px;
         }
 
-        .resource-info {
-            flex: 1;
-        }
-
-        .resource-name {
-            font-weight: 500;
-            font-size: 12px;
-        }
-
-        .resource-size {
-            font-size: 10px;
-            color: #888;
-        }
+        .resource-info { flex: 1; }
+        .resource-name { font-weight: 500; font-size: 12px; }
+        .resource-size { font-size: 10px; color: #888; }
 
         .download-btn {
             color: #0066cc;
@@ -430,10 +359,9 @@
             border-radius: 4px;
         }
 
-        .download-btn:hover {
-            text-decoration: underline;
-        }
+        .download-btn:hover { text-decoration: underline; }
 
+        /* ── Chat Input ── */
         .chat-input-area {
             padding: 15px 20px;
             border-top: 1px solid #f0f0f0;
@@ -465,10 +393,7 @@
             color: #0066cc;
         }
 
-        .message-input-wrapper {
-            display: flex;
-            gap: 10px;
-        }
+        .message-input-wrapper { display: flex; gap: 10px; }
 
         .message-input {
             flex: 1;
@@ -492,9 +417,7 @@
             cursor: pointer;
         }
 
-        .send-btn:hover {
-            background: #0052a3;
-        }
+        .send-btn:hover { background: #0052a3; }
 
         .supervisor-badge-chat {
             background: #2c3e50;
@@ -505,6 +428,7 @@
             font-weight: 500;
         }
 
+        /* ── Empty State ── */
         .empty-state {
             flex: 1;
             display: flex;
@@ -516,12 +440,9 @@
             text-align: center;
         }
 
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
+        .empty-state-icon { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
 
+        /* ── Flash Messages ── */
         .flash-message {
             padding: 12px;
             border-radius: 6px;
@@ -530,27 +451,12 @@
             animation: slideIn 0.3s ease;
         }
 
-        .flash-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .flash-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+        .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
         @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(-20px); opacity: 0; }
+            to   { transform: translateY(0);     opacity: 1; }
         }
 
         @media (max-width: 768px) {
@@ -564,19 +470,20 @@
             }
         }
 
+        /* ── Modals ── */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 3000;
             align-items: center;
             justify-content: center;
         }
+
         .modal.active { display: flex; }
+
         .modal-content {
             background: white;
             border-radius: 10px;
@@ -584,65 +491,56 @@
             width: 90%;
             max-width: 500px;
         }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        .close-modal {
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
+
+        .close-modal { font-size: 24px; cursor: pointer; color: #888; }
+        .close-modal:hover { color: #ff4444; }
+
+        .form-group { margin-bottom: 15px; }
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             font-size: 13px;
             font-weight: 500;
         }
-        .form-group input, .form-group select, .form-group textarea {
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 13px;
         }
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
+
+        .form-group textarea { min-height: 80px; resize: vertical; }
+
         .modal-actions {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
             margin-top: 20px;
         }
-        .modal-btn {
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .modal-btn-primary {
-            background: #0066cc;
-            color: white;
-            border: none;
-        }
-        .modal-btn-secondary {
-            background: #f8f9fa;
-            color: #555;
-            border: 1px solid #ddd;
-        }
+
+        .modal-btn { padding: 8px 20px; border-radius: 6px; font-weight: 500; cursor: pointer; }
+        .modal-btn-primary   { background: #0066cc; color: white; border: none; }
+        .modal-btn-secondary { background: #f8f9fa; color: #555; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
-    <div class="mobile-menu-btn" onclick="toggleSidebar()">☰</div>
+    <!-- Mobile Menu Button -->
+    <div class="mobile-menu-btn" id="menuBtn" onclick="toggleSidebar()">&#9776;</div>
 
+    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>Innovation Hub</h2>
@@ -677,17 +575,19 @@
         </div>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
+
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">
-                        {{ message }}
-                    </div>
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
+        <!-- Project List -->
         <div class="projects-sidebar">
             <div class="sidebar-header-chat">
                 <h3>Supervised Projects</h3>
@@ -697,7 +597,8 @@
             <ul class="project-list" id="projectList">
                 {% if project_chats %}
                     {% for chat in project_chats %}
-                    <li class="project-item {% if current_project and current_project.id == chat.project.id %}active{% endif %}" data-project-id="{{ chat.project.id }}">
+                    <li class="project-item {% if current_project and current_project.id == chat.project.id %}active{% endif %}"
+                        data-project-id="{{ chat.project.id }}">
                         <a href="{{ url_for('supervisor.chats', project_id=chat.project.id) }}">
                             <div class="project-name">{{ chat.project.title }}</div>
                             <div class="project-meta">
@@ -718,6 +619,7 @@
             </ul>
         </div>
 
+        <!-- Chat Area -->
         {% if current_project %}
         <div class="chat-area" id="chatArea" data-project-id="{{ current_project.id }}">
             <div class="chat-header">
@@ -735,12 +637,19 @@
             <div class="chat-messages" id="chatMessages">
                 {% if messages %}
                     {% for message in messages %}
-                    <div class="message {% if message.sender_id == current_user.id %}own-message{% endif %}" data-message-id="{{ message.id }}">
-                        <div class="message-avatar">{{ (message.sender.get_full_name() or message.sender.username)[:2]|upper if message.sender else '?' }}</div>
+                    <div class="message {% if message.sender_id == current_user.id %}own-message{% endif %}"
+                         data-message-id="{{ message.id }}">
+                        <div class="message-avatar">
+                            {{ (message.sender.get_full_name() or message.sender.username)[:2]|upper if message.sender else '?' }}
+                        </div>
                         <div class="message-content">
                             <div class="message-header">
-                                <span class="message-author">{{ message.sender.get_full_name() or message.sender.username if message.sender else 'Unknown' }}</span>
-                                <span class="message-time">{{ message.created_at.strftime('%I:%M %p, %d %b') if message.created_at else '' }}</span>
+                                <span class="message-author">
+                                    {{ message.sender.get_full_name() or message.sender.username if message.sender else 'Unknown' }}
+                                </span>
+                                <span class="message-time">
+                                    {{ message.created_at.strftime('%I:%M %p, %d %b') if message.created_at else '' }}
+                                </span>
                             </div>
                             <div class="message-text">{{ message.content }}</div>
                             {% if message.resource %}
@@ -750,7 +659,8 @@
                                     <div class="resource-name">{{ message.resource.original_filename }}</div>
                                     <div class="resource-size">{{ message.resource.file_size }}</div>
                                 </div>
-                                <button onclick="downloadResource({{ message.resource.id }})" class="download-btn">Download</button>
+                                <button onclick="downloadResource({{ message.resource.id }})"
+                                        class="download-btn">Download</button>
                             </div>
                             {% endif %}
                         </div>
@@ -765,7 +675,8 @@
                 {% endif %}
             </div>
 
-            <div class="modal" id="resourceModal" style="display: none;">
+            <!-- Share Resource Modal -->
+            <div class="modal" id="resourceModal">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Share Resource</h3>
@@ -773,26 +684,28 @@
                     </div>
                     <form id="resourceForm" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label>Resource Name <span style="color: #888;">(optional)</span></label>
+                            <label>Resource Name <span style="color:#888;">(optional)</span></label>
                             <input type="text" name="resource_name" placeholder="e.g., Project Proposal">
                         </div>
                         <div class="form-group">
-                            <label>Description <span style="color: #888;">(optional)</span></label>
+                            <label>Description <span style="color:#888;">(optional)</span></label>
                             <textarea name="description" placeholder="What's this file about?"></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Select File <span class="required">*</span></label>
-                            <input type="file" name="file" id="resourceFile" required>
+                            <label>Select File *</label>
+                            <input type="file" name="file" required>
                         </div>
                         <div class="modal-actions">
-                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('resourceModal')">Cancel</button>
-                            <button type="submit" class="modal-btn modal-btn-primary">Upload & Share</button>
+                            <button type="button" class="modal-btn modal-btn-secondary"
+                                    onclick="closeModal('resourceModal')">Cancel</button>
+                            <button type="submit" class="modal-btn modal-btn-primary">Upload &amp; Share</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <div class="modal" id="linkModal" style="display: none;">
+            <!-- Share Link Modal -->
+            <div class="modal" id="linkModal">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Share Link</h3>
@@ -808,14 +721,16 @@
                             <textarea name="description" placeholder="What's this link about?"></textarea>
                         </div>
                         <div class="modal-actions">
-                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('linkModal')">Cancel</button>
+                            <button type="button" class="modal-btn modal-btn-secondary"
+                                    onclick="closeModal('linkModal')">Cancel</button>
                             <button type="submit" class="modal-btn modal-btn-primary">Share Link</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <div class="modal" id="codeModal" style="display: none;">
+            <!-- Share Code Modal -->
+            <div class="modal" id="codeModal">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Share Code Snippet</h3>
@@ -839,13 +754,15 @@
                             <textarea name="code" required placeholder="Paste your code here..."></textarea>
                         </div>
                         <div class="modal-actions">
-                            <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('codeModal')">Cancel</button>
+                            <button type="button" class="modal-btn modal-btn-secondary"
+                                    onclick="closeModal('codeModal')">Cancel</button>
                             <button type="submit" class="modal-btn modal-btn-primary">Share Code</button>
                         </div>
                     </form>
                 </div>
             </div>
 
+            <!-- Chat Input -->
             <div class="chat-input-area">
                 <div class="input-tools">
                     <span class="tool-btn" onclick="openModal('resourceModal')">Share Resource</span>
@@ -854,12 +771,14 @@
                 </div>
                 <form id="messageForm">
                     <div class="message-input-wrapper">
-                        <input type="text" class="message-input" name="message" placeholder="Type your message..." autocomplete="off" required>
-                        <button type="submit" class="send-btn">Send</button>
+                        <input type="text" class="message-input" name="message"
+                               placeholder="Type your message..." autocomplete="off" required>
+                        <button type="submit" class="send-btn">&#9658;</button>
                     </div>
                 </form>
             </div>
         </div>
+
         {% else %}
         <div class="chat-area">
             <div class="empty-state">
@@ -869,72 +788,109 @@
             </div>
         </div>
         {% endif %}
+
     </div>
 
     <script>
-        const currentProjectId = {{ current_project.id if current_project else null }};
+        // FIXED: safe null — Jinja outputs Python None as JS null correctly
+        const currentProjectId = {{ current_project.id if current_project else 'null' }};
 
-        async function downloadResource(resourceId) {
-            if (!resourceId) {
-                showNotification('Error: No resource specified', 'error');
-                return;
+        // ── Sidebar toggle ──────────────────────────────────────────
+        // FIXED: standalone function, NOT overridden by window.onclick
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            var sidebar = document.getElementById('sidebar');
+            var menuBtn = document.getElementById('menuBtn');
+            // FIXED: guard against null refs and only act on mobile
+            if (!sidebar || !menuBtn) return;
+            if (window.innerWidth > 768) return;
+            if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('active');
             }
+        });
 
+        // Close sidebar when a nav link is clicked on mobile
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        // ── Modals ──────────────────────────────────────────────────
+        function openModal(modalId) {
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+            }
+        }
+
+        function closeModal(modalId) {
+            var modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('active');
+            }
+        }
+
+        // FIXED: modal backdrop click — scoped to modal overlays only,
+        // does NOT interfere with the hamburger button
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal') &&
+                e.target.style.display === 'flex') {
+                e.target.classList.remove('active');
+                e.target.style.display = 'none';
+            }
+        });
+
+        // ── Messages ────────────────────────────────────────────────
+        async function downloadResource(resourceId) {
+            if (!resourceId) { showNotification('Error: No resource specified', 'error'); return; }
             try {
                 const response = await fetch(`/chat/api/download-resource/${resourceId}`);
-
                 if (response.ok) {
                     const blob = await response.blob();
-                    const contentDisposition = response.headers.get('Content-Disposition');
+                    const cd = response.headers.get('Content-Disposition');
                     let filename = 'download';
-
-                    if (contentDisposition) {
-                        const match = contentDisposition.match(/filename="?([^"]+)"?/);
-                        if (match) filename = match[1];
-                    }
-
+                    if (cd) { const m = cd.match(/filename="?([^"]+)"?/); if (m) filename = m[1]; }
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
+                    a.href = url; a.download = filename;
+                    document.body.appendChild(a); a.click();
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                     showNotification('Download started', 'success');
                 } else {
                     showNotification('Download failed', 'error');
                 }
-            } catch (error) {
-                showNotification('Error downloading file', 'error');
-            }
+            } catch (e) { showNotification('Error downloading file', 'error'); }
         }
 
         document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-
             try {
                 const response = await fetch(`/chat/api/send-message/${currentProjectId}`, {
-                    method: 'POST',
-                    body: formData
+                    method: 'POST', body: formData
                 });
-
                 if (response.ok) {
                     e.target.reset();
                     await loadMessages();
                 } else {
-                    const error = await response.json();
-                    showNotification(error.error || 'Failed to send message', 'error');
+                    const err = await response.json();
+                    showNotification(err.error || 'Failed to send message', 'error');
                 }
-            } catch (error) {
-                showNotification('Error sending message', 'error');
-            }
+            } catch (e) { showNotification('Error sending message', 'error'); }
         });
 
         async function loadMessages() {
             if (!currentProjectId) return;
-
             try {
                 const response = await fetch(`/chat/api/messages/${currentProjectId}`);
                 if (response.ok) {
@@ -942,39 +898,51 @@
                     updateMessagesDisplay(data.messages);
                     markMessagesAsRead();
                 }
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
+            } catch (e) { console.error('Error loading messages:', e); }
         }
 
         function updateMessagesDisplay(messages) {
             const container = document.getElementById('chatMessages');
             if (!container) return;
-
             if (!messages || messages.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">💬</div>
                         <h3>No messages yet</h3>
                         <p>Start the conversation with the student team!</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
-
-            container.innerHTML = messages.map(msg => `
-                <div class="message ${msg.is_own ? 'own-message' : ''}" data-message-id="${msg.id}">
-                    <div class="message-avatar">${(msg.sender_name || '?').substring(0, 2).toUpperCase()}</div>
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-author">${escapeHtml(msg.sender_name)}</span>
-                            <span class="message-time">${msg.time}</span>
+            container.innerHTML = messages.map(msg => {
+                let resourceHtml = '';
+                if (msg.resource) {
+                    resourceHtml = `
+                        <div class="resource-share">
+                            <div class="resource-icon">File</div>
+                            <div class="resource-info">
+                                <div class="resource-name">${escapeHtml(msg.resource.name)}</div>
+                                <div class="resource-size">${escapeHtml(msg.resource.size)}</div>
+                            </div>
+                            <button onclick="downloadResource(${msg.resource.id})"
+                                    class="download-btn">Download</button>
+                        </div>`;
+                }
+                return `
+                    <div class="message ${msg.is_own ? 'own-message' : ''}"
+                         data-message-id="${msg.id}">
+                        <div class="message-avatar">
+                            ${(msg.sender_name || '?').substring(0, 2).toUpperCase()}
                         </div>
-                        <div class="message-text">${escapeHtml(msg.content)}</div>
-                    </div>
-                </div>
-            `).join('');
-
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">${escapeHtml(msg.sender_name)}</span>
+                                <span class="message-time">${escapeHtml(msg.time)}</span>
+                            </div>
+                            <div class="message-text">${escapeHtml(msg.content)}</div>
+                            ${resourceHtml}
+                        </div>
+                    </div>`;
+            }).join('');
             scrollToBottom();
         }
 
@@ -987,159 +955,95 @@
 
         async function markMessagesAsRead() {
             if (!currentProjectId) return;
-
             try {
-                await fetch(`/chat/api/mark-project-read/${currentProjectId}`, {
-                    method: 'POST'
-                });
-            } catch (error) {
-                console.error('Error marking messages as read:', error);
-            }
+                await fetch(`/chat/api/mark-project-read/${currentProjectId}`, { method: 'POST' });
+            } catch (e) { console.error('Error marking as read:', e); }
         }
 
         function scrollToBottom() {
-            const chatMessages = document.getElementById('chatMessages');
-            if (chatMessages) {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+            const c = document.getElementById('chatMessages');
+            if (c) c.scrollTop = c.scrollHeight;
         }
 
         function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `flash-message flash-${type}`;
-            notification.textContent = message;
-            notification.style.position = 'fixed';
-            notification.style.top = '20px';
-            notification.style.right = '20px';
-            notification.style.zIndex = '3000';
-            document.body.appendChild(notification);
-
+            const n = document.createElement('div');
+            n.className = `flash-message flash-${type}`;
+            n.textContent = message;
+            n.style.cssText = 'position:fixed;top:20px;right:20px;z-index:3000;min-width:200px;';
+            document.body.appendChild(n);
             setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => notification.remove(), 300);
+                n.style.opacity = '0';
+                n.style.transition = 'opacity 0.3s';
+                setTimeout(() => n.remove(), 300);
             }, 3000);
         }
 
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            document.getElementById(modalId).classList.remove('active');
-        }
-
+        // ── Resource / Link / Code form submissions ──────────────────
         document.getElementById('resourceForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-
             try {
                 const response = await fetch(`/chat/api/share-resource/${currentProjectId}`, {
-                    method: 'POST',
-                    body: formData
+                    method: 'POST', body: new FormData(e.target)
                 });
-
                 if (response.ok) {
                     closeModal('resourceModal');
                     await loadMessages();
                     showNotification('Resource shared successfully', 'success');
                     e.target.reset();
-                } else {
-                    showNotification('Failed to share resource', 'error');
-                }
-            } catch (error) {
-                showNotification('Error sharing resource', 'error');
-            }
+                } else { showNotification('Failed to share resource', 'error'); }
+            } catch (e) { showNotification('Error sharing resource', 'error'); }
         });
 
         document.getElementById('linkForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-
+            const data = Object.fromEntries(new FormData(e.target));
             try {
                 const response = await fetch(`/chat/api/share-link/${currentProjectId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-
                 if (response.ok) {
                     closeModal('linkModal');
                     await loadMessages();
                     showNotification('Link shared successfully', 'success');
                     e.target.reset();
-                } else {
-                    showNotification('Failed to share link', 'error');
-                }
-            } catch (error) {
-                showNotification('Error sharing link', 'error');
-            }
+                } else { showNotification('Failed to share link', 'error'); }
+            } catch (e) { showNotification('Error sharing link', 'error'); }
         });
 
         document.getElementById('codeForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-
+            const data = Object.fromEntries(new FormData(e.target));
             try {
                 const response = await fetch(`/chat/api/share-code/${currentProjectId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-
                 if (response.ok) {
                     closeModal('codeModal');
                     await loadMessages();
                     showNotification('Code shared successfully', 'success');
                     e.target.reset();
-                } else {
-                    showNotification('Failed to share code', 'error');
-                }
-            } catch (error) {
-                showNotification('Error sharing code', 'error');
-            }
+                } else { showNotification('Failed to share code', 'error'); }
+            } catch (e) { showNotification('Error sharing code', 'error'); }
         });
 
+        // ── Auto-refresh messages every 5s ──────────────────────────
         if (currentProjectId) {
             setInterval(loadMessages, 5000);
-            setTimeout(() => {
-                scrollToBottom();
-                loadMessages();
-            }, 500);
+            setTimeout(() => { scrollToBottom(); loadMessages(); }, 500);
         }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-
-        document.addEventListener('click', function(event) {
-            var sidebar = document.getElementById('sidebar');
-            var menuBtn = document.querySelector('.mobile-menu-btn');
-
-            if (window.innerWidth <= 768) {
-                if (!sidebar.contains(event.target) && !menuBtn.contains(event.target) && sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                }
-            }
-        });
-
-        document.querySelectorAll('.nav-item').forEach(function(link) {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    document.getElementById('sidebar').classList.remove('active');
-                }
+        // ── Auto-hide Flask flash messages ──────────────────────────
+        setTimeout(function() {
+            document.querySelectorAll('.flash-message').forEach(function(flash) {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                setTimeout(function() { flash.style.display = 'none'; }, 300);
             });
-        });
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.classList.remove('active');
-                event.target.style.display = 'none';
-            }
-        }
+        }, 3000);
     </script>
 </body>
 </html>
